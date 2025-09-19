@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  /* Theme utility classes */
+  --color-primary: var(--theme-primary);
+  --color-secondary: var(--theme-secondary); 
+  --color-accent: var(--theme-accent);
+  --color-background: var(--theme-background);
+  --color-surface: var(--theme-surface);
+}
+
+/* Theme 1: Purple-Pink-Blue */
+[data-theme="dorofi-light"] {
+  --theme-primary: #7C3AED;
+  --theme-secondary: #DB2777;
+  --theme-accent: #2563EB;
+  --theme-background: #FFFFFF;
+  --theme-surface: #F8FAFC;
+}
+
+[data-theme="dorofi-dark"] {
+  --theme-primary: #CBA0F6;
+  --theme-secondary: #F9A8D4;
+  --theme-accent: #93C5FD;
+  --theme-background: #1C1729;
+  --theme-surface: #2A1F3B;
+}
+
+/* Theme 2: Teal-Blue-Green */
+[data-theme="ocean-light"] {
+  --theme-primary: #0891b2;
+  --theme-secondary: #0ea5e9;
+  --theme-accent: #059669;
+  --theme-background: #FFFFFF;
+  --theme-surface: #F0F9FF;
+}
+
+[data-theme="ocean-dark"] {
+  --theme-primary: #67e8f9;
+  --theme-secondary: #7dd3fc;
+  --theme-accent: #6ee7b7;
+  --theme-background: #0f172a;
+  --theme-surface: #1e293b;
+}
+
+
