@@ -1,124 +1,161 @@
-// Pages/profile.jsx
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-    User, 
-    Clock, 
-    Target, 
-    Calendar, 
-    TrendingUp, 
-    Award, 
-    Settings, 
-    Edit3,
-    Save,
-    X,
-    LogOut,
-    Upload,
-    AlertCircle
-} from 'lucide-react';
+// Pages/profile.jsx - Move userStatus initialization after user is available
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext.jsx";
+import apiService from "../services/api.js";
+import { AlertCircle } from "lucide-react";
+
+// Import modular components
+import ProfileHeader from "../components/Profile/ProfileHeader.jsx";
+import StatsOverview from "../components/Profile/StatsOverview.jsx";
+import WeeklyProgress from "../components/Profile/WeeklyProgress.jsx";
+import Achievements from "../components/Profile/Achievements.jsx";
+import ActivityCalendar from "../components/Profile/ActivityCalendar.jsx";
+import LogoutModal from "../components/Profile/LogoutModal.jsx";
+import StatusManager from "../components/Profile/StatusManager.jsx"; // Add this import
 
 export default function Profile() {
-    const [user, setUser] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedName, setEditedName] = useState('');
-    const [imageError, setImageError] = useState(false);
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const navigate = useNavigate();
+    // Auth Context
+    const { user, loading: authLoading, logout, updateUser, isAuthenticated } = useAuth();
 
-    // Mock data - replace with real data from your backend
-    const [stats, setStats] = useState({
-        totalSessions: 47,
-        totalFocusTime: 1580, // in minutes
-        currentStreak: 5,
-        longestStreak: 12,
-        weeklyGoal: 300, // minutes
-        weeklyProgress: 185,
-        achievements: [
-            { id: 1, name: 'First Session', icon: '🎯', earned: true },
-            { id: 2, name: '7-Day Streak', icon: '🔥', earned: true },
-            { id: 3, name: '50 Hours Total', icon: '⏰', earned: false },
-            { id: 4, name: '30-Day Warrior', icon: '💪', earned: false },
-        ]
+    // State Management
+    const [isEditingDisplay, setIsEditingDisplay] = useState(false);
+    const [isEditingUsername, setIsEditingUsername] = useState(false);
+    const [editedDisplayName, setEditedDisplayName] = useState("");
+    const [editedUsername, setEditedUsername] = useState("");
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [profileLoading, setProfileLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
+    const [profileInitialized, setProfileInitialized] = useState(false);
+
+    // Initialize userStatus with safe defaults
+    const [userStatus, setUserStatus] = useState({
+        presence: { status: 'offline', isManual: false },
+        customStatus: { text: '', emoji: '', isActive: false }
     });
 
+    const [stats, setStats] = useState({
+        totalSessions: 0,
+        totalFocusTime: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        weeklyGoal: 300,
+        weeklyProgress: 0,
+        achievements: [],
+    });
+
+    // Initialize profile data only once when user is available
     useEffect(() => {
-        // Get user info from localStorage
-        const userInfo = localStorage.getItem('googleUserInfo');
-        if (userInfo) {
-            try {
-                const parsed = JSON.parse(userInfo);
-                console.log('User data loaded:', parsed); // Debug log
-                setUser(parsed);
-                setEditedName(parsed.name);
-            } catch (error) {
-                console.error('Error parsing user info:', error);
-                localStorage.removeItem('googleUserInfo');
-                localStorage.removeItem('googleToken');
-                navigate('/');
-            }
-        } else {
-            // Redirect to home if not logged in
-            console.log('No user info found, redirecting to home');
-            navigate('/', { replace: true });
-        }
-    }, [navigate]);
+        if (authLoading) return; // Wait for auth context
+        if (!isAuthenticated || !user) return; // Wait for authenticated user
+        if (profileInitialized) return; // Don't initialize twice
 
-    const handleSaveEdit = () => {
-        if (user && editedName.trim()) {
-            const updatedUser = { ...user, name: editedName.trim() };
-            setUser(updatedUser);
-            localStorage.setItem('googleUserInfo', JSON.stringify(updatedUser));
-            setIsEditing(false);
-        }
+        console.log("🎯 Initializing profile for user:", user.email);
+
+        // Set editing state with user data
+        setEditedDisplayName(user.displayName || user.name || "");
+        setEditedUsername(user.username || "");
+
+        // Initialize userStatus with user data
+        setUserStatus({
+            presence: user.presence || { status: 'offline', isManual: false },
+            customStatus: user.customStatus || { text: '', emoji: '', isActive: false }
+        });
+
+        // Fetch backend data
+        fetchUserProfile();
+        setProfileInitialized(true);
+    }, [user, isAuthenticated, authLoading, profileInitialized]);
+
+    const handleStatusUpdate = (updates) => {
+        setUserStatus(prev => ({ ...prev, ...updates }));
+        updateUser(updates); // Update context
     };
 
-    const handleLogout = () => {
+    const fetchUserProfile = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.log("⚠️ No token, using basic stats");
+            setBasicStats();
+            return;
+        }
+
         try {
-            console.log('Logging out user...'); // Debug log
-            
-            // Clear all user data from localStorage
-            localStorage.removeItem('googleToken');
-            localStorage.removeItem('googleUserInfo');
-            
-            // Reset component state
-            setUser(null);
-            setShowLogoutConfirm(false);
-            
-            console.log('User logged out successfully'); // Debug log
-            
-            // Force navigation to home with replace to clear history
-            navigate('/', { replace: true });
-            
-            // Optional: Force page reload to ensure clean state
-            window.location.href = '/';
-            
+            setProfileLoading(true);
+            setError("");
+
+            console.log("📡 Fetching backend profile data...");
+
+            // Fetch user stats (don't update user profile here to avoid loops)
+            const statsResponse = await apiService.getUserStats();
+            console.log("✅ Stats received:", statsResponse);
+
+            setStats({
+                totalSessions: statsResponse.totalSessions || 0,
+                totalFocusTime: statsResponse.totalFocusTime || 0,
+                totalFocusTime: statsResponse.dailyFocusTime || 0,
+                currentStreak: statsResponse.currentStreak || 0,
+                longestStreak: statsResponse.longestStreak || 0,
+                weeklyGoal: statsResponse.weeklyGoal || 300,
+                weeklyProgress: statsResponse.weeklyProgress || 0,
+                achievements: generateAchievements(statsResponse)
+            });
+
         } catch (error) {
-            console.error('Error during logout:', error);
-            // Force navigation even if there's an error
-            window.location.href = '/';
+            console.error("❌ Backend fetch failed:", error);
+            setError("Backend unavailable - showing basic profile");
+            setBasicStats();
+        } finally {
+            setProfileLoading(false);
         }
     };
 
-    const handleImageError = () => {
-        console.log('Profile image failed to load'); // Debug log
-        setImageError(true);
+    const setBasicStats = () => {
+        setStats({
+            totalSessions: 0,
+            totalFocusTime: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            weeklyGoal: 300,
+            weeklyProgress: 0,
+            achievements: generateAchievements({ totalSessions: 0, longestStreak: 0, totalFocusTime: 0 })
+        });
     };
 
-    const handleImageLoad = () => {
-        console.log('Profile image loaded successfully'); // Debug log
-        setImageError(false);
-    };
+    const generateAchievements = (stats) => [
+        {
+            id: 1,
+            name: "First Session",
+            icon: "🎯",
+            earned: (stats.totalSessions || 0) > 0,
+        },
+        {
+            id: 2,
+            name: "7-Day Streak",
+            icon: "🔥",
+            earned: (stats.longestStreak || 0) >= 7,
+        },
+        {
+            id: 3,
+            name: "50 Hours Total",
+            icon: "⏰",
+            earned: (stats.totalFocusTime || 0) >= 3000,
+        },
+        {
+            id: 4,
+            name: "30-Day Warrior",
+            icon: "💪",
+            earned: (stats.longestStreak || 0) >= 30,
+        },
+    ];
 
-    // Get high-resolution profile picture from Google
+    // Utility functions
     const getHighResProfilePicture = (googlePicture) => {
         if (!googlePicture) return null;
-        
-        // Google profile pictures come in different sizes
-        // Replace size parameters to get higher resolution
         return googlePicture
-            .replace('s96-c', 's400-c') // Increase size from 96px to 400px
-            .replace('=s96', '=s400')   // Alternative format
-            .replace('sz=50', 'sz=400'); // Another alternative format
+            .replace("s96-c", "s400-c")
+            .replace("=s96", "=s400")
+            .replace("sz=50", "sz=400");
     };
 
     const formatTime = (minutes) => {
@@ -127,12 +164,92 @@ export default function Profile() {
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
     };
 
-    const weeklyProgressPercent = (stats.weeklyProgress / stats.weeklyGoal) * 100;
+    // Handler functions
+    const handleSaveDisplayName = async () => {
+        if (!editedDisplayName.trim()) {
+            setError("Display name cannot be empty");
+            return;
+        }
 
-    if (!user) {
+        try {
+            setSaving(true);
+            setError("");
+
+            if (localStorage.getItem("token")) {
+                await apiService.updateDisplayName(editedDisplayName.trim());
+                console.log("✅ Display name updated in backend");
+            }
+
+            updateUser({ 
+                displayName: editedDisplayName.trim(),
+                name: editedDisplayName.trim() 
+            });
+
+            setIsEditingDisplay(false);
+        } catch (error) {
+            console.error("Failed to update display name:", error);
+            setError("Failed to update display name. Please try again.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSaveUsername = async () => {
+        if (!editedUsername.trim()) {
+            setError("Username cannot be empty");
+            return;
+        }
+
+        try {
+            setSaving(true);
+            setError("");
+
+            if (!localStorage.getItem("token")) {
+                setError("Please log in to set a username");
+                return;
+            }
+
+            await apiService.updateUsername(editedUsername.trim());
+            console.log("✅ Username updated in backend");
+
+            updateUser({
+                username: editedUsername.trim().toLowerCase(),
+                usernameLastChanged: new Date().toISOString(),
+            });
+
+            setIsEditingUsername(false);
+        } catch (error) {
+            console.error("Failed to update username:", error);
+            setError(error.message || "Failed to update username. Please try again.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleLogout = () => {
+        setShowLogoutConfirm(false);
+        logout(); // Context handles everything
+    };
+
+    // Show loading only while auth is initializing
+    if (authLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="animate-pulse text-secondary">Loading...</div>
+                <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="text-secondary">Loading...</div>
+                </div>
+            </div>
+        );
+    }
+
+    // ProtectedRoute should handle this, but keep as fallback
+    if (!isAuthenticated || !user) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-500 mb-4">Please log in to view your profile</p>
+                </div>
             </div>
         );
     }
@@ -140,243 +257,61 @@ export default function Profile() {
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8 max-w-4xl">
-                {/* Header */}
-                <div className="bg-surface rounded-lg p-6 mb-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            {/* Profile Picture - Enhanced for Google images */}
-                            <div className="relative">
-                                <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-primary bg-background">
-                                    {user.picture && !imageError ? (
-                                        <img 
-                                            src={getHighResProfilePicture(user.picture)} 
-                                            alt={user.name}
-                                            className="w-full h-full object-cover"
-                                            onError={handleImageError}
-                                            onLoad={handleImageLoad}
-                                            crossOrigin="anonymous"
-                                            referrerPolicy="no-referrer"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-surface flex items-center justify-center">
-                                            <User size={24} className="text-secondary" />
-                                        </div>
-                                    )}
-                                </div>
-                            
-                            </div>
-                            
-                            <div>
-                                {isEditing ? (
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="text"
-                                            value={editedName}
-                                            onChange={(e) => setEditedName(e.target.value)}
-                                            className="text-xl font-bold bg-background border border-primary rounded px-2 py-1 text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            autoFocus
-                                            maxLength={50}
-                                        />
-                                        <button
-                                            onClick={handleSaveEdit}
-                                            className="p-1 text-primary hover:text-accent transition-colors"
-                                            title="Save changes"
-                                        >
-                                            <Save size={16} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setIsEditing(false);
-                                                setEditedName(user.name);
-                                            }}
-                                            className="p-1 text-secondary hover:text-primary transition-colors"
-                                            title="Cancel editing"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <h1 className="text-2xl font-bold text-primary">{user.name}</h1>
-                                        <button
-                                            onClick={() => setIsEditing(true)}
-                                            className="p-1 text-secondary hover:text-primary transition-colors"
-                                            title="Edit name"
-                                        >
-                                            <Edit3 size={16} />
-                                        </button>
-                                    </div>
-                                )}
-                                <p className="text-secondary">{user.email}</p>
-                            </div>
-                        </div>
-                        
-                        {/* Logout Button */}
-                        <button
-                            onClick={() => setShowLogoutConfirm(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-600 rounded-lg transition-all border border-red-500/20 hover:border-red-500"
-                            title="Logout from Dorofi"
-                        >
-                            <LogOut size={18} />
-                            <span className="font-medium">Logout</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Stats Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-surface rounded-lg p-4">
+                {/* Error Banner */}
+                {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Clock size={20} className="text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-secondary">Total Focus Time</p>
-                                <p className="text-lg font-semibold text-primary">{formatTime(stats.totalFocusTime)}</p>
-                            </div>
+                            <AlertCircle size={20} className="text-red-500" />
+                            <p className="text-red-600 text-sm">{error}</p>
                         </div>
                     </div>
+                )}
 
-                    <div className="bg-surface rounded-lg p-4">
+                {/* Show loading indicator for profile data only */}
+                {profileLoading && (
+                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-secondary/10 rounded-lg">
-                                <Target size={20} className="text-secondary" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-secondary">Sessions Completed</p>
-                                <p className="text-lg font-semibold text-primary">{stats.totalSessions}</p>
-                            </div>
+                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            <p className="text-primary text-sm">Loading profile data...</p>
                         </div>
                     </div>
+                )}
 
-                    <div className="bg-surface rounded-lg p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-accent/10 rounded-lg">
-                                <TrendingUp size={20} className="text-accent" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-secondary">Current Streak</p>
-                                <p className="text-lg font-semibold text-primary">{stats.currentStreak} days</p>
-                            </div>
-                        </div>
-                    </div>
+                {/* Modular Components */}
+                <ProfileHeader
+                    currentUser={user}
+                    isEditingDisplay={isEditingDisplay}
+                    setIsEditingDisplay={setIsEditingDisplay}
+                    editedDisplayName={editedDisplayName}
+                    setEditedDisplayName={setEditedDisplayName}
+                    isEditingUsername={isEditingUsername}
+                    setIsEditingUsername={setIsEditingUsername}
+                    editedUsername={editedUsername}
+                    setEditedUsername={setEditedUsername}
+                    saving={saving}
+                    error={error}
+                    setError={setError}
+                    onSaveDisplayName={handleSaveDisplayName}
+                    onSaveUsername={handleSaveUsername}
+                    onLogout={() => setShowLogoutConfirm(true)}
+                    getHighResProfilePicture={getHighResProfilePicture}
+                />
+                <StatusManager 
+                    user={{...user, ...userStatus}}
+                    onStatusUpdate={handleStatusUpdate}
+                />
 
-                    <div className="bg-surface rounded-lg p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Award size={20} className="text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-secondary">Best Streak</p>
-                                <p className="text-lg font-semibold text-primary">{stats.longestStreak} days</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <StatsOverview stats={stats} formatTime={formatTime} />
+                <WeeklyProgress stats={stats} formatTime={formatTime} />
+                <Achievements stats={stats} />
+                <ActivityCalendar stats={stats} />
 
-                {/* Weekly Progress */}
-                <div className="bg-surface rounded-lg p-6 mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold text-primary">Weekly Goal</h2>
-                        <span className="text-sm text-secondary">
-                            {formatTime(stats.weeklyProgress)} / {formatTime(stats.weeklyGoal)}
-                        </span>
-                    </div>
-                    <div className="w-full bg-background rounded-full h-3 mb-2">
-                        <div 
-                            className="bg-primary h-3 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(weeklyProgressPercent, 100)}%` }}
-                        ></div>
-                    </div>
-                    <p className="text-sm text-secondary">
-                        {weeklyProgressPercent >= 100 
-                            ? '🎉 Goal achieved! Great work!' 
-                            : `${Math.round(weeklyProgressPercent)}% complete - ${formatTime(stats.weeklyGoal - stats.weeklyProgress)} to go`
-                        }
-                    </p>
-                </div>
-
-                {/* Achievements */}
-                <div className="bg-surface rounded-lg p-6">
-                    <h2 className="text-xl font-semibold text-primary mb-4">Achievements</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {stats.achievements.map((achievement) => (
-                            <div 
-                                key={achievement.id}
-                                className={`p-4 rounded-lg border-2 transition-all ${
-                                    achievement.earned 
-                                        ? 'border-primary bg-primary/5' 
-                                        : 'border-surface bg-background opacity-50'
-                                }`}
-                            >
-                                <div className="text-center">
-                                    <div className="text-2xl mb-2">{achievement.icon}</div>
-                                    <p className={`text-sm font-medium ${
-                                        achievement.earned ? 'text-primary' : 'text-secondary'
-                                    }`}>
-                                        {achievement.name}
-                                    </p>
-                                    {achievement.earned && (
-                                        <p className="text-xs text-accent mt-1">Earned!</p>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Recent Activity */}
-                <div className="bg-surface rounded-lg p-6 mt-6">
-                    <h2 className="text-xl font-semibold text-primary mb-4">This Week</h2>
-                    <div className="grid grid-cols-7 gap-2">
-                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                            const hasActivity = index < 5; // Mock data - first 5 days have activity
-                            return (
-                                <div key={day} className="text-center">
-                                    <p className="text-xs text-secondary mb-1">{day}</p>
-                                    <div className={`w-8 h-8 rounded mx-auto ${
-                                        hasActivity ? 'bg-primary' : 'bg-background'
-                                    }`}></div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                <LogoutModal
+                    showModal={showLogoutConfirm}
+                    onClose={() => setShowLogoutConfirm(false)}
+                    onConfirm={handleLogout}
+                />
             </div>
-
-            {/* Logout Confirmation Modal */}
-            {showLogoutConfirm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-background rounded-lg shadow-lg w-96 max-w-[90vw] p-6 border border-surface">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-red-500/10 rounded-lg">
-                                <AlertCircle size={20} className="text-red-500" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-primary">Confirm Logout</h3>
-                        </div>
-                        
-                        <p className="text-secondary mb-6">
-                            Are you sure you want to logout? You'll need to sign in again to access your progress.
-                        </p>
-                        
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => setShowLogoutConfirm(false)}
-                                className="px-4 py-2 bg-surface hover:bg-background text-secondary hover:text-primary rounded-lg transition-colors border border-surface"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center gap-2"
-                            >
-                                <LogOut size={16} />
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

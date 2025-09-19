@@ -1,91 +1,102 @@
-// InfoModal.jsx
-import { X, Play, Users, Settings, Keyboard, Zap, Timer, Volume2, TrendingUp, Trophy, Clock } from 'lucide-react';
+// InfoModal.jsx - Fixed shortcuts tab visibility
+import { X, Play, Users, Settings, Keyboard, Zap, Timer, Volume2, TrendingUp, Trophy, Clock, Star, Shield } from 'lucide-react';
 import { useState } from 'react';
 
 export default function InfoModal({ onClose, user }) {
     const [activeTab, setActiveTab] = useState('basics');
 
     const shortcuts = [
-        { key: 'Space', action: 'Start/Pause timer' },
-        { key: 'R', action: 'Reset current session' },
-        { key: 'S', action: 'Skip to break/work' },
-        { key: 'M', action: 'Mute/Unmute sounds' },
-        { key: 'F', action: 'Toggle fullscreen mode' },
-        { key: 'Esc', action: 'Close modals' },
-        { key: '1-5', action: 'Quick timer presets' },
+        { key: 'Space', action: 'Start/Pause timer', category: 'Timer Control' },
+        { key: 'R', action: 'Reset current session', category: 'Timer Control' },
+        { key: 'S', action: 'Skip to break/work', category: 'Timer Control' },
+        { key: 'M', action: 'Mute/Unmute sounds', category: 'Audio' },
+        { key: 'F', action: 'Toggle fullscreen mode', category: 'Display' },
+        { key: 'Esc', action: 'Close modals', category: 'Navigation' },
+        { key: '1-5', action: 'Quick timer presets', category: 'Quick Actions' },
     ];
 
+    // Fixed: Changed 'key' to 'id' for shortcuts tab
     const tabs = [
         { id: 'basics', label: 'Getting Started', icon: Play },
-        { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard },
+        { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard }, // Fixed: was 'key'
         { id: 'features', label: 'Features', icon: Zap }
     ];
 
     // If user is not logged in, show "Why Login?" content
     if (!user) {
         return (
-            <div className="fixed inset-0 bg-background/95 bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-background rounded-lg shadow-lg w-96 max-w-[90vw] p-6">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-background rounded-xl shadow-2xl w-full max-w-md border border-surface/50">
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-semibold text-primary">Why Login?</h2>
+                    <div className="relative p-6 pb-0">
                         <button 
                             onClick={onClose}
-                            className="rounded-full p-1 hover:bg-surface transition-colors"
+                            className="absolute right-4 top-4 rounded-full p-2 hover:bg-surface/80 transition-colors"
                             aria-label="Close Info"
                         >
                             <X size={20} className="text-secondary" />
                         </button>
+                        
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                                <Star size={28} className="text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-primary mb-2">Unlock Your Full Potential</h2>
+                            <p className="text-secondary">Sign in to access more features</p>
+                        </div>
                     </div>
 
                     {/* Benefits Content */}
-                    <div className="space-y-4">
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
+                    <div className="px-6 pb-6 space-y-4">
+                        <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/10">
+                            <div className="p-2 bg-primary/20 rounded-lg flex-shrink-0">
                                 <TrendingUp size={20} className="text-primary" />
                             </div>
                             <div>
-                                <h3 className="font-medium text-primary mb-1">Track Your Progress</h3>
-                                <p className="text-sm text-secondary">Monitor your daily focus time, streaks, and productivity patterns.</p>
+                                <h3 className="font-semibold text-primary mb-1">Track Your Progress</h3>
+                                <p className="text-sm text-secondary">Monitor daily focus time, streaks, and productivity patterns with detailed analytics.</p>
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-secondary/10 rounded-lg">
-                                <Users size={20} className="text-secondary" />
+                        <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-blue-500/5 to-blue-500/10 rounded-lg border border-blue-500/10">
+                            <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
+                                <Users size={20} className="text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-medium text-primary mb-1">Join Friends</h3>
-                                <p className="text-sm text-secondary">Study together in rooms and compete with friends on leaderboards.</p>
+                                <h3 className="font-semibold text-primary mb-1">Study with Friends</h3>
+                                <p className="text-sm text-secondary">Join study rooms, compete on leaderboards, and motivate each other.</p>
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-accent/10 rounded-lg">
-                                <Trophy size={20} className="text-accent" />
+                        <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-yellow-500/5 to-yellow-500/10 rounded-lg border border-yellow-500/10">
+                            <div className="p-2 bg-yellow-500/20 rounded-lg flex-shrink-0">
+                                <Trophy size={20} className="text-yellow-500" />
                             </div>
                             <div>
-                                <h3 className="font-medium text-primary mb-1">Earn Achievements</h3>
+                                <h3 className="font-semibold text-primary mb-1">Earn Achievements</h3>
                                 <p className="text-sm text-secondary">Unlock badges and celebrate milestones in your focus journey.</p>
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Clock size={20} className="text-primary" />
+                        <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-500/5 to-green-500/10 rounded-lg border border-green-500/10">
+                            <div className="p-2 bg-green-500/20 rounded-lg flex-shrink-0">
+                                <Clock size={20} className="text-green-500" />
                             </div>
                             <div>
-                                <h3 className="font-medium text-primary mb-1">Daily Goals</h3>
-                                <p className="text-sm text-secondary">Set and track personalized focus goals that sync across all devices.</p>
+                                <h3 className="font-semibold text-primary mb-1">Sync Across Devices</h3>
+                                <p className="text-sm text-secondary">Access your data anywhere with cloud sync and personalized goals.</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Privacy Note */}
-                    <div className="mt-6 p-3 bg-surface rounded-lg">
-                        <p className="text-xs text-secondary">
-                            🔒 We only use your Google account for authentication and basic profile info. 
-                        </p>
+                    <div className="px-6 pb-6">
+                        <div className="flex items-center gap-3 p-4 bg-surface/80 rounded-lg border border-surface">
+                            <Shield size={18} className="text-green-500 flex-shrink-0" />
+                            <p className="text-xs text-secondary">
+                                <span className="font-medium text-primary">Privacy Protected:</span> We only use your Google account for secure authentication and basic profile information.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,147 +105,268 @@ export default function InfoModal({ onClose, user }) {
 
     // If user is logged in, show tutorial content
     return (
-        <div className="fixed inset-0 bg-background/95 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-background rounded-lg shadow-lg w-[32rem] max-w-[90vw] max-h-[80vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden border border-surface/50">
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-surface">
-                    <h2 className="text-xl font-semibold text-primary">How to Use Dorofi</h2>
+                <div className="relative px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10">
                     <button 
                         onClick={onClose}
-                        className="rounded-full p-1 hover:bg-surface transition-colors"
+                        className="absolute right-6 top-6 rounded-full p-2 hover:bg-surface/80 transition-colors"
                         aria-label="Close Tutorial"
                     >
                         <X size={20} className="text-secondary" />
                     </button>
+                    
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
+                            <Zap size={24} className="text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-primary">Master Dorofi</h2>
+                            <p className="text-secondary">Learn how to maximize your productivity</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-surface">
+                <div className="flex border-b border-surface/50 bg-surface/20">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors flex-1 justify-center ${
+                            className={`flex items-center gap-3 px-8 py-4 text-sm font-medium transition-all flex-1 justify-center relative ${
                                 activeTab === tab.id
-                                    ? 'text-primary border-b-2 border-primary bg-surface/50'
-                                    : 'text-secondary hover:text-primary hover:bg-surface/30'
+                                    ? 'text-primary bg-background border-b-2 border-primary shadow-sm'
+                                    : 'text-secondary hover:text-primary hover:bg-surface/50'
                             }`}
                         >
-                            <tab.icon size={16} />
+                            <tab.icon size={18} />
                             {tab.label}
                         </button>
                     ))}
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-96">
+                <div className="p-8 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 180px)' }}>
                     {activeTab === 'basics' && (
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-primary/10 rounded-lg">
-                                    <Timer size={20} className="text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="font-medium text-primary mb-1">Starting Your First Session</h3>
-                                    <p className="text-sm text-secondary mb-2">
-                                        Click the Solo Focus button or hit <kbd className="px-2 py-1 bg-surface rounded text-xs font-mono">Space</kbd> to start a 25-minute Pomodoro session.
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="space-y-6">
+                                <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/10">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-3 bg-primary/20 rounded-xl">
+                                            <Timer size={24} className="text-primary" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Start Your First Session</h3>
+                                    </div>
+                                    <p className="text-secondary mb-4">
+                                        Click the Solo Focus button or press <kbd className="px-3 py-1 bg-surface rounded-lg text-xs font-mono border border-surface shadow-sm">Space</kbd> to begin a 25-minute Pomodoro session.
                                     </p>
+                                    <div className="text-xs text-secondary bg-background/50 p-3 rounded-lg">
+                                        💡 The timer automatically switches between work and break periods
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-gradient-to-br from-blue-500/5 to-blue-500/10 rounded-xl border border-blue-500/10">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-3 bg-blue-500/20 rounded-xl">
+                                            <Users size={24} className="text-blue-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Join Study Rooms</h3>
+                                    </div>
+                                    <p className="text-secondary mb-4">
+                                        Click "Group Rooms" to create or join study sessions. Your progress syncs in real-time with friends!
+                                    </p>
+                                    <div className="text-xs text-secondary bg-background/50 p-3 rounded-lg">
+                                        🎯 Compete on leaderboards and motivate each other
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-gradient-to-br from-orange-500/5 to-red-500/10 rounded-xl border border-red-500/10">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-3 bg-red-500/20 rounded-xl">
+                                            <Trophy size={24} className="text-orange-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Compete with Friends</h3>
+                                    </div>
+                                    <p className="text-secondary mb-4">
+                                        Add friends and compete on daily streaks and focus time leaderboards.
+                                    </p>
+                                    <div className="text-xs text-secondary bg-background/50 p-3 rounded-lg">
+                                        🏆 Turn productivity into a fun competition
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-secondary/10 rounded-lg">
-                                    <Users size={20} className="text-secondary" />
-                                </div>
-                                <div>
-                                    <h3 className="font-medium text-primary mb-1">Joining Study Rooms</h3>
-                                    <p className="text-sm text-secondary mb-2">
-                                        Click "Group Rooms" to join or create study sessions with friends. Your progress syncs in real-time!
+                            <div className="space-y-6">
+                                <div className="p-6 bg-gradient-to-br from-purple-500/5 to-purple-500/10 rounded-xl border border-purple-500/10">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-3 bg-purple-500/20 rounded-xl">
+                                            <Volume2 size={24} className="text-purple-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Background Sounds</h3>
+                                    </div>
+                                    <p className="text-secondary mb-4">
+                                        Choose from lofi beats, nature sounds, or white noise to enhance your focus environment.
                                     </p>
+                                    <div className="text-xs text-secondary bg-background/50 p-3 rounded-lg">
+                                        🎵 Access the sound menu from the bottom toolbar
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-accent/10 rounded-lg">
-                                    <Volume2 size={20} className="text-accent" />
-                                </div>
-                                <div>
-                                    <h3 className="font-medium text-primary mb-1">Background Sounds</h3>
-                                    <p className="text-sm text-secondary mb-2">
-                                        Click the sound button at the bottom to choose from lofi beats, nature sounds, or white noise.
+                                <div className="p-6 bg-gradient-to-br from-green-500/5 to-green-500/10 rounded-xl border border-green-500/10">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-3 bg-green-500/20 rounded-xl">
+                                            <Settings size={24} className="text-green-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Customize Everything</h3>
+                                    </div>
+                                    <p className="text-secondary mb-4">
+                                        Adjust timer lengths, workspaces, themes, and more in Settings.
                                     </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-primary/10 rounded-lg">
-                                    <Settings size={20} className="text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="font-medium text-primary mb-1">Customizing Your Experience</h3>
-                                    <p className="text-sm text-secondary mb-2">
-                                        Open Settings to adjust timer lengths, notification preferences, and choose your favorite theme.
-                                    </p>
+                                    <div className="text-xs text-secondary bg-background/50 p-3 rounded-lg">
+                                        ⚙️ Make Dorofi work exactly how you want it to
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'shortcuts' && (
-                        <div className="space-y-3">
-                            <p className="text-sm text-secondary mb-4">Master these keyboard shortcuts to boost your productivity:</p>
-                            {shortcuts.map((shortcut, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-surface/50 rounded-lg">
-                                    <span className="text-sm text-primary">{shortcut.action}</span>
-                                    <kbd className="px-3 py-1 bg-background border border-surface rounded text-xs font-mono text-secondary">
-                                        {shortcut.key}
-                                    </kbd>
-                                </div>
-                            ))}
-                            <div className="mt-4 p-3 bg-primary/5 rounded-lg">
-                                <p className="text-xs text-secondary">
-                                    💡 <strong>Pro tip:</strong> Use number keys (1-5) for quick timer presets: 1 = 15min, 2 = 25min, 3 = 45min, 4 = 60min, 5 = 90min
-                                </p>
+                        <div className="space-y-6">
+                            <div className="text-center mb-8">
+                                <h3 className="text-xl font-semibold text-primary mb-2">Keyboard Shortcuts</h3>
+                                <p className="text-secondary">Master these shortcuts to boost your productivity</p>
                             </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {shortcuts.map((shortcut, index) => (
+                                    <div key={index} className="flex items-center justify-between p-4 bg-surface/50 rounded-xl border border-surface hover:bg-surface/80 transition-colors">
+                                        <div>
+                                            <span className="text-primary font-medium">{shortcut.action}</span>
+                                            <p className="text-xs text-secondary">{shortcut.category}</p>
+                                        </div>
+                                        <kbd className="px-4 py-2 bg-background border border-surface rounded-lg text-sm font-mono text-primary shadow-sm">
+                                            {shortcut.key}
+                                        </kbd>
+                                    </div>
+                                ))}
+                            </div>
+
                         </div>
                     )}
 
                     {activeTab === 'features' && (
-                        <div className="space-y-4">
-                            <div className="p-4 bg-primary/5 rounded-lg">
-                                <h3 className="font-medium text-primary mb-2 flex items-center gap-2">
-                                    <Timer size={18} />
-                                    Smart Pomodoro Timer
-                                </h3>
-                                <ul className="text-sm text-secondary space-y-1">
-                                    <li>• Automatic break reminders</li>
-                                    <li>• Customizable work/break intervals</li>
-                                    <li>• Session history and analytics</li>
-                                </ul>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="space-y-6">
+                                <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-3 bg-primary/20 rounded-xl">
+                                            <Timer size={24} className="text-primary" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Smart Pomodoro Timer</h3>
+                                    </div>
+                                    <ul className="text-secondary space-y-2">
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                                            Automatic break reminders
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                                            Customizable work/break intervals
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                                            Session history and analytics
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                                            Smart notifications
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="p-6 bg-gradient-to-br from-blue-500/5 to-blue-500/10 rounded-xl border border-blue-500/10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-3 bg-blue-500/20 rounded-xl">
+                                            <Users size={24} className="text-blue-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Social Features</h3>
+                                    </div>
+                                    <ul className="text-secondary space-y-2">
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                            Real-time study rooms
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                            Friends leaderboard
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                            Daily/weekly challenges
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                            Friend status sharing
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <div className="p-4 bg-secondary/5 rounded-lg">
-                                <h3 className="font-medium text-primary mb-2 flex items-center gap-2">
-                                    <Users size={18} />
-                                    Social Features
-                                </h3>
-                                <ul className="text-sm text-secondary space-y-1">
-                                    <li>• Study rooms with real-time sync</li>
-                                    <li>• Friends leaderboard</li>
-                                    <li>• Daily/weekly challenges</li>
-                                </ul>
-                            </div>
+                            <div className="space-y-6">
+                                <div className="p-6 bg-gradient-to-br from-purple-500/5 to-purple-500/10 rounded-xl border border-purple-500/10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-3 bg-purple-500/20 rounded-xl">
+                                            <Zap size={24} className="text-purple-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Productivity Tools</h3>
+                                    </div>
+                                    <ul className="text-secondary space-y-2">
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                                            Focus streak tracking
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                                            Achievement badges
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                                            Detailed statistics
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                                            Goal setting & tracking
+                                        </li>
+                                    </ul>
+                                </div>
 
-                            <div className="p-4 bg-accent/5 rounded-lg">
-                                <h3 className="font-medium text-primary mb-2 flex items-center gap-2">
-                                    <Zap size={18} />
-                                    Productivity Tools
-                                </h3>
-                                <ul className="text-sm text-secondary space-y-1">
-                                    <li>• Task management integration</li>
-                                    <li>• Focus streak tracking</li>
-                                    <li>• Achievement badges</li>
-                                </ul>
+                                <div className="p-6 bg-gradient-to-br from-green-500/5 to-green-500/10 rounded-xl border border-green-500/10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-3 bg-green-500/20 rounded-xl">
+                                            <Settings size={24} className="text-green-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-primary">Customization</h3>
+                                    </div>
+                                    <ul className="text-secondary space-y-2">
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                            Multiple themes
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                            Custom timer lengths
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                            Notification preferences
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                            Background sounds
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     )}

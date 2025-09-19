@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
+@variant dark (&:where([data-theme*="-dark"], [data-theme*="-dark"] *));
+
 @theme {
-  /* Theme utility classes */
+  /* Your existing theme colors */
   --color-primary: var(--theme-primary);
   --color-secondary: var(--theme-secondary); 
   --color-accent: var(--theme-accent);
@@ -9,8 +11,8 @@
   --color-surface: var(--theme-surface);
 }
 
-/* Theme 1: Purple-Pink-Blue */
-[data-theme="dorofi-light"] {
+/* Dorofi Theme - Purple/Pink */
+[data-theme="celestial-light"] {
   --theme-primary: #7C3AED;
   --theme-secondary: #DB2777;
   --theme-accent: #2563EB;
@@ -18,7 +20,7 @@
   --theme-surface: #F8FAFC;
 }
 
-[data-theme="dorofi-dark"] {
+[data-theme="celestial-dark"] {
   --theme-primary: #CBA0F6;
   --theme-secondary: #F9A8D4;
   --theme-accent: #93C5FD;
@@ -26,7 +28,7 @@
   --theme-surface: #2A1F3B;
 }
 
-/* Theme 2: Teal-Blue-Green */
+/* Ocean Theme - Blue/Cyan */
 [data-theme="ocean-light"] {
   --theme-primary: #0891b2;
   --theme-secondary: #0ea5e9;
@@ -43,4 +45,36 @@
   --theme-surface: #1e293b;
 }
 
+/* Contrast Theme - Black/White High Contrast */
+[data-theme="void-light"] {
+  --theme-primary: #000000;
+  --theme-secondary: #374151;
+  --theme-accent: #1f2937;
+  --theme-background: #FFFFFF;
+  --theme-surface: #F9FAFB;
+}
 
+[data-theme="void-dark"] {
+  --theme-primary: #FFFFFF;
+  --theme-secondary: #D1D5DB;
+  --theme-accent: #E5E7EB;
+  --theme-background: #000000;
+  --theme-surface: #111111;
+}
+
+/* Fire Theme - Red/Orange */
+[data-theme="flame-light"] {
+  --theme-primary: #dc2626;
+  --theme-secondary: #ea580c;
+  --theme-accent: #f59e0b;
+  --theme-background: #FFFFFF;
+  --theme-surface: #FEF2F2;
+}
+
+[data-theme="flame-dark"] {
+  --theme-primary: #fca5a5;
+  --theme-secondary: #fed7aa;
+  --theme-accent: #fde68a;
+  --theme-background: #1f1a1a;
+  --theme-surface: #2d1b1b;
+}

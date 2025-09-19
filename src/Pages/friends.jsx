@@ -1,569 +1,284 @@
 // Pages/friends.jsx
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-    Users, 
-    UserPlus, 
-    Trophy, 
-    Clock, 
-    Target, 
-    TrendingUp, 
-    Search,
-    Crown,
-    Medal,
-    Award,
-    Plus,
-    X,
-    Copy,
-    Check,
-    UserCheck,
-    UserX,
-    Bell,
-    Send
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext.jsx";
+import apiService from "../services/api.js";
+import { Users, Trophy, Target, Bell, AlertCircle } from "lucide-react";
+import FriendsHeader from "../components/friends/FriendsHeader.jsx";
+import FriendsTabs from "../components/friends/FriendsTabs.jsx";
+import LeaderboardTab from "../components/friends/LeaderboardTab.jsx";
+import FriendsListTab from "../components/friends/FriendsListTab.jsx";
+import RequestsTab from "../components/friends/RequestsTab.jsx";
 
 export default function Friends() {
-    const [user, setUser] = useState(null);
-    const [activeTab, setActiveTab] = useState('leaderboard');
-    const [showAddFriend, setShowAddFriend] = useState(false);
-    const [friendCode, setFriendCode] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [copiedCode, setCopiedCode] = useState(false);
-    const navigate = useNavigate();
+	// Auth Context
+	const { user, isAuthenticated, loading: authLoading } = useAuth();
 
-    // Mock data - replace with real API calls
-    const [friends, setFriends] = useState([
-        {
-            id: 1,
-            name: 'Alex Chen',
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format',
-            weeklyMinutes: 340,
-            currentStreak: 8,
-            totalSessions: 89,
-            status: 'focusing',
-            lastSeen: null
-        },
-        {
-            id: 2,
-            name: 'Maria Rodriguez',
-            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b590?w=40&h=40&fit=crop&crop=face&auto=format',
-            weeklyMinutes: 285,
-            currentStreak: 12,
-            totalSessions: 67,
-            status: 'break',
-            lastSeen: '2 min ago'
-        },
-        {
-            id: 3,
-            name: 'David Kim',
-            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&auto=format',
-            weeklyMinutes: 220,
-            currentStreak: 5,
-            totalSessions: 45,
-            status: 'offline',
-            lastSeen: '1 hour ago'
-        },
-        {
-            id: 4,
-            name: 'Sarah Wilson',
-            avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face&auto=format',
-            weeklyMinutes: 195,
-            currentStreak: 3,
-            totalSessions: 32,
-            status: 'offline',
-            lastSeen: '3 hours ago'
-        }
-    ]);
+	// State Management
+	const [activeTab, setActiveTab] = useState("leaderboard");
+	const [friendsLoading, setFriendsLoading] = useState(false);
+	const [error, setError] = useState(null);
+	const [friendsInitialized, setFriendsInitialized] = useState(false);
 
-    // Friend request states
-    const [pendingIncoming, setPendingIncoming] = useState([
-        {
-            id: 101,
-            name: 'John Doe',
-            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40&fit=crop&crop=face&auto=format',
-            sentAt: '2 hours ago',
-            mutualFriends: 2
-        },
-        {
-            id: 102,
-            name: 'Emma Smith',
-            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b590?w=40&h=40&fit=crop&crop=face&auto=format',
-            sentAt: '5 hours ago',
-            mutualFriends: 1
-        }
-    ]);
+	// Backend data state
+	const [friends, setFriends] = useState([]);
+	const [pendingIncoming, setPendingIncoming] = useState([]);
+	const [pendingOutgoing, setPendingOutgoing] = useState([]);
 
-    const [pendingOutgoing, setPendingOutgoing] = useState([
-        {
-            id: 201,
-            name: 'Mike Johnson',
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format',
-            sentAt: '1 day ago'
-        }
-    ]);
+	// Fetch friends data from backend only once when user is authenticated
+	useEffect(() => {
+		if (authLoading) return; // Wait for auth to load
+		if (!isAuthenticated || !user) return; // Must be authenticated
+		if (friendsInitialized) return; // Don't fetch twice
 
-    const userStats = {
-        weeklyMinutes: 185,
-        currentStreak: 5,
-        totalSessions: 47
-    };
+		console.log("🤝 Initializing friends data for user:", user.email);
+		fetchFriendsData();
+		setFriendsInitialized(true);
+	}, [user, isAuthenticated, authLoading, friendsInitialized]);
 
-    const allParticipants = [
-        { ...userStats, name: user?.name || 'You', avatar: user?.picture, isCurrentUser: true },
-        ...friends
-    ].sort((a, b) => b.weeklyMinutes - a.weeklyMinutes);
+	const fetchFriendsData = async () => {
+		const token = localStorage.getItem("token");
+		if (!token) {
+			console.log("⚠️ No JWT token found, using empty friends data");
+			setFriends([]);
+			setPendingIncoming([]);
+			setPendingOutgoing([]);
+			return;
+		}
 
-    useEffect(() => {
-        const userInfo = localStorage.getItem('googleUserInfo');
-        if (userInfo) {
-            setUser(JSON.parse(userInfo));
-        } else {
-            navigate('/');
-        }
-    }, [navigate]);
+		try {
+			setFriendsLoading(true);
+			setError(null);
 
-    const handleSendFriendRequest = () => {
-        if (friendCode.trim()) {
-            console.log('Sending friend request to:', friendCode);
-            setPendingOutgoing([...pendingOutgoing, {
-                id: Date.now(),
-                name: friendCode,
-                avatar: '/default-avatar.png',
-                sentAt: 'just now'
-            }]);
-            setFriendCode('');
-            setShowAddFriend(false);
-        }
-    };
+			console.log("📡 Fetching friends data from backend...");
+			const friendsData = await apiService.getFriends();
+			console.log("✅ Friends data received:", friendsData);
 
-    const handleAcceptRequest = (requestId) => {
-        const request = pendingIncoming.find(r => r.id === requestId);
-        if (request) {
-            setFriends([...friends, {
-                id: request.id,
-                name: request.name,
-                avatar: request.avatar,
-                weeklyMinutes: Math.floor(Math.random() * 200) + 100,
-                currentStreak: Math.floor(Math.random() * 10) + 1,
-                totalSessions: Math.floor(Math.random() * 50) + 10,
-                status: 'offline',
-                lastSeen: 'just joined'
-            }]);
-            setPendingIncoming(pendingIncoming.filter(r => r.id !== requestId));
-        }
-    };
+			setFriends(friendsData.friends || []);
+			setPendingIncoming(friendsData.pendingIncoming || []);
+			setPendingOutgoing(friendsData.pendingOutgoing || []);
+		} catch (error) {
+			console.error("❌ Failed to fetch friends data:", error);
+			setError("Backend unavailable - showing basic friends page");
 
-    const handleDeclineRequest = (requestId) => {
-        setPendingIncoming(pendingIncoming.filter(r => r.id !== requestId));
-    };
+			// Set empty arrays on error
+			setFriends([]);
+			setPendingIncoming([]);
+			setPendingOutgoing([]);
+		} finally {
+			setFriendsLoading(false);
+		}
+	};
 
-    const handleCancelRequest = (requestId) => {
-        setPendingOutgoing(pendingOutgoing.filter(r => r.id !== requestId));
-    };
+	// Handle friend request actions
+	const handleSendFriendRequest = async (friendCode) => {
+		try {
+			setFriendsLoading(true);
+			console.log("📤 Sending friend request to:", friendCode);
 
-    const copyFriendCode = async () => {
-        const myCode = `DOROFI-${user?.email?.split('@')[0]?.toUpperCase() || 'USER'}`;
-        try {
-            await navigator.clipboard.writeText(myCode);
-            setCopiedCode(true);
-            setTimeout(() => setCopiedCode(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
-        }
-    };
+			const response = await apiService.sendFriendRequest(friendCode);
+			setPendingOutgoing((prev) => [...prev, response.request]);
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'focusing': return 'text-accent';
-            case 'break': return 'text-secondary';
-            default: return 'text-secondary/50';
-        }
-    };
+			return { success: true, message: "Friend request sent!" };
+		} catch (error) {
+			console.error("❌ Failed to send friend request:", error);
+			return {
+				success: false,
+				error: error.message || "Failed to send request",
+			};
+		} finally {
+			setFriendsLoading(false);
+		}
+	};
 
-    const getStatusText = (status, lastSeen) => {
-        switch (status) {
-            case 'focusing': return '🎯 Focusing';
-            case 'break': return '☕ On break';
-            default: return lastSeen ? `Last seen ${lastSeen}` : 'Offline';
-        }
-    };
+	const handleRemoveFriend = async (friendId) => {
+		try {
+			// Call your API to remove friend
+			await apiService.removeFriend(friendId);
 
-    const formatTime = (minutes) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    };
+			// Update local state
+			setFriends((prev) => prev.filter((f) => (f.id || f._id) !== friendId));
 
-    const filteredFriends = friends.filter(friend =>
-        friend.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+			return { success: true };
+		} catch (error) {
+			console.error("Failed to remove friend:", error);
+			throw error;
+		}
+	};
 
-    if (!user) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="animate-pulse text-secondary">Loading...</div>
-            </div>
-        );
-    }
+	const handleAcceptRequest = async (requestId) => {
+		try {
+			console.log("✅ Accepting friend request:", requestId);
+			const response = await apiService.acceptFriendRequest(requestId);
 
-    const tabs = [
-        { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-        { id: 'friends', label: 'Friends', icon: Users },
-        { id: 'requests', label: `Requests ${pendingIncoming.length > 0 ? `(${pendingIncoming.length})` : ''}`, icon: Bell },
-        { id: 'challenges', label: 'Challenges', icon: Target }
-    ];
+			// Move request to friends list
+			const request = pendingIncoming.find((r) => r._id === requestId);
+			if (request && response.friend) {
+				setFriends((prev) => [...prev, response.friend]);
+				setPendingIncoming((prev) => prev.filter((r) => r._id !== requestId));
+			}
 
-    return (
-        <div className="min-h-screen bg-background">
-            <div className="container mx-auto px-4 py-8 max-w-4xl">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold text-primary">Friends & Leaderboard</h1>
-                    <button
-                        onClick={() => setShowAddFriend(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-accent transition-colors"
-                    >
-                        <UserPlus size={18} />
-                        Add Friend
-                    </button>
-                </div>
+			return { success: true };
+		} catch (error) {
+			console.error("❌ Failed to accept friend request:", error);
+			return { success: false, error: error.message };
+		}
+	};
 
-                {/* Tabs */}
-                <div className="flex border-b border-surface mb-6">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
-                                activeTab === tab.id
-                                    ? 'text-primary border-b-2 border-primary'
-                                    : 'text-secondary hover:text-primary'
-                            }`}
-                        >
-                            <tab.icon size={16} />
-                            {tab.label}
-                            {tab.id === 'requests' && pendingIncoming.length > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                    {pendingIncoming.length}
-                                </span>
-                            )}
-                        </button>
-                    ))}
-                </div>
+	const handleDeclineRequest = async (requestId) => {
+		try {
+			console.log("❌ Declining friend request:", requestId);
+			await apiService.declineFriendRequest(requestId);
+			setPendingIncoming((prev) => prev.filter((r) => r._id !== requestId));
+			return { success: true };
+		} catch (error) {
+			console.error("❌ Failed to decline friend request:", error);
+			// Remove from UI anyway for better UX
+			setPendingIncoming((prev) => prev.filter((r) => r._id !== requestId));
+			return { success: false, error: error.message };
+		}
+	};
 
-                {/* Tab Content */}
-                {activeTab === 'leaderboard' && (
-                    <div className="space-y-4">
-                        {/* Weekly Leaderboard */}
-                        <div className="bg-surface rounded-lg p-4">
-                            <h3 className="text-lg font-semibold text-primary mb-4">This Week's Leaderboard</h3>
-                            
-                            <div className="space-y-3">
-                                {allParticipants.map((participant, index) => {
-                                    // Determine styling based on rank
-                                    const getRankStyling = (position) => {
-                                        switch (position) {
-                                            case 0: return {
-                                                bgColor: 'bg-yellow-500/10 border-yellow-500/30',
-                                                textColor: 'text-yellow-600',
-                                                icon: <Crown size={18} className="text-yellow-500" />,
-                                                rankText: '1st'
-                                            };
-                                            case 1: return {
-                                                bgColor: 'bg-gray-400/10 border-gray-400/30',
-                                                textColor: 'text-gray-500',
-                                                icon: <Medal size={18} className="text-gray-400" />,
-                                                rankText: '2nd'
-                                            };
-                                            case 2: return {
-                                                bgColor: 'bg-amber-600/10 border-amber-600/30',
-                                                textColor: 'text-amber-600',
-                                                icon: <Award size={18} className="text-amber-600" />,
-                                                rankText: '3rd'
-                                            };
-                                            default: return {
-                                                bgColor: 'bg-transparent border-transparent',
-                                                textColor: 'text-secondary',
-                                                icon: null,
-                                                rankText: `${position + 1}`
-                                            };
-                                        }
-                                    };
+	const handleCancelRequest = async (requestId) => {
+		try {
+			console.log("🚫 Canceling friend request:", requestId);
+			await apiService.cancelFriendRequest(requestId);
+			setPendingOutgoing((prev) => prev.filter((r) => r._id !== requestId));
+			return { success: true };
+		} catch (error) {
+			console.error("❌ Failed to cancel friend request:", error);
+			setPendingOutgoing((prev) => prev.filter((r) => r._id !== requestId));
+			return { success: false, error: error.message };
+		}
+	};
 
-                                    const styling = getRankStyling(index);
-                                    
-                                    return (
-                                        <div 
-                                            key={participant.id || 'currentUser'}
-                                            className={`rounded-lg p-4 border-2 transition-all ${styling.bgColor} ${
-                                                participant.isCurrentUser ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
-                                            }`}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    {/* Rank with icon */}
-                                                    <div className="flex items-center justify-center w-8">
-                                                        {styling.icon || (
-                                                            <span className={`font-bold text-sm ${styling.textColor}`}>
-                                                                #{styling.rankText}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    {/* Profile picture */}
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-surface">
-                                                        <img 
-                                                            src={participant.avatar || '/default-avatar.png'} 
-                                                            alt={participant.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                    
-                                                    {/* Name and status */}
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <h3 className="font-medium text-primary">
-                                                                {participant.isCurrentUser ? 'You' : participant.name}
-                                                            </h3>
-                                                            {participant.isCurrentUser && (
-                                                                <span className="text-xs bg-primary text-white px-2 py-1 rounded">You</span>
-                                                            )}
-                                                            {/* Special badge for top 3 */}
-                                                            {index < 3 && (
-                                                                <span className={`text-xs px-2 py-1 rounded ${
-                                                                    index === 0 ? 'bg-yellow-500/20 text-yellow-600' :
-                                                                    index === 1 ? 'bg-gray-400/20 text-gray-500' :
-                                                                    'bg-amber-600/20 text-amber-600'
-                                                                }`}>
-                                                                    {styling.rankText}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        {!participant.isCurrentUser && (
-                                                            <p className={`text-xs ${getStatusColor(participant.status)}`}>
-                                                                {getStatusText(participant.status, participant.lastSeen)}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                
-                                                {/* Stats */}
-                                                <div className="text-right">
-                                                    <p className="font-semibold text-primary">{formatTime(participant.weeklyMinutes)}</p>
-                                                    <p className="text-xs text-secondary">🔥 {participant.currentStreak} day streak</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                )}
+	// Show loading while auth is initializing
+	if (authLoading) {
+		return (
+			<div className="min-h-screen bg-background flex items-center justify-center">
+				<div className="text-center">
+					<div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+					<div className="text-secondary">Loading friends...</div>
+				</div>
+			</div>
+		);
+	}
 
-                {activeTab === 'friends' && (
-                    <div>
-                        {/* Search */}
-                        <div className="relative mb-4">
-                            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" />
-                            <input
-                                type="text"
-                                placeholder="Search friends..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-surface border border-surface rounded-lg text-primary placeholder-secondary focus:outline-none focus:border-primary"
-                            />
-                        </div>
+	// This should never show due to ProtectedRoute, but keep as fallback
+	if (!isAuthenticated || !user) {
+		return (
+			<div className="min-h-screen bg-background flex items-center justify-center">
+				<div className="text-center">
+					<p className="text-red-500 mb-4">Please log in to view friends</p>
+					<button
+						onClick={() => (window.location.href = "/")}
+						className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-accent transition-colors"
+					>
+						Go to Home
+					</button>
+				</div>
+			</div>
+		);
+	}
 
-                        {/* Friends List */}
-                        <div className="space-y-3">
-                            {filteredFriends.map((friend) => (
-                                <div key={friend.id} className="bg-surface rounded-lg p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full overflow-hidden">
-                                                <img 
-                                                    src={friend.avatar} 
-                                                    alt={friend.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-medium text-primary">{friend.name}</h3>
-                                                <p className={`text-sm ${getStatusColor(friend.status)}`}>
-                                                    {getStatusText(friend.status, friend.lastSeen)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right text-sm">
-                                            <p className="text-primary">🎯 {friend.totalSessions} sessions</p>
-                                            <p className="text-secondary">🔥 {friend.currentStreak} day streak</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+	const tabs = [
+		{
+			id: "leaderboard",
+			label: "Leaderboard",
+			icon: Trophy,
+		},
+		{
+			id: "friends",
+			label: "Friends",
+			icon: Users,
+			count: friends.length,
+		},
+		{
+			id: "requests",
+			label: "Requests",
+			icon: Bell,
+			count: pendingIncoming.length,
+		},
+		{
+			id: "challenges",
+			label: "Challenges",
+			icon: Target,
+		},
+	];
 
-                {activeTab === 'requests' && (
-                    <div className="space-y-6">
-                        {/* Incoming Requests */}
-                        {pendingIncoming.length > 0 && (
-                            <div>
-                                <h3 className="text-lg font-semibold text-primary mb-4">Friend Requests</h3>
-                                <div className="space-y-3">
-                                    {pendingIncoming.map((request) => (
-                                        <div key={request.id} className="bg-surface rounded-lg p-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden">
-                                                        <img 
-                                                            src={request.avatar} 
-                                                            alt={request.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-medium text-primary">{request.name}</h3>
-                                                        <p className="text-sm text-secondary">
-                                                            {request.mutualFriends > 0 
-                                                                ? `${request.mutualFriends} mutual friends • ${request.sentAt}`
-                                                                : `Sent ${request.sentAt}`
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleAcceptRequest(request.id)}
-                                                        className="p-2 bg-primary text-white rounded-lg hover:bg-accent transition-colors"
-                                                        title="Accept"
-                                                    >
-                                                        <UserCheck size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeclineRequest(request.id)}
-                                                        className="p-2 bg-surface text-secondary rounded-lg hover:bg-background hover:text-primary transition-colors"
-                                                        title="Decline"
-                                                    >
-                                                        <UserX size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+	return (
+		<div className="min-h-screen bg-background">
+			<div className="container mx-auto px-4 py-8 max-w-4xl">
+				{/* Error Banner */}
+				{error && (
+					<div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
+						<div className="flex items-center gap-3">
+							<AlertCircle size={20} className="text-red-500" />
+							<p className="text-red-600 text-sm">{error}</p>
+						</div>
+					</div>
+				)}
 
-                        {/* Outgoing Requests */}
-                        {pendingOutgoing.length > 0 && (
-                            <div>
-                                <h3 className="text-lg font-semibold text-primary mb-4">Sent Requests</h3>
-                                <div className="space-y-3">
-                                    {pendingOutgoing.map((request) => (
-                                        <div key={request.id} className="bg-surface rounded-lg p-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-background">
-                                                        <img 
-                                                            src={request.avatar} 
-                                                            alt={request.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-medium text-primary">{request.name}</h3>
-                                                        <p className="text-sm text-secondary">Sent {request.sentAt}</p>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleCancelRequest(request.id)}
-                                                    className="px-3 py-1 text-sm text-secondary hover:text-primary border border-surface rounded-lg hover:bg-background transition-colors"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+				{/* Friends Loading Indicator */}
+				{friendsLoading && (
+					<div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+						<div className="flex items-center gap-3">
+							<div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+							<p className="text-primary text-sm">Loading friends data...</p>
+						</div>
+					</div>
+				)}
 
-                        {pendingIncoming.length === 0 && pendingOutgoing.length === 0 && (
-                            <div className="text-center py-8">
-                                <Bell size={48} className="text-secondary mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-primary mb-2">No pending requests</h3>
-                                <p className="text-secondary">When someone sends you a friend request, it will appear here.</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+				<FriendsHeader
+					user={user}
+					onSendFriendRequest={handleSendFriendRequest}
+					loading={friendsLoading}
+				/>
 
-                {activeTab === 'challenges' && (
-                    <div className="text-center py-8">
-                        <Target size={48} className="text-secondary mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-primary mb-2">Challenges Coming Soon!</h3>
-                        <p className="text-secondary">Weekly challenges and group goals will be available here.</p>
-                    </div>
-                )}
+				<FriendsTabs
+					tabs={tabs}
+					activeTab={activeTab}
+					setActiveTab={setActiveTab}
+				/>
 
-                {/* Add Friend Modal */}
-                {showAddFriend && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-background rounded-lg shadow-lg w-96 max-w-[90vw] p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold text-primary">Add Friend</h3>
-                                <button 
-                                    onClick={() => setShowAddFriend(false)}
-                                    className="text-secondary hover:text-primary"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
+				{activeTab === "leaderboard" && (
+					<LeaderboardTab
+						user={user}
+						friends={friends}
+						loading={friendsLoading}
+					/>
+				)}
 
-                            {/* Share Your Code */}
-                            <div className="mb-4">
-                                <p className="text-sm text-secondary mb-2">Share your friend code:</p>
-                                <div className="flex items-center gap-2">
-                                    <div className="flex-1 p-2 bg-surface rounded text-primary font-mono text-sm">
-                                        DOROFI-{user?.email?.split('@')[0]?.toUpperCase() || 'USER'}
-                                    </div>
-                                    <button
-                                        onClick={copyFriendCode}
-                                        className="p-2 bg-primary text-white rounded hover:bg-accent transition-colors"
-                                        title="Copy code"
-                                    >
-                                        {copiedCode ? <Check size={16} /> : <Copy size={16} />}
-                                    </button>
-                                </div>
-                            </div>
+				{activeTab === "friends" && (
+					<FriendsListTab
+						friends={friends}
+						loading={friendsLoading}
+						onRemoveFriend={handleRemoveFriend}
+					/>
+				)}
 
-                            {/* Send Friend Request */}
-                            <div>
-                                <p className="text-sm text-secondary mb-2">Send friend request:</p>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="DOROFI-USERNAME"
-                                        value={friendCode}
-                                        onChange={(e) => setFriendCode(e.target.value)}
-                                        className="flex-1 p-2 bg-surface border border-surface rounded text-primary placeholder-secondary focus:outline-none focus:border-primary"
-                                    />
-                                    <button
-                                        onClick={handleSendFriendRequest}
-                                        className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition-colors flex items-center gap-2"
-                                        title="Send request"
-                                    >
-                                        <Send size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+				{activeTab === "requests" && (
+					<RequestsTab
+						pendingIncoming={pendingIncoming}
+						pendingOutgoing={pendingOutgoing}
+						onAcceptRequest={handleAcceptRequest}
+						onDeclineRequest={handleDeclineRequest}
+						onCancelRequest={handleCancelRequest}
+						loading={friendsLoading}
+					/>
+				)}
+
+				{activeTab === "challenges" && (
+					<div className="bg-surface rounded-lg p-8 text-center">
+						<Target size={48} className="text-secondary mx-auto mb-4" />
+						<h3 className="text-xl font-semibold text-primary mb-2">
+							Challenges Coming Soon!
+						</h3>
+						<p className="text-secondary">
+							Weekly challenges and group goals will be available here.
+						</p>
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }
