@@ -74,10 +74,10 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-lg shadow-xl w-full max-w-md border border-surface">
+        <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50 p-4 ">
+            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md border border-primary/20">
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-surface">
+                <div className="flex justify-between items-center p-6 border-b border-background">
                     <h3 className="text-xl font-semibold text-primary flex items-center gap-2">
                         <User size={20} />
                         Add Friend
@@ -94,16 +94,16 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                 <div className="p-6 space-y-6">
                     {/* Message Display */}
                     {message && (
-                        <div className={`p-3 rounded-lg flex items-center gap-2 ${
+                        <div className={`p-3 rounded-lg flex items-center gap-2 border ${
                             messageType === 'success' 
-                                ? 'bg-green-500/10 border border-green-500/20' 
-                                : 'bg-red-500/10 border border-red-500/20'
+                                ? 'bg-accent/10 border-accent/20' 
+                                : 'bg-red-500/10 border-red-500/20'
                         }`}>
                             <AlertCircle size={16} className={
-                                messageType === 'success' ? 'text-green-600' : 'text-red-600'
+                                messageType === 'success' ? 'text-accent' : 'text-red-500'
                             } />
                             <p className={`text-sm ${
-                                messageType === 'success' ? 'text-green-700' : 'text-red-600'
+                                messageType === 'success' ? 'text-accent' : 'text-red-500'
                             }`}>
                                 {message}
                             </p>
@@ -114,7 +114,7 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                     <div>
                         <h4 className="text-sm font-medium text-primary mb-3">Your Friend Code</h4>
                         <div className="flex items-center gap-2">
-                            <div className="flex-1 p-3 bg-surface rounded-lg border border-surface">
+                            <div className="flex-1 p-3 bg-background rounded-lg border border-background">
                                 <code className="text-primary font-mono text-sm">
                                     {myFriendCode}
                                 </code>
@@ -124,7 +124,7 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                                 className={`p-3 rounded-lg border transition-colors ${
                                     user?.username 
                                         ? 'bg-primary text-background hover:bg-accent border-primary' 
-                                        : 'bg-surface text-secondary border-surface cursor-not-allowed'
+                                        : 'bg-background text-secondary border-background cursor-not-allowed'
                                 }`}
                                 title={user?.username ? 'Copy your friend code' : 'Set username first'}
                                 disabled={!user?.username}
@@ -150,7 +150,7 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                                         setFriendCode(e.target.value);
                                         setMessage('');
                                     }}
-                                    className="flex-1 p-3 bg-surface border border-surface rounded-lg text-primary placeholder-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                    className="flex-1 p-3 bg-background border border-background rounded-lg text-primary placeholder-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                                     disabled={sending}
                                     maxLength={20}
                                 />
@@ -160,7 +160,7 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                                     disabled={!friendCode.trim() || sending}
                                 >
                                     {sending ? (
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
                                     ) : (
                                         <Send size={16} />
                                     )}
@@ -174,18 +174,6 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="p-6 bg-surface/50 border-t border-surface rounded-b-lg">
-                    <div className="flex justify-end gap-3">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-secondary hover:text-primary transition-colors"
-                            disabled={sending}
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     );

@@ -9,22 +9,25 @@
   --color-accent: var(--theme-accent);
   --color-background: var(--theme-background);
   --color-surface: var(--theme-surface);
+  --color-invert: var(--theme-invert);
 }
 
 /* Dorofi Theme - Purple/Pink */
 [data-theme="celestial-light"] {
-  --theme-primary: #7C3AED;
-  --theme-secondary: #DB2777;
+  --theme-primary: #a470ff;
+  --theme-secondary: #ff5aa4;
   --theme-accent: #2563EB;
   --theme-background: #FFFFFF;
+  --theme-invert: #000000;
   --theme-surface: #F8FAFC;
 }
 
 [data-theme="celestial-dark"] {
-  --theme-primary: #CBA0F6;
+  --theme-primary: #c386ff;
   --theme-secondary: #F9A8D4;
   --theme-accent: #93C5FD;
   --theme-background: #1C1729;
+  --theme-invert: #f4f0f0;
   --theme-surface: #2A1F3B;
 }
 
@@ -34,6 +37,7 @@
   --theme-secondary: #0ea5e9;
   --theme-accent: #059669;
   --theme-background: #FFFFFF;
+  --theme-invert: #000000;
   --theme-surface: #F0F9FF;
 }
 
@@ -43,22 +47,25 @@
   --theme-accent: #6ee7b7;
   --theme-background: #0f172a;
   --theme-surface: #1e293b;
+  --theme-invert: #f4f0f0;
 }
 
 /* Contrast Theme - Black/White High Contrast */
 [data-theme="void-light"] {
   --theme-primary: #000000;
-  --theme-secondary: #374151;
+  --theme-secondary: #333333;
   --theme-accent: #1f2937;
   --theme-background: #FFFFFF;
+  --theme-invert: #8d8d8d;
   --theme-surface: #F9FAFB;
 }
 
 [data-theme="void-dark"] {
   --theme-primary: #FFFFFF;
-  --theme-secondary: #D1D5DB;
+  --theme-secondary: #bababa;
   --theme-accent: #E5E7EB;
   --theme-background: #000000;
+  --theme-invert: #5c5c5c;
   --theme-surface: #111111;
 }
 
@@ -68,6 +75,7 @@
   --theme-secondary: #ea580c;
   --theme-accent: #f59e0b;
   --theme-background: #FFFFFF;
+  --theme-invert: #000000; 
   --theme-surface: #FEF2F2;
 }
 
@@ -76,5 +84,143 @@
   --theme-secondary: #fed7aa;
   --theme-accent: #fde68a;
   --theme-background: #1f1a1a;
+  --theme-invert: #f4f0f0;
   --theme-surface: #2d1b1b;
 }
+
+/* 🎵 UNIFIED VOLUME SLIDER - One style for all */
+.volume-slider,
+.modal-volume-slider,
+.white-noise-slider {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.volume-slider:focus,
+.modal-volume-slider:focus,
+.white-noise-slider:focus {
+  outline: none;
+}
+
+/* Track Styling */
+.volume-slider::-webkit-slider-track,
+.modal-volume-slider::-webkit-slider-track,
+.white-noise-slider::-webkit-slider-track {
+  -webkit-appearance: none;
+  background: transparent;
+  height: 4px;
+  border: none;
+  border-radius: 2px;
+}
+
+.volume-slider::-moz-range-track,
+.modal-volume-slider::-moz-range-track,
+.white-noise-slider::-moz-range-track {
+  background: transparent;
+  height: 4px;
+  border: none;
+  border-radius: 2px;
+}
+
+/* Unified Thumb Styling - Music volume uses primary, white noise uses accent */
+.volume-slider::-webkit-slider-thumb,
+.modal-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--color-background);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+}
+
+.white-noise-slider::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-background);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+}
+
+.volume-slider::-moz-range-thumb,
+.modal-volume-slider::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--color-background);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+  -moz-appearance: none !important;
+}
+
+.white-noise-slider::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-background);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+  -moz-appearance: none !important;
+}
+
+/* Hover Effects */
+.volume-slider::-webkit-slider-thumb:hover,
+.modal-volume-slider::-webkit-slider-thumb:hover,
+.white-noise-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.volume-slider::-moz-range-thumb:hover,
+.modal-volume-slider::-moz-range-thumb:hover,
+.white-noise-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Active/Pressed State */
+.volume-slider::-webkit-slider-thumb:active,
+.modal-volume-slider::-webkit-slider-thumb:active,
+.white-noise-slider::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+}
+
+/* Disabled State for White Noise */
+.white-noise-slider:disabled::-webkit-slider-thumb {
+  background: var(--color-surface);
+  transform: none !important;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.white-noise-slider:disabled::-moz-range-thumb {
+  background: var(--color-surface);
+  transform: none !important;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Music Player Padding */
+body.has-compact-music-player {
+  padding-bottom: 80px !important;
+  background-color: var(--color-background) !important;
+}
+
+

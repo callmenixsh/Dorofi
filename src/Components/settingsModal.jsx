@@ -1,9 +1,8 @@
-import { X, LogOut, Palette, Moon, Sun, User, Settings as SettingsIcon } from 'lucide-react';
+import { X, LogOut, Palette, Moon, Sun, User, Settings as SettingsIcon, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function SettingsModal({ onClose, user, onLogout, onThemeChange }) {
     const [currentTheme, setCurrentTheme] = useState(() => {
-        // Check localStorage first, then document attribute, then default
         return localStorage.getItem('theme') || 
                document.documentElement.getAttribute("data-theme") || 
                'celestial-light';
@@ -40,8 +39,6 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
         },
     ];
 
-
-    // Listen for theme changes
     useEffect(() => {
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -69,16 +66,10 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
         const isDark = currentTheme.includes('-dark');
         const newTheme = `${themeId}-${isDark ? 'dark' : 'light'}`;
         
-        // Save to localStorage
         localStorage.setItem('theme', newTheme);
-        
-        // Apply to document
         document.documentElement.setAttribute('data-theme', newTheme);
-        
-        // Update state
         setCurrentTheme(newTheme);
         
-        // Call callback if provided
         if (onThemeChange) {
             onThemeChange(newTheme);
         }
@@ -89,16 +80,10 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
         const isDark = currentTheme.includes('-dark');
         const newTheme = `${currentThemeBase}-${isDark ? 'light' : 'dark'}`;
         
-        // Save to localStorage
         localStorage.setItem('theme', newTheme);
-        
-        // Apply to document
         document.documentElement.setAttribute('data-theme', newTheme);
-        
-        // Update state
         setCurrentTheme(newTheme);
         
-        // Call callback if provided
         if (onThemeChange) {
             onThemeChange(newTheme);
         }
@@ -113,8 +98,8 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-xl shadow-2xl w-full max-w-lg border border-surface/50">
+        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-xl shadow-2xl w-full max-w-lg border border-primary/20">
                 {/* Header */}
                 <div className="relative px-6 py-4 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10">
                     <button 
@@ -122,12 +107,12 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                         className="absolute right-4 top-4 rounded-full p-2 hover:bg-surface/80 transition-colors"
                         aria-label="Close Settings"
                     >
-                        <X size={20} className="text-secondary" />
+                        <X size={20} className="text-secondary hover:text-primary transition-colors" />
                     </button>
                     
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
-                            <SettingsIcon size={20} className="text-white" />
+                            <SettingsIcon size={20} className="text-background" />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-primary">Settings</h2>
@@ -146,7 +131,7 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                         </h3>
                         
                         {/* Dark/Light Mode Toggle */}
-                        <div className="flex justify-between items-center mb-6 p-4 bg-surface/50 rounded-lg">
+                        <div className="flex justify-between items-center mb-6 p-4 bg-surface/50 rounded-lg border border-surface/30 hover:bg-surface/60 transition-colors">
                             <div className="flex items-center gap-3">
                                 {isDarkMode() ? (
                                     <Moon size={18} className="text-secondary" />
@@ -161,12 +146,12 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                             <button
                                 onClick={toggleDarkMode}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                    isDarkMode() ? 'bg-secondary' : 'bg-gray-300'
-                                }`}
+                                    isDarkMode() ? 'bg-primary' : 'bg-surface'
+                                } border-2 ${isDarkMode() ? 'border-primary' : 'border-primary/30'}`}
                             >
                                 <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                        isDarkMode() ? 'translate-x-6' : 'translate-x-1'
+                                    className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                                        isDarkMode() ? 'translate-x-6 bg-background' : 'translate-x-1 bg-primary'
                                     }`}
                                 />
                             </button>
@@ -176,34 +161,49 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                         <div>
                             <p className="text-sm font-medium text-primary mb-3">Color Theme</p>
                             <div className="grid grid-cols-2 gap-3">
-                                {themes.map((theme) => (
-                                    <button
-                                        key={theme.id}
-                                        onClick={() => handleThemeSelect(theme.id)}
-                                        className={`p-4 rounded-lg border-2 transition-all hover:scale-105 ${
-                                            getCurrentThemeBase() === theme.id
-                                                ? 'border-primary bg-primary/10'
-                                                : 'border-surface hover:border-primary/50 bg-surface/30'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <span className="text-lg">{theme.icon}</span>
-                                            <div className="text-left">
-                                                <p className="font-medium text-primary text-sm">{theme.name}</p>
-                                                <p className="text-xs text-secondary">{theme.description}</p>
+                                {themes.map((theme) => {
+                                    const isSelected = getCurrentThemeBase() === theme.id;
+                                    return (
+                                        <button
+                                            key={theme.id}
+                                            onClick={() => handleThemeSelect(theme.id)}
+                                            className={`group relative p-4 rounded-lg border-2 transition-all hover:scale-105 hover:shadow-md ${
+                                                isSelected
+                                                    ? 'border-primary bg-primary/10'
+                                                    : 'border-surface hover:border-primary/50 bg-surface/30'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-lg">{theme.icon}</span>
+                                                <div className="text-left flex-1">
+                                                    <p className="font-medium text-primary text-sm">{theme.name}</p>
+                                                    <p className="text-xs text-secondary">{theme.description}</p>
+                                                </div>
+                                                
+                                                {/* Split Color Circle with checkmark overlay */}
+                                                <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm border border-background/30 flex-shrink-0">
+                                                    {/* Left half */}
+                                                    <div 
+                                                        className="absolute inset-0 w-1/2"
+                                                        style={{ backgroundColor: theme.colors[0] }}
+                                                    />
+                                                    {/* Right half */}
+                                                    <div 
+                                                        className="absolute inset-0 left-1/2 w-1/2"
+                                                        style={{ backgroundColor: theme.colors[1] }}
+                                                    />
+                                                    
+                                                    {/* Checkmark overlay for active theme */}
+                                                    {isSelected && (
+                                                        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+                                                            <Check size={16} className="text-primary drop-shadow-sm" />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="flex gap-1">
-                                            {theme.colors.map((color, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="w-6 h-3 rounded-full"
-                                                    style={{ backgroundColor: color }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </button>
-                                ))}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -216,7 +216,7 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                                 Account
                             </h3>
                             
-                            <div className="flex items-center gap-4 p-4 bg-surface/50 rounded-lg mb-4">
+                            <div className="flex items-center gap-4 p-4 bg-surface/50 rounded-lg mb-4 border border-surface/30">
                                 <img 
                                     src={user.picture} 
                                     alt={user.name}
@@ -233,7 +233,7 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                             
                             <button 
                                 onClick={handleLogout}
-                                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/20 hover:border-red-500 rounded-lg transition-all text-red-600 hover:text-white font-medium"
+                                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-accent/10 hover:bg-accent hover:text-background border border-accent/20 hover:border-accent rounded-lg transition-all text-accent font-medium hover:shadow-md"
                             >
                                 <LogOut size={16} />
                                 <span>Sign Out</span>

@@ -1,8 +1,15 @@
-// Pages/profile.jsx - Move userStatus initialization after user is available
-import { useState, useEffect } from "react";
+// Pages/profile.jsx - Updated with proper data fetching
+import { useEffect } from "react";
+import { useSelector, useDispatch } from 'react-redux';
 import { useAuth } from "../contexts/AuthContext.jsx";
-import apiService from "../services/api.js";
 import { AlertCircle } from "lucide-react";
+import apiService from '../services/api.js';
+import { 
+  setIsEditingDisplay, setIsEditingUsername, setEditedDisplayName, 
+  setEditedUsername, setShowLogoutConfirm, setError, initializeProfile,
+  resetProfile, setUserStatus, updatePresence, updateCustomStatus, 
+  updatePrivacy, setStats, setLoading, generateAchievements
+} from '../store/slices/profileSlice';
 
 // Import modular components
 import ProfileHeader from "../components/Profile/ProfileHeader.jsx";
@@ -11,307 +18,328 @@ import WeeklyProgress from "../components/Profile/WeeklyProgress.jsx";
 import Achievements from "../components/Profile/Achievements.jsx";
 import ActivityCalendar from "../components/Profile/ActivityCalendar.jsx";
 import LogoutModal from "../components/Profile/LogoutModal.jsx";
-import StatusManager from "../components/Profile/StatusManager.jsx"; // Add this import
+import StatusManager from "../components/Profile/StatusManager.jsx";
 
 export default function Profile() {
-    // Auth Context
-    const { user, loading: authLoading, logout, updateUser, isAuthenticated } = useAuth();
+  const dispatch = useDispatch();
+  const { user, loading: authLoading, logout, updateUser, isAuthenticated } = useAuth();
+  
+  // Safe destructuring with fallbacks
+  const profileState = useSelector(state => state.profile) || {};
+  const {
+    stats = {
+      totalSessions: 0,
+      totalFocusTime: 0,
+      dailyFocusTime: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      weeklyGoal: 300,
+      weeklyProgress: 0,
+      achievements: []
+    },
+    isEditingDisplay = false,
+    isEditingUsername = false,
+    editedDisplayName = '',
+    editedUsername = '',
+    showLogoutConfirm = false,
+    loading = false,
+    saving = false,
+    error = '',
+    profileInitialized = false,
+    usernameAvailable = null,
+    checkingUsername = false,
+    userStatus = {
+      presence: { status: 'offline', isManual: false },
+      customStatus: { text: '', emoji: '', isActive: false },
+      privacy: { showLastSeen: true }
+    }
+  } = profileState;
 
-    // State Management
-    const [isEditingDisplay, setIsEditingDisplay] = useState(false);
-    const [isEditingUsername, setIsEditingUsername] = useState(false);
-    const [editedDisplayName, setEditedDisplayName] = useState("");
-    const [editedUsername, setEditedUsername] = useState("");
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const [profileLoading, setProfileLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState("");
-    const [profileInitialized, setProfileInitialized] = useState(false);
+  // Initialize profile data when user is available - ONLY ONCE
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated || !user) return;
+    if (profileInitialized) return;
 
-    // Initialize userStatus with safe defaults
-    const [userStatus, setUserStatus] = useState({
-        presence: { status: 'offline', isManual: false },
-        customStatus: { text: '', emoji: '', isActive: false }
-    });
+    console.log("🎯 Initializing profile for user:", user.email);
+    dispatch(initializeProfile({ user }));
+    fetchUserProfile();
+  }, [user, isAuthenticated, authLoading, profileInitialized]);
 
-    const [stats, setStats] = useState({
-        totalSessions: 0,
-        totalFocusTime: 0,
-        currentStreak: 0,
-        longestStreak: 0,
-        weeklyGoal: 300,
-        weeklyProgress: 0,
-        achievements: [],
-    });
+  // Cleanup on logout
+  useEffect(() => {
+    if (!isAuthenticated) {
+      dispatch(resetProfile());
+    }
+  }, [isAuthenticated, dispatch]);
 
-    // Initialize profile data only once when user is available
-    useEffect(() => {
-        if (authLoading) return; // Wait for auth context
-        if (!isAuthenticated || !user) return; // Wait for authenticated user
-        if (profileInitialized) return; // Don't initialize twice
-
-        console.log("🎯 Initializing profile for user:", user.email);
-
-        // Set editing state with user data
-        setEditedDisplayName(user.displayName || user.name || "");
-        setEditedUsername(user.username || "");
-
-        // Initialize userStatus with user data
-        setUserStatus({
-            presence: user.presence || { status: 'offline', isManual: false },
-            customStatus: user.customStatus || { text: '', emoji: '', isActive: false }
-        });
-
-        // Fetch backend data
-        fetchUserProfile();
-        setProfileInitialized(true);
-    }, [user, isAuthenticated, authLoading, profileInitialized]);
-
-    const handleStatusUpdate = (updates) => {
-        setUserStatus(prev => ({ ...prev, ...updates }));
-        updateUser(updates); // Update context
-    };
-
-    const fetchUserProfile = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            console.log("⚠️ No token, using basic stats");
-            setBasicStats();
-            return;
-        }
-
-        try {
-            setProfileLoading(true);
-            setError("");
-
-            console.log("📡 Fetching backend profile data...");
-
-            // Fetch user stats (don't update user profile here to avoid loops)
-            const statsResponse = await apiService.getUserStats();
-            console.log("✅ Stats received:", statsResponse);
-
-            setStats({
-                totalSessions: statsResponse.totalSessions || 0,
-                totalFocusTime: statsResponse.totalFocusTime || 0,
-                totalFocusTime: statsResponse.dailyFocusTime || 0,
-                currentStreak: statsResponse.currentStreak || 0,
-                longestStreak: statsResponse.longestStreak || 0,
-                weeklyGoal: statsResponse.weeklyGoal || 300,
-                weeklyProgress: statsResponse.weeklyProgress || 0,
-                achievements: generateAchievements(statsResponse)
-            });
-
-        } catch (error) {
-            console.error("❌ Backend fetch failed:", error);
-            setError("Backend unavailable - showing basic profile");
-            setBasicStats();
-        } finally {
-            setProfileLoading(false);
-        }
-    };
-
-    const setBasicStats = () => {
-        setStats({
-            totalSessions: 0,
-            totalFocusTime: 0,
-            currentStreak: 0,
-            longestStreak: 0,
-            weeklyGoal: 300,
-            weeklyProgress: 0,
-            achievements: generateAchievements({ totalSessions: 0, longestStreak: 0, totalFocusTime: 0 })
-        });
-    };
-
-    const generateAchievements = (stats) => [
-        {
-            id: 1,
-            name: "First Session",
-            icon: "🎯",
-            earned: (stats.totalSessions || 0) > 0,
-        },
-        {
-            id: 2,
-            name: "7-Day Streak",
-            icon: "🔥",
-            earned: (stats.longestStreak || 0) >= 7,
-        },
-        {
-            id: 3,
-            name: "50 Hours Total",
-            icon: "⏰",
-            earned: (stats.totalFocusTime || 0) >= 3000,
-        },
-        {
-            id: 4,
-            name: "30-Day Warrior",
-            icon: "💪",
-            earned: (stats.longestStreak || 0) >= 30,
-        },
-    ];
-
-    // Utility functions
-    const getHighResProfilePicture = (googlePicture) => {
-        if (!googlePicture) return null;
-        return googlePicture
-            .replace("s96-c", "s400-c")
-            .replace("=s96", "=s400")
-            .replace("sz=50", "sz=400");
-    };
-
-    const formatTime = (minutes) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    };
-
-    // Handler functions
-    const handleSaveDisplayName = async () => {
-        if (!editedDisplayName.trim()) {
-            setError("Display name cannot be empty");
-            return;
-        }
-
-        try {
-            setSaving(true);
-            setError("");
-
-            if (localStorage.getItem("token")) {
-                await apiService.updateDisplayName(editedDisplayName.trim());
-                console.log("✅ Display name updated in backend");
-            }
-
-            updateUser({ 
-                displayName: editedDisplayName.trim(),
-                name: editedDisplayName.trim() 
-            });
-
-            setIsEditingDisplay(false);
-        } catch (error) {
-            console.error("Failed to update display name:", error);
-            setError("Failed to update display name. Please try again.");
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleSaveUsername = async () => {
-        if (!editedUsername.trim()) {
-            setError("Username cannot be empty");
-            return;
-        }
-
-        try {
-            setSaving(true);
-            setError("");
-
-            if (!localStorage.getItem("token")) {
-                setError("Please log in to set a username");
-                return;
-            }
-
-            await apiService.updateUsername(editedUsername.trim());
-            console.log("✅ Username updated in backend");
-
-            updateUser({
-                username: editedUsername.trim().toLowerCase(),
-                usernameLastChanged: new Date().toISOString(),
-            });
-
-            setIsEditingUsername(false);
-        } catch (error) {
-            console.error("Failed to update username:", error);
-            setError(error.message || "Failed to update username. Please try again.");
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleLogout = () => {
-        setShowLogoutConfirm(false);
-        logout(); // Context handles everything
-    };
-
-    // Show loading only while auth is initializing
-    if (authLoading) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <div className="text-secondary">Loading...</div>
-                </div>
-            </div>
-        );
+  // 🔧 Updated profile fetching with real API calls
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("⚠️ No token, using basic stats");
+      setBasicStats();
+      return;
     }
 
-    // ProtectedRoute should handle this, but keep as fallback
-    if (!isAuthenticated || !user) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-red-500 mb-4">Please log in to view your profile</p>
-                </div>
-            </div>
-        );
+    try {
+      dispatch(setLoading(true));
+      console.log("📡 Fetching user stats from API...");
+      
+      // Try to fetch real stats from your API
+      const statsResponse = await apiService.getUserStats();
+      console.log("✅ Stats received from API:", statsResponse);
+      
+      // Update Redux with real data
+      const realStats = {
+        totalSessions: statsResponse.totalSessions || 0,
+        totalFocusTime: statsResponse.totalFocusTime || 0,
+        dailyFocusTime: statsResponse.dailyFocusTime || 0,
+        currentStreak: statsResponse.currentStreak || 0,
+        longestStreak: statsResponse.longestStreak || 0,
+        weeklyGoal: statsResponse.weeklyGoal || 300,
+        weeklyProgress: statsResponse.weeklyProgress || 0
+      };
+      
+      dispatch(setStats(realStats));
+      dispatch(generateAchievements(realStats));
+      
+    } catch (error) {
+      console.error("❌ Failed to fetch user stats:", error);
+      console.log("🔄 Falling back to basic stats");
+      setBasicStats();
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  // Fallback for when API is unavailable
+  const setBasicStats = () => {
+    const basicStats = {
+      totalSessions: 12, // Some demo data
+      totalFocusTime: 450, // 7.5 hours in minutes
+      dailyFocusTime: 85, // Today's focus time
+      currentStreak: 3,
+      longestStreak: 7,
+      weeklyGoal: 300,
+      weeklyProgress: 180
+    };
+    
+    dispatch(setStats(basicStats));
+    dispatch(generateAchievements(basicStats));
+    console.log("📊 Using demo stats:", basicStats);
+  };
+
+  // Utility functions
+  const getHighResProfilePicture = (googlePicture) => {
+    if (!googlePicture) return null;
+    return googlePicture
+      .replace("s96-c", "s400-c")
+      .replace("=s96", "=s400")
+      .replace("sz=50", "sz=400");
+  };
+
+  const formatTime = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  };
+
+  // Handler functions
+  const handleSaveDisplayName = async () => {
+    if (!editedDisplayName.trim()) {
+      dispatch(setError("Display name cannot be empty"));
+      return;
     }
 
+    try {
+      updateUser({ displayName: editedDisplayName.trim(), name: editedDisplayName.trim() });
+      dispatch(setIsEditingDisplay(false));
+      dispatch(setError(""));
+    } catch (error) {
+      dispatch(setError("Failed to update display name"));
+    }
+  };
+
+  const handleSaveUsername = async () => {
+    if (!editedUsername.trim()) {
+      dispatch(setError("Username cannot be empty"));
+      return;
+    }
+
+    try {
+      updateUser({ username: editedUsername.trim().toLowerCase() });
+      dispatch(setIsEditingUsername(false));
+      dispatch(setError(""));
+    } catch (error) {
+      dispatch(setError("Failed to update username"));
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch(setShowLogoutConfirm(false));
+    logout();
+  };
+
+  // Fixed status update handler
+  const handleStatusUpdate = (updates) => {
+    console.log("🔄 Handling status update:", updates);
+    
+    // Update Redux state immediately
+    if (updates.presence) {
+      dispatch(updatePresence(updates.presence));
+    }
+    if (updates.customStatus) {
+      dispatch(updateCustomStatus(updates.customStatus));
+    }
+    if (updates.privacy) {
+      dispatch(updatePrivacy(updates.privacy));
+    }
+    
+    // Also update AuthContext for persistence
+    updateUser(updates);
+  };
+
+  // API function handlers
+  const updatePresenceStatus = async (status) => {
+    try {
+      console.log("🔄 Updating presence status:", status);
+      await apiService.updatePresenceStatus(status);
+      console.log("✅ Presence status updated successfully");
+    } catch (error) {
+      console.error("❌ Failed to update presence status:", error);
+    }
+  };
+
+  const updateUserCustomStatus = async (statusData) => {
+    try {
+      console.log("🔄 Updating custom status:", statusData);
+      await apiService.updateCustomStatus(statusData);
+      console.log("✅ Custom status updated successfully");
+    } catch (error) {
+      console.error("❌ Failed to update custom status:", error);
+    }
+  };
+
+  const updatePrivacySettings = async (privacyData) => {
+    try {
+      console.log("🔄 Updating privacy settings:", privacyData);
+      await apiService.updatePrivacySettings(privacyData);
+      console.log("✅ Privacy settings updated successfully");
+    } catch (error) {
+      console.error("❌ Failed to update privacy settings:", error);
+    }
+  };
+
+  // Show loading while auth is initializing
+  if (authLoading) {
     return (
-        <div className="min-h-screen bg-background">
-            <div className="container mx-auto px-4 py-8 max-w-4xl">
-                {/* Error Banner */}
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
-                        <div className="flex items-center gap-3">
-                            <AlertCircle size={20} className="text-red-500" />
-                            <p className="text-red-600 text-sm">{error}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Show loading indicator for profile data only */}
-                {profileLoading && (
-                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-primary text-sm">Loading profile data...</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Modular Components */}
-                <ProfileHeader
-                    currentUser={user}
-                    isEditingDisplay={isEditingDisplay}
-                    setIsEditingDisplay={setIsEditingDisplay}
-                    editedDisplayName={editedDisplayName}
-                    setEditedDisplayName={setEditedDisplayName}
-                    isEditingUsername={isEditingUsername}
-                    setIsEditingUsername={setIsEditingUsername}
-                    editedUsername={editedUsername}
-                    setEditedUsername={setEditedUsername}
-                    saving={saving}
-                    error={error}
-                    setError={setError}
-                    onSaveDisplayName={handleSaveDisplayName}
-                    onSaveUsername={handleSaveUsername}
-                    onLogout={() => setShowLogoutConfirm(true)}
-                    getHighResProfilePicture={getHighResProfilePicture}
-                />
-                <StatusManager 
-                    user={{...user, ...userStatus}}
-                    onStatusUpdate={handleStatusUpdate}
-                />
-
-                <StatsOverview stats={stats} formatTime={formatTime} />
-                <WeeklyProgress stats={stats} formatTime={formatTime} />
-                <Achievements stats={stats} />
-                <ActivityCalendar stats={stats} />
-
-                <LogoutModal
-                    showModal={showLogoutConfirm}
-                    onClose={() => setShowLogoutConfirm(false)}
-                    onConfirm={handleLogout}
-                />
-            </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-secondary">Loading...</div>
         </div>
+      </div>
     );
+  }
+
+  // Show login prompt for unauthenticated users
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <AlertCircle className="w-16 h-16 text-secondary mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-primary mb-4">Profile Access Required</h1>
+          <p className="text-secondary">Please log in to view your profile</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state for stats
+  if (loading && !profileInitialized) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-secondary">Loading profile data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Merge user data with Redux userStatus for StatusManager
+  const mergedUserData = {
+    ...user,
+    presence: userStatus.presence.status ? userStatus.presence : (user.presence || { status: 'online', isManual: false }),
+    customStatus: userStatus.customStatus.isActive || userStatus.customStatus.text ? userStatus.customStatus : (user.customStatus || { text: '', emoji: '', isActive: false }),
+    privacy: userStatus.privacy.showLastSeen !== undefined ? userStatus.privacy : (user.privacy || { showLastSeen: true })
+  };
+
+  return (
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-4xl mx-auto space-y-8">
+        
+        {/* Error Display */}
+        {error && (
+          <div className="bg-surface/50 border border-accent/20 rounded-2xl p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-accent" />
+              <span className="text-accent">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Header */}
+        <ProfileHeader 
+          currentUser={user}
+          isEditingDisplay={isEditingDisplay}
+          setIsEditingDisplay={(value) => dispatch(setIsEditingDisplay(value))}
+          editedDisplayName={editedDisplayName}
+          setEditedDisplayName={(value) => dispatch(setEditedDisplayName(value))}
+          isEditingUsername={isEditingUsername}
+          setIsEditingUsername={(value) => dispatch(setIsEditingUsername(value))}
+          editedUsername={editedUsername}
+          setEditedUsername={(value) => dispatch(setEditedUsername(value))}
+          saving={saving}
+          error={error}
+          setError={(value) => dispatch(setError(value))}
+          onSaveDisplayName={handleSaveDisplayName}
+          onSaveUsername={handleSaveUsername}
+          onLogout={() => dispatch(setShowLogoutConfirm(true))}
+          getHighResProfilePicture={getHighResProfilePicture}
+          usernameAvailable={usernameAvailable}
+          checkingUsername={checkingUsername}
+        />
+
+        {/* Status Manager */}
+        <StatusManager 
+          user={mergedUserData}
+          onStatusUpdate={handleStatusUpdate}
+          updatePresenceStatus={updatePresenceStatus}
+          updateUserCustomStatus={updateUserCustomStatus}
+          updatePrivacySettings={updatePrivacySettings}
+        />
+
+        {/* Stats Overview - Back to original horizontal layout */}
+        <StatsOverview stats={stats} formatTime={formatTime} />
+
+        {/* Weekly Progress */}
+        <WeeklyProgress stats={stats} formatTime={formatTime} />
+
+        {/* Achievements */}
+        <Achievements stats={stats} />
+
+        {/* Activity Calendar */}
+        <ActivityCalendar stats={stats} />
+
+        {/* Logout Modal */}
+        <LogoutModal 
+          showModal={showLogoutConfirm}
+          onClose={() => dispatch(setShowLogoutConfirm(false))}
+          onConfirm={handleLogout}
+        />
+      </div>
+    </div>
+  );
 }

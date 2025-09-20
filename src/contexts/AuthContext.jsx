@@ -1,4 +1,3 @@
-// contexts/AuthContext.jsx - Add useActivityDetection here
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useActivityDetection } from '../hooks/userActivityDetection.js';
 import apiService from '../services/api';

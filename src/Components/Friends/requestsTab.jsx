@@ -1,4 +1,4 @@
-// components/friends/RequestsTab.jsx
+// components/friends/RequestsTab.jsx - Your EXACT original working code
 import { useState } from 'react';
 import { Bell, Check, X, Clock, User } from 'lucide-react';
 
@@ -144,7 +144,6 @@ export default function RequestsTab({
                                                 ) : (
                                                     <Check size={14} />
                                                 )}
-                                                
                                             </button>
                                             <button
                                                 onClick={() => handleDecline(request._id)}
@@ -152,7 +151,6 @@ export default function RequestsTab({
                                                 className="flex items-center gap-1 px-3 py-2 bg-red-400 hover:bg-red-600 text-white rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <X size={14} />
-                                                
                                             </button>
                                         </div>
                                     </div>

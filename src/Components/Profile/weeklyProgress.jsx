@@ -1,4 +1,4 @@
-// components/Profile/WeeklyProgress.jsx
+// components/Profile/WeeklyProgress.jsx - Original UI
 export default function WeeklyProgress({ stats, formatTime }) {
     const weeklyProgressPercent = stats.weeklyGoal > 0 ? (stats.weeklyProgress / stats.weeklyGoal) * 100 : 0;
 
