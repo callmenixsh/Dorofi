@@ -5,7 +5,7 @@ import musicReducer from './slices/musicSlice';
 import tasksReducer from './slices/tasksSlice';
 import profileReducer from './slices/profileSlice'; // 🆕 Make sure this exists
 import friendsReducer from './slices/friendsSlice';
-
+import statsReducer from './slices/statsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +13,8 @@ export const store = configureStore({
     music: musicReducer,
     tasks: tasksReducer,
     profile: profileReducer,
-    friends: friendsReducer
+    friends: friendsReducer,
+    stats: statsReducer, 
   },
   devTools: process.env.NODE_ENV !== 'production'
 });

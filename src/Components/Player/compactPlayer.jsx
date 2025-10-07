@@ -4,12 +4,12 @@ import {
     Play,
     SkipForward,
     Repeat1,
-    Settings,
     Minimize2,
     VolumeX,
     Volume2,
     ChevronUp,
     ChevronDown,
+    Settings2,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import {
@@ -182,7 +182,7 @@ const CompactPlayer = ({
                                     className="w-8 h-8 rounded-lg bg-surface/50 hover:bg-primary/20 flex items-center justify-center transition-colors"
                                     title="Open audio settings"
                                 >
-                                    <Settings size={12} className="text-secondary" />
+                                    <Settings2 size={12} className="text-secondary" />
                                 </button>
                             </div>
                         </div>
@@ -297,7 +297,7 @@ const CompactPlayer = ({
                             className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-surface/50 hover:bg-primary/20 flex items-center justify-center transition-colors"
                             title="Open audio settings"
                         >
-                            <Settings size={14} className="lg:w-4 lg:h-4 text-secondary" />
+                            <Settings2 size={14} className="lg:w-4 lg:h-4 text-secondary" />
                         </button>
                     </div>
                 </div>

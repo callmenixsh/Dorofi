@@ -1,42 +1,36 @@
-// Pages/profile.jsx - Updated with proper data fetching
+// Pages/profile.jsx - Fixed WeeklyProgress call
 import { useEffect } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { AlertCircle } from "lucide-react";
 import apiService from '../services/api.js';
+
 import { 
   setIsEditingDisplay, setIsEditingUsername, setEditedDisplayName, 
   setEditedUsername, setShowLogoutConfirm, setError, initializeProfile,
   resetProfile, setUserStatus, updatePresence, updateCustomStatus, 
-  updatePrivacy, setStats, setLoading, generateAchievements
+  updatePrivacy, setLoading, setSaving
 } from '../store/slices/profileSlice';
 
+// 🔥 Import unified stats
+import { fetchUnifiedStats } from '../store/slices/statsSlice';
+
 // Import modular components
-import ProfileHeader from "../components/Profile/ProfileHeader.jsx";
-import StatsOverview from "../components/Profile/StatsOverview.jsx";
-import WeeklyProgress from "../components/Profile/WeeklyProgress.jsx";
-import Achievements from "../components/Profile/Achievements.jsx";
-import ActivityCalendar from "../components/Profile/ActivityCalendar.jsx";
-import LogoutModal from "../components/Profile/LogoutModal.jsx";
-import StatusManager from "../components/Profile/StatusManager.jsx";
+import ProfileHeader from "../components/Profile/profileHeader.jsx";
+import StatsOverview from "../components/Profile/statsOverview.jsx";
+import WeeklyProgress from "../components/Profile/weeklyProgress.jsx";
+import Achievements from "../components/Profile/achievements.jsx";
+import ActivityCalendar from "../components/Profile/activityCalendar.jsx";
+import LogoutModal from "../components/Profile/logoutModal.jsx";
+import StatusManager from "../components/Profile/statusManager.jsx";
 
 export default function Profile() {
   const dispatch = useDispatch();
   const { user, loading: authLoading, logout, updateUser, isAuthenticated } = useAuth();
   
-  // Safe destructuring with fallbacks
+  // Profile slice state (no stats)
   const profileState = useSelector(state => state.profile) || {};
   const {
-    stats = {
-      totalSessions: 0,
-      totalFocusTime: 0,
-      dailyFocusTime: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      weeklyGoal: 300,
-      weeklyProgress: 0,
-      achievements: []
-    },
     isEditingDisplay = false,
     isEditingUsername = false,
     editedDisplayName = '',
@@ -55,6 +49,9 @@ export default function Profile() {
     }
   } = profileState;
 
+  // 🔥 Get stats from unified stats slice
+  const { profile: profileStats, isLoading: statsLoading } = useSelector(state => state.stats);
+
   // Initialize profile data when user is available - ONLY ONCE
   useEffect(() => {
     if (authLoading) return;
@@ -63,8 +60,10 @@ export default function Profile() {
 
     console.log("🎯 Initializing profile for user:", user.email);
     dispatch(initializeProfile({ user }));
-    fetchUserProfile();
-  }, [user, isAuthenticated, authLoading, profileInitialized]);
+    
+    // 🔥 Fetch unified stats instead of separate API call
+    dispatch(fetchUnifiedStats());
+  }, [user, isAuthenticated, authLoading, profileInitialized, dispatch]);
 
   // Cleanup on logout
   useEffect(() => {
@@ -72,63 +71,6 @@ export default function Profile() {
       dispatch(resetProfile());
     }
   }, [isAuthenticated, dispatch]);
-
-  // 🔧 Updated profile fetching with real API calls
-  const fetchUserProfile = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.log("⚠️ No token, using basic stats");
-      setBasicStats();
-      return;
-    }
-
-    try {
-      dispatch(setLoading(true));
-      console.log("📡 Fetching user stats from API...");
-      
-      // Try to fetch real stats from your API
-      const statsResponse = await apiService.getUserStats();
-      console.log("✅ Stats received from API:", statsResponse);
-      
-      // Update Redux with real data
-      const realStats = {
-        totalSessions: statsResponse.totalSessions || 0,
-        totalFocusTime: statsResponse.totalFocusTime || 0,
-        dailyFocusTime: statsResponse.dailyFocusTime || 0,
-        currentStreak: statsResponse.currentStreak || 0,
-        longestStreak: statsResponse.longestStreak || 0,
-        weeklyGoal: statsResponse.weeklyGoal || 300,
-        weeklyProgress: statsResponse.weeklyProgress || 0
-      };
-      
-      dispatch(setStats(realStats));
-      dispatch(generateAchievements(realStats));
-      
-    } catch (error) {
-      console.error("❌ Failed to fetch user stats:", error);
-      console.log("🔄 Falling back to basic stats");
-      setBasicStats();
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
-
-  // Fallback for when API is unavailable
-  const setBasicStats = () => {
-    const basicStats = {
-      totalSessions: 12, // Some demo data
-      totalFocusTime: 450, // 7.5 hours in minutes
-      dailyFocusTime: 85, // Today's focus time
-      currentStreak: 3,
-      longestStreak: 7,
-      weeklyGoal: 300,
-      weeklyProgress: 180
-    };
-    
-    dispatch(setStats(basicStats));
-    dispatch(generateAchievements(basicStats));
-    console.log("📊 Using demo stats:", basicStats);
-  };
 
   // Utility functions
   const getHighResProfilePicture = (googlePicture) => {
@@ -153,11 +95,25 @@ export default function Profile() {
     }
 
     try {
-      updateUser({ displayName: editedDisplayName.trim(), name: editedDisplayName.trim() });
-      dispatch(setIsEditingDisplay(false));
+      dispatch(setSaving(true));
       dispatch(setError(""));
+
+      if (localStorage.getItem("token")) {
+        await apiService.updateDisplayName(editedDisplayName.trim());
+        console.log("✅ Display name updated in backend");
+      }
+
+      updateUser({ 
+        displayName: editedDisplayName.trim(), 
+        name: editedDisplayName.trim() 
+      });
+      
+      dispatch(setIsEditingDisplay(false));
     } catch (error) {
-      dispatch(setError("Failed to update display name"));
+      console.error("Failed to update display name:", error);
+      dispatch(setError("Failed to update display name. Please try again."));
+    } finally {
+      dispatch(setSaving(false));
     }
   };
 
@@ -168,11 +124,28 @@ export default function Profile() {
     }
 
     try {
-      updateUser({ username: editedUsername.trim().toLowerCase() });
-      dispatch(setIsEditingUsername(false));
+      dispatch(setSaving(true));
       dispatch(setError(""));
+
+      if (!localStorage.getItem("token")) {
+        dispatch(setError("Please log in to set a username"));
+        return;
+      }
+
+      await apiService.updateUsername(editedUsername.trim());
+      console.log("✅ Username updated in backend");
+
+      updateUser({ 
+        username: editedUsername.trim().toLowerCase(),
+        usernameLastChanged: new Date().toISOString(),
+      });
+      
+      dispatch(setIsEditingUsername(false));
     } catch (error) {
-      dispatch(setError("Failed to update username"));
+      console.error("Failed to update username:", error);
+      dispatch(setError(error.message || "Failed to update username. Please try again."));
+    } finally {
+      dispatch(setSaving(false));
     }
   };
 
@@ -181,11 +154,9 @@ export default function Profile() {
     logout();
   };
 
-  // Fixed status update handler
   const handleStatusUpdate = (updates) => {
     console.log("🔄 Handling status update:", updates);
     
-    // Update Redux state immediately
     if (updates.presence) {
       dispatch(updatePresence(updates.presence));
     }
@@ -196,7 +167,6 @@ export default function Profile() {
       dispatch(updatePrivacy(updates.privacy));
     }
     
-    // Also update AuthContext for persistence
     updateUser(updates);
   };
 
@@ -257,7 +227,7 @@ export default function Profile() {
   }
 
   // Show loading state for stats
-  if (loading && !profileInitialized) {
+  if ((loading || statsLoading) && !profileInitialized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -321,17 +291,17 @@ export default function Profile() {
           updatePrivacySettings={updatePrivacySettings}
         />
 
-        {/* Stats Overview - Back to original horizontal layout */}
-        <StatsOverview stats={stats} formatTime={formatTime} />
+        {/* Stats Overview */}
+        <StatsOverview />
 
-        {/* Weekly Progress */}
-        <WeeklyProgress stats={stats} formatTime={formatTime} />
+        {/* 🔥 FIXED: Weekly Progress - No props needed! */}
+        <WeeklyProgress />
 
         {/* Achievements */}
-        <Achievements stats={stats} />
+        <Achievements/>
 
         {/* Activity Calendar */}
-        <ActivityCalendar stats={stats} />
+        <ActivityCalendar />
 
         {/* Logout Modal */}
         <LogoutModal 

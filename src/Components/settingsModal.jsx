@@ -8,6 +8,20 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                'celestial-light';
     });
 
+    // Lock body scroll when modal opens
+    useEffect(() => {
+        // Store original body style
+        const originalStyle = window.getComputedStyle(document.body).overflow;
+        
+        // Lock body scroll
+        document.body.style.overflow = 'hidden';
+        
+        // Cleanup: restore original scroll when modal closes
+        return () => {
+            document.body.style.overflow = originalStyle;
+        };
+    }, []);
+
     const themes = [
         {
             id: 'celestial',

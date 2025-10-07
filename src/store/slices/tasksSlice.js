@@ -1,70 +1,294 @@
-import { createSlice } from '@reduxjs/toolkit';
+// store/slices/tasksSlice.js - Updated with clean backend sync + edit functionality
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../services/api';
+
+// Async thunks for backend communication (auth-only)
+export const fetchTasks = createAsyncThunk(
+    'tasks/fetchTasks',
+    async (_, { getState, rejectWithValue }) => {
+        try {
+            const { timer } = getState();
+            
+            if (!timer.isLoggedIn) {
+                // Return empty for guests - they'll use localStorage
+                return { tasks: [] };
+            }
+
+            return await api.getTasks();
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const syncTaskToBackend = createAsyncThunk(
+    'tasks/syncTaskToBackend',
+    async ({ action, task, taskId }, { getState, rejectWithValue }) => {
+        try {
+            const { timer } = getState();
+            
+            if (!timer.isLoggedIn) {
+                return null; // No sync for guests
+            }
+
+            switch (action) {
+                case 'add':
+                    // 🔥 CLEAN - Only send essential fields to backend
+                    const cleanTask = {
+                        id: task.id,
+                        text: task.text
+                    };
+                    return await api.addTask(cleanTask);
+                case 'update':
+                    return await api.updateTask(taskId, task);
+                case 'delete':
+                    return await api.deleteTask(taskId);
+                default:
+                    throw new Error('Invalid action');
+            }
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+// Local storage functions (for pinned tasks and guest mode)
+const loadTasksFromStorage = () => {
+    try {
+        const saved = localStorage.getItem('dorofi_tasks');
+        return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+        console.error('Failed to load tasks from localStorage:', error);
+        return [];
+    }
+};
+
+const saveTasksToStorage = (tasks) => {
+    try {
+        localStorage.setItem('dorofi_tasks', JSON.stringify(tasks));
+    } catch (error) {
+        console.error('Failed to save tasks to localStorage:', error);
+    }
+};
+
+const loadPinnedTaskFromStorage = () => {
+    try {
+        const saved = localStorage.getItem('dorofi_pinned_task');
+        return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+        console.error('Failed to load pinned task from localStorage:', error);
+        return null;
+    }
+};
+
+const savePinnedTaskToStorage = (task) => {
+    try {
+        if (task) {
+            localStorage.setItem('dorofi_pinned_task', JSON.stringify(task));
+        } else {
+            localStorage.removeItem('dorofi_pinned_task');
+        }
+    } catch (error) {
+        console.error('Failed to save pinned task to localStorage:', error);
+    }
+};
+
+const initialState = {
+    tasks: loadTasksFromStorage(),
+    pinnedTask: loadPinnedTaskFromStorage(),
+    showTaskModal: false,
+    isLoading: false,
+    lastSyncDate: null,
+    isLoggedIn: false,
+};
 
 const tasksSlice = createSlice({
-  name: 'tasks',
-  initialState: {
-    tasks: [
-      { id: 1, text: "Review project documentation", completed: false, isPinned: false },
-      { id: 2, text: "Complete React components", completed: true, isPinned: false },
-      { id: 3, text: "Test user authentication", completed: false, isPinned: true },
-    ],
-    showTaskModal: false
-  },
-  reducers: {
-    // Task CRUD operations
-    addTask: (state, action) => {
-      const newTask = {
-        id: Date.now(),
-        text: action.payload,
-        completed: false,
-        isPinned: false
-      };
-      state.tasks.push(newTask);
+    name: 'tasks',
+    initialState,
+    reducers: {
+        addTask: (state, action) => {
+            const newTask = {
+                id: Date.now().toString(),
+                text: action.payload,
+                completed: false,
+                isPinned: false,
+                // 🔥 FRONTEND ONLY - timestamps for local use
+                createdAt: new Date().toISOString(),
+            };
+            
+            state.tasks.push(newTask);
+            
+            if (state.isLoggedIn) {
+                // Auto-sync to backend (will be handled by TaskModal)
+                console.log('📝 Task added, will sync to backend');
+            } else {
+                saveTasksToStorage(state.tasks);
+            }
+        },
+        
+        toggleTask: (state, action) => {
+            const task = state.tasks.find(t => t.id === action.payload);
+            if (task) {
+                task.completed = !task.completed;
+                
+                if (!state.isLoggedIn) {
+                    saveTasksToStorage(state.tasks);
+                }
+            }
+        },
+        
+        removeTask: (state, action) => {
+            const taskId = action.payload;
+            
+            // Remove from pinned if it was pinned
+            if (state.pinnedTask?.id === taskId) {
+                state.pinnedTask = null;
+                savePinnedTaskToStorage(null);
+            }
+            
+            state.tasks = state.tasks.filter(t => t.id !== taskId);
+            
+            if (!state.isLoggedIn) {
+                saveTasksToStorage(state.tasks);
+            }
+        },
+
+        // 🆕 NEW - Update task functionality
+        updateTask: (state, action) => {
+            const { taskId, updates } = action.payload;
+            const taskIndex = state.tasks.findIndex(task => task.id === taskId);
+            
+            if (taskIndex !== -1) {
+                // Update the task
+                state.tasks[taskIndex] = { 
+                    ...state.tasks[taskIndex], 
+                    ...updates,
+                    // Keep original timestamps
+                    createdAt: state.tasks[taskIndex].createdAt,
+                    // Add updated timestamp
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Update pinned task if this was the pinned one
+                if (state.pinnedTask?.id === taskId) {
+                    state.pinnedTask = { ...state.pinnedTask, ...updates };
+                    savePinnedTaskToStorage(state.pinnedTask);
+                }
+                
+                // Save to localStorage if not logged in
+                if (!state.isLoggedIn) {
+                    saveTasksToStorage(state.tasks);
+                }
+                
+                console.log('📝 Task updated:', taskId, updates);
+            }
+        },
+        
+        togglePinTask: (state, action) => {
+            const taskId = action.payload;
+            const task = state.tasks.find(t => t.id === taskId);
+            
+            if (task) {
+                if (state.pinnedTask?.id === taskId) {
+                    // Unpin
+                    state.pinnedTask = null;
+                    task.isPinned = false;
+                    savePinnedTaskToStorage(null);
+                } else {
+                    // Pin (and unpin any existing)
+                    if (state.pinnedTask) {
+                        const oldPinned = state.tasks.find(t => t.id === state.pinnedTask.id);
+                        if (oldPinned) oldPinned.isPinned = false;
+                    }
+                    
+                    state.pinnedTask = { ...task }; // Create a copy
+                    task.isPinned = true;
+                    savePinnedTaskToStorage(state.pinnedTask);
+                }
+                
+                if (!state.isLoggedIn) {
+                    saveTasksToStorage(state.tasks);
+                }
+            }
+        },
+        
+        openTaskModal: (state) => {
+            state.showTaskModal = true;
+        },
+        
+        closeTaskModal: (state) => {
+            state.showTaskModal = false;
+        },
+        
+        setLoggedInState: (state, action) => {
+            state.isLoggedIn = action.payload;
+            if (action.payload) {
+                // Clear localStorage when logged in
+                localStorage.removeItem('dorofi_tasks');
+                console.log('🔑 User logged in, cleared local tasks');
+            } else {
+                // When logging out, keep current tasks as local
+                saveTasksToStorage(state.tasks);
+                console.log('🔑 User logged out, saved tasks locally');
+            }
+        },
     },
     
-    toggleTask: (state, action) => {
-      const task = state.tasks.find(task => task.id === action.payload);
-      if (task) {
-        task.completed = !task.completed;
-      }
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchTasks.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(fetchTasks.fulfilled, (state, action) => {
+                state.isLoading = false;
+                if (action.payload.tasks) {
+                    // 🔥 Merge backend data with frontend-only fields
+                    state.tasks = action.payload.tasks.map(task => ({
+                        ...task,
+                        // Frontend-only fields
+                        isPinned: state.pinnedTask?.id === task.id,
+                        createdAt: task.createdAt || new Date().toISOString(),
+                    }));
+                    state.lastSyncDate = Date.now();
+                    console.log('✅ Tasks synced from backend:', action.payload.tasks.length);
+                }
+            })
+            .addCase(fetchTasks.rejected, (state, action) => {
+                state.isLoading = false;
+                console.error('❌ Failed to fetch tasks:', action.payload);
+            })
+            .addCase(syncTaskToBackend.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(syncTaskToBackend.fulfilled, (state, action) => {
+                state.isLoading = false;
+                if (action.payload?.tasks) {
+                    // 🔥 Update with fresh backend data + frontend fields
+                    state.tasks = action.payload.tasks.map(task => ({
+                        ...task,
+                        isPinned: state.pinnedTask?.id === task.id,
+                        createdAt: task.createdAt || new Date().toISOString(),
+                    }));
+                    state.lastSyncDate = Date.now();
+                    console.log('✅ Task synced to backend');
+                }
+            })
+            .addCase(syncTaskToBackend.rejected, (state, action) => {
+                state.isLoading = false;
+                console.error('❌ Failed to sync task to backend:', action.payload);
+            });
     },
-    
-    removeTask: (state, action) => {
-      state.tasks = state.tasks.filter(task => task.id !== action.payload);
-    },
-    
-    togglePinTask: (state, action) => {
-      // First, unpin all other tasks
-      state.tasks.forEach(task => {
-        if (task.id !== action.payload) {
-          task.isPinned = false;
-        }
-      });
-      
-      // Then toggle the target task
-      const task = state.tasks.find(task => task.id === action.payload);
-      if (task) {
-        task.isPinned = !task.isPinned;
-      }
-    },
-    
-    // Modal controls
-    openTaskModal: (state) => {
-      state.showTaskModal = true;
-    },
-    closeTaskModal: (state) => {
-      state.showTaskModal = false;
-    }
-  }
 });
 
 export const {
-  addTask,
-  toggleTask,
-  removeTask,
-  togglePinTask,
-  openTaskModal,
-  closeTaskModal
+    addTask,
+    toggleTask,
+    removeTask,
+    updateTask, // 🆕 NEW - Export the updateTask action
+    togglePinTask,
+    openTaskModal,
+    closeTaskModal,
+    setLoggedInState,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

@@ -1,8 +1,23 @@
 // components/LoginPromptModal.jsx
 import { X, Users, Star, TrendingUp, Trophy } from 'lucide-react';
 import { FaGoogle } from 'react-icons/fa';
+import { useEffect } from 'react';
 
 export default function LoginPromptModal({ onClose, onLogin, featureType = "features", isLoading = false }) {
+    // Lock body scroll when modal opens
+    useEffect(() => {
+        // Store original body style
+        const originalStyle = window.getComputedStyle(document.body).overflow;
+        
+        // Lock body scroll
+        document.body.style.overflow = 'hidden';
+        
+        // Cleanup: restore original scroll when modal closes
+        return () => {
+            document.body.style.overflow = originalStyle;
+        };
+    }, []);
+
     const getFeatureContent = () => {
         switch (featureType) {
             case 'friends':
@@ -47,7 +62,7 @@ export default function LoginPromptModal({ onClose, onLogin, featureType = "feat
 
     return (
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-xl shadow-2xl w-full max-w-md border border-primary/20">
+            <div className="bg-background rounded-xl shadow-2xl w-full max-w-md border border-surface/50">
                 {/* Header */}
                 <div className="relative p-6 pb-4">
                     <button 

@@ -11,6 +11,7 @@ import {
     Repeat1,
     Volume2,
     VolumeX,
+    Settings2,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { closeModal, toggleRepeat } from "../../store/slices/musicSlice";
@@ -41,7 +42,7 @@ const SettingsModal = ({
             <div className="w-full max-w-xs sm:max-w-2xl lg:max-w-4xl max-h-[90vh] sm:max-h-[85vh] bg-surface/95 rounded-2xl sm:rounded-3xl border border-primary/20 overflow-hidden">
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-surface/50">
                     <h2 className="text-lg sm:text-2xl font-bold text-primary flex items-center gap-2 sm:gap-3">
-                        <Settings size={20} className="sm:w-6 sm:h-6" />
+                        <Settings2 size={20} className="sm:w-6 sm:h-6" />
                         <span className="hidden sm:inline">Audio Settings</span>
                         <span className="sm:hidden">Audio</span>
                     </h2>

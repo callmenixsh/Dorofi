@@ -132,13 +132,13 @@ const PrivacyContent = () => (
         </ul>
       </section>
 
-      <section>
+      {/* <section>
         <h3 className="text-xl font-semibold text-primary mb-4">Contact Us</h3>
         <p>Questions about this privacy policy? Contact us at:</p>
         <p className="mt-2">
           Email: <a href="mailto:privacy@dorofi.com" className="text-primary underline">privacy@dorofi.com</a>
         </p>
-      </section>
+      </section> */}
     </div>
   </div>
 );
@@ -197,13 +197,13 @@ const TermsContent = () => (
         <p>We don't guarantee that Dorofi will be error-free or uninterrupted. We're not responsible for any damages from using the service.</p>
       </section>
 
-      <section>
+      {/* <section>
         <h3 className="text-xl font-semibold text-primary mb-4">Contact Information</h3>
         <p>Questions about these terms? Contact us:</p>
         <p className="mt-2">
           Email: <a href="mailto:legal@dorofi.com" className="text-primary underline">legal@dorofi.com</a>
         </p>
-      </section>
+      </section> */}
     </div>
   </div>
 );
@@ -230,10 +230,6 @@ const FAQContent = () => {
       answer: "Yes! You can customize work and break durations in your settings. While 25 minutes is the traditional Pomodoro length, you can adjust it to fit your needs."
     },
     {
-      question: "What are study rooms?",
-      answer: "Study rooms are virtual spaces where you can focus alongside friends or other users. Your timers sync in real-time, creating a shared productivity experience."
-    },
-    {
       question: "How does the streak system work?",
       answer: "Streaks track consecutive days of completing at least one Pomodoro session. The longer your streak, the more achievements you unlock."
     },
@@ -243,11 +239,11 @@ const FAQContent = () => {
     },
     {
       question: "Can I use Dorofi offline?",
-      answer: "Dorofi requires an internet connection for social features and data syncing. However, basic timer functionality may work offline temporarily."
+      answer: "Dorofi requires an internet connection for social features and data syncing. However, basic timer functionality may work offline."
     },
     {
       question: "How do I add friends?",
-      answer: "Once logged in, go to the Friends page where you can search for other users by their username or email address to send friend requests."
+      answer: "Once logged in, go to the Friends page where you can search for other users by their username to send friend requests."
     },
     {
       question: "Can I delete my account?",
@@ -284,7 +280,7 @@ const FAQContent = () => {
           </div>
         ))}
       </div>
-
+{/* 
       <section className="mt-12">
         <h3 className="text-xl font-semibold text-primary mb-4">Still have questions?</h3>
         <p className="text-secondary mb-4">
@@ -293,7 +289,7 @@ const FAQContent = () => {
         <p className="text-secondary">
           Contact us: <a href="mailto:support@dorofi.com" className="text-primary underline">support@dorofi.com</a>
         </p>
-      </section>
+      </section> */}
     </div>
   );
 };

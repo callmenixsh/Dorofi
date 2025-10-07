@@ -1,18 +1,28 @@
-// Pages/friends.jsx - Redux version
+// Pages/friends.jsx - With URL-based tab persistence
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useSelector } from 'react-redux';
 import { useFriendsActions } from "../hooks/useFriendsActions.js";
 import { Users, Trophy, Target, Bell, AlertCircle } from "lucide-react";
-import FriendsHeader from "../components/friends/FriendsHeader.jsx";
-import FriendsTabs from "../components/friends/FriendsTabs.jsx";
-import LeaderboardTab from "../components/friends/LeaderboardTab.jsx";
-import FriendsListTab from "../components/friends/FriendsListTab.jsx";
-import RequestsTab from "../components/friends/RequestsTab.jsx";
+import FriendsHeader from "../components/friends/friendsHeader.jsx";
+import FriendsTabs from "../components/friends/friendsTabs.jsx";
+import LeaderboardTab from "../components/friends/leaderboardTab.jsx";
+import FriendsListTab from "../components/friends/friendsListTab.jsx";
+import RequestsTab from "../components/friends/requestsTab.jsx";
 
 export default function Friends() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("leaderboard");
+  const [currentUserStats, setCurrentUserStats] = useState(null);
+
+  // 🔥 NEW - Get initial tab from URL or default to leaderboard
+  const getInitialTab = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('tab');
+    const validTabs = ['leaderboard', 'friends', 'requests', 'challenges'];
+    return validTabs.includes(tabFromUrl) ? tabFromUrl : 'leaderboard';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
 
   // Get state from Redux
   const { 
@@ -33,15 +43,79 @@ export default function Friends() {
     cancelRequest 
   } = useFriendsActions();
 
-  // Initialize friends data
+  // 🔥 NEW - Update URL when tab changes
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    
+    // Update URL without page reload
+    const url = new URL(window.location);
+    url.searchParams.set('tab', newTab);
+    window.history.replaceState({}, '', url);
+  };
+
+  // 🔥 NEW - Listen for browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const newTab = getInitialTab();
+      setActiveTab(newTab);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Fetch current user's stats
+  const fetchUserStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.stats) {
+          // Map unified stats to LeaderboardTab format
+          setCurrentUserStats({
+            dailyFocusTime: data.stats.timer?.dailyFocusTime || 0,
+            dailySessions: data.stats.timer?.dailySessions || 0,
+            weeklyFocusTime: data.stats.timer?.weeklyFocusTime || 0,
+            weeklySessions: data.stats.timer?.weeklySessions || 0,
+            weeklyGoal: data.stats.timer?.weeklyGoal || 300,
+            totalFocusTime: data.stats.timer?.totalFocusTime || 0,
+            totalSessions: data.stats.timer?.totalSessions || 0,
+            currentStreak: data.stats.timer?.currentStreak || 0,
+            longestStreak: data.stats.timer?.longestStreak || 0,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    }
+  };
+
+  // Always refresh data when navigating to friends page
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated || !user) return;
-    if (friendsInitialized) return;
 
-    console.log("🤝 Initializing friends data for user:", user.email);
+    
+    // Always fetch fresh data when navigating to friends page
     fetchFriendsData();
-  }, [user, isAuthenticated, authLoading, friendsInitialized, fetchFriendsData]);
+    fetchUserStats();
+    
+  }, [user, isAuthenticated, authLoading]);
+
+  // Create user with stats for LeaderboardTab
+  const userWithStats = currentUserStats ? {
+    ...user,
+    stats: currentUserStats
+  } : user;
 
   // Show loading while auth is initializing
   if (authLoading) {
@@ -100,6 +174,7 @@ export default function Friends() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+        
         {/* Error Banner */}
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
@@ -126,15 +201,16 @@ export default function Friends() {
           loading={friendsLoading}
         />
 
+        {/* 🔥 UPDATED - Pass handleTabChange instead of setActiveTab */}
         <FriendsTabs
           tabs={tabs}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange} // 🔥 Updated to use URL-aware handler
         />
 
         {activeTab === "leaderboard" && (
           <LeaderboardTab
-            user={user}
+            user={userWithStats}
             friends={friends}
             loading={friendsLoading}
           />

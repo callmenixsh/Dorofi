@@ -16,6 +16,8 @@ import Rooms from "./Pages/rooms.jsx";
 import About from "./Pages/about.jsx";
 import Friends from "./Pages/friends.jsx";
 import Profile from "./Pages/profile.jsx";
+import Support from "./Pages/support.jsx";
+import Guide from "./Pages/guide.jsx";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import Notfound from "./components/notfound.jsx";
@@ -112,6 +114,22 @@ const router = createBrowserRouter([
         element: (
             <Layout>
                 <Policies />
+            </Layout>
+        ),
+    },
+    {
+        path: "/guide",
+        element: (
+            <Layout>
+                <Guide />
+            </Layout>
+        ),
+    },
+    {
+        path: "/support",
+        element: (
+            <Layout>
+                <Support />
             </Layout>
         ),
     },

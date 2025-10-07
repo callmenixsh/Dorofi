@@ -1,21 +1,11 @@
-// store/slices/profileSlice.js - Complete with status management
+// store/slices/profileSlice.js - Clean profile-only slice
 import { createSlice } from '@reduxjs/toolkit';
 
 const profileSlice = createSlice({
   name: 'profile',
   initialState: {
-    // User profile data
+    // User profile data only (no stats)
     userProfile: null,
-    stats: {
-      totalSessions: 0,
-      totalFocusTime: 0,
-      dailyFocusTime: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      weeklyGoal: 300,
-      weeklyProgress: 0,
-      achievements: []
-    },
     
     // Editing states
     isEditingDisplay: false,
@@ -44,7 +34,7 @@ const profileSlice = createSlice({
     }
   },
   reducers: {
-    // Existing reducers
+    // Profile editing reducers
     setIsEditingDisplay: (state, action) => {
       state.isEditingDisplay = action.payload;
     },
@@ -70,7 +60,7 @@ const profileSlice = createSlice({
       state.editedDisplayName = user.displayName || user.name || '';
       state.editedUsername = user.username || '';
       
-      // 🆕 Initialize user status from user data
+      // Initialize user status from user data
       state.userStatus = {
         presence: user.presence || { status: 'online', isManual: false },
         customStatus: user.customStatus || { text: '', emoji: '', isActive: false },
@@ -99,7 +89,7 @@ const profileSlice = createSlice({
       };
     },
     
-    // 🆕 Status management reducers
+    // Status management reducers
     setUserStatus: (state, action) => {
       state.userStatus = { ...state.userStatus, ...action.payload };
     },
@@ -116,11 +106,7 @@ const profileSlice = createSlice({
       state.userStatus.privacy = { ...state.userStatus.privacy, ...action.payload };
     },
     
-    // 🆕 Additional helper reducers
-    setStats: (state, action) => {
-      state.stats = { ...state.stats, ...action.payload };
-    },
-    
+    // Utility reducers
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -135,42 +121,12 @@ const profileSlice = createSlice({
     
     setCheckingUsername: (state, action) => {
       state.checkingUsername = action.payload;
-    },
-    
-    generateAchievements: (state, action) => {
-      const statsData = action.payload;
-      state.stats.achievements = [
-        {
-          id: 1,
-          name: "First Session",
-          icon: "🎯",
-          earned: (statsData.totalSessions || 0) > 0,
-        },
-        {
-          id: 2,
-          name: "7-Day Streak",
-          icon: "🔥",
-          earned: (statsData.longestStreak || 0) >= 7,
-        },
-        {
-          id: 3,
-          name: "50 Hours Total",
-          icon: "⏰",
-          earned: (statsData.totalFocusTime || 0) >= 3000,
-        },
-        {
-          id: 4,
-          name: "30-Day Warrior",
-          icon: "💪",
-          earned: (statsData.longestStreak || 0) >= 30,
-        },
-      ];
     }
   }
 });
 
 export const {
-  // Existing actions
+  // Profile editing actions
   setIsEditingDisplay,
   setIsEditingUsername,
   setEditedDisplayName,
@@ -180,19 +136,18 @@ export const {
   initializeProfile,
   resetProfile,
   
-  // 🆕 Status management actions
+  // Status management actions
   setUserStatus,
   updatePresence,
   updateCustomStatus,
   updatePrivacy,
   
-  // 🆕 Additional actions
-  setStats,
+  // Utility actions
   setLoading,
-  setSaving,
+  setSaving, // 🔥 This was missing!
   setUsernameAvailable,
-  setCheckingUsername,
-  generateAchievements
+  setCheckingUsername
 } = profileSlice.actions;
+
 
 export default profileSlice.reducer;

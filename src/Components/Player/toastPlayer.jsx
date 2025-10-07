@@ -3,10 +3,10 @@ import {
     Pause,
     Play,
     Music,
-    Settings,
     Maximize2,
 	Repeat1,
 	SkipForward,
+    Settings2,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import {
@@ -126,7 +126,7 @@ const ToastPlayer = ({
                             className="w-11 h-11 rounded-full bg-surface/50 hover:bg-primary/20 flex items-center justify-center transition-colors shadow-sm"
                             title="Audio settings"
                         >
-                            <Settings size={16} className="text-secondary hover:text-primary transition-colors" />
+                            <Settings2 size={16} className="text-secondary hover:text-primary transition-colors" />
                         </button>
 
                         {/* Compact View Button (if available) */}
@@ -239,7 +239,7 @@ const ToastPlayer = ({
                                 className="w-10 h-10 rounded-xl hover:bg-surface/50 flex items-center justify-center transition-colors"
                                 title="Open audio settings"
                             >
-                                <Settings size={16} className="text-secondary" />
+                                <Settings2 size={16} className="text-secondary" />
                             </button>
                         </div>
                     </div>

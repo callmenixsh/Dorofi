@@ -1,6 +1,6 @@
-// components/Profile/ProfileHeader.jsx
+// components/Profile/ProfileHeader.jsx - Fixed Logic with Original Styling
 import { useState, useEffect } from "react";
-import { User, Edit3, Save, X, LogOut, Check, AlertCircle } from "lucide-react";
+import { User, Edit3, Save, X, LogOut, Check } from "lucide-react";
 import apiService from "../../services/api.js";
 
 export default function ProfileHeader({ 
@@ -25,9 +25,9 @@ export default function ProfileHeader({
     const [usernameAvailable, setUsernameAvailable] = useState(null);
     const [checkingUsername, setCheckingUsername] = useState(false);
 
-    // Check username availability with debounce
+    // Only check username availability when actively editing username
     useEffect(() => {
-        if (!editedUsername || editedUsername.length < 3) {
+        if (!isEditingUsername || !editedUsername || editedUsername.length < 3) {
             setUsernameAvailable(null);
             return;
         }
@@ -38,7 +38,6 @@ export default function ProfileHeader({
                 const result = await apiService.checkUsername(editedUsername);
                 setUsernameAvailable(result.available);
             } catch (error) {
-                console.error('Username check failed:', error);
                 setUsernameAvailable(null);
             } finally {
                 setCheckingUsername(false);
@@ -46,7 +45,7 @@ export default function ProfileHeader({
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [editedUsername]);
+    }, [editedUsername, isEditingUsername]);
 
     const canChangeUsername = () => {
         if (!currentUser.usernameLastChanged) return true;
@@ -64,6 +63,25 @@ export default function ProfileHeader({
         const nextChange = new Date(currentUser.usernameLastChanged);
         nextChange.setDate(nextChange.getDate() + 60);
         return nextChange.toLocaleDateString();
+    };
+
+    const handleStartUsernameEdit = () => {
+        setIsEditingUsername(true);
+        setUsernameAvailable(null);
+        setError("");
+    };
+
+    const handleCancelUsernameEdit = () => {
+        setIsEditingUsername(false);
+        setEditedUsername(currentUser.username || "");
+        setUsernameAvailable(null);
+        setError("");
+    };
+
+    const handleCancelDisplayEdit = () => {
+        setIsEditingDisplay(false);
+        setEditedDisplayName(currentUser.displayName || currentUser.name || "");
+        setError("");
     };
 
     return (
@@ -93,7 +111,7 @@ export default function ProfileHeader({
 
                     {/* User Info */}
                     <div>
-                        {/* Display Name (Gmail name) */}
+                        {/* Display Name */}
                         {isEditingDisplay ? (
                             <div className="flex items-center gap-2 mb-1">
                                 <input
@@ -122,11 +140,7 @@ export default function ProfileHeader({
                                     )}
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        setIsEditingDisplay(false);
-                                        setEditedDisplayName(currentUser.displayName || currentUser.name || "");
-                                        setError("");
-                                    }}
+                                    onClick={handleCancelDisplayEdit}
                                     className="p-1 text-secondary hover:text-primary transition-colors"
                                     title="Cancel"
                                     disabled={saving}
@@ -196,12 +210,7 @@ export default function ProfileHeader({
                                     )}
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        setIsEditingUsername(false);
-                                        setEditedUsername(currentUser.username || "");
-                                        setUsernameAvailable(null);
-                                        setError("");
-                                    }}
+                                    onClick={handleCancelUsernameEdit}
                                     className="p-1 text-secondary hover:text-primary transition-colors"
                                     title="Cancel"
                                     disabled={saving}
@@ -216,7 +225,7 @@ export default function ProfileHeader({
                                 </p>
                                 {canChangeUsername() ? (
                                     <button
-                                        onClick={() => setIsEditingUsername(true)}
+                                        onClick={handleStartUsernameEdit}
                                         className="p-1 text-secondary hover:text-primary transition-colors"
                                         title="Edit username"
                                     >

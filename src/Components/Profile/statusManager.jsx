@@ -1,6 +1,6 @@
-// components/Profile/StatusManager.jsx - Fixed error handling
+// components/Profile/StatusManager.jsx - Compact Balanced Design
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Eye, EyeOff, Edit3, Check, X } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, Edit3, Check, X, Plus, Smile } from 'lucide-react';
 
 export default function StatusManager({ 
   user, 
@@ -17,21 +17,18 @@ export default function StatusManager({
     const dropdownRef = useRef(null);
 
     const presenceOptions = [
-        { id: 'online', label: 'Online', color: 'bg-green-500' },
+        { id: 'online', label: 'Available', color: 'bg-green-500' },
         { id: 'away', label: 'Away', color: 'bg-yellow-500' },
         { id: 'busy', label: 'Do Not Disturb', color: 'bg-red-500' },
         { id: 'invisible', label: 'Invisible', color: 'bg-gray-400' },
     ];
 
-    const commonEmojis = [
-        '😊', '😴', '📚', '💻', '☕', '🎵', '🎮', '🍕', 
-        '💪', '🧠', '🔥', '❤️', '🎉', '👀', '🤔', '😅'
-    ];
-
+    const quickEmojis = ['😊', '💻', '📚', '☕', '🎵', '😴', '💪', '🔥'];
     const quickStatuses = [
         { emoji: '📚', text: 'Studying' },
         { emoji: '💻', text: 'Working' },
-        { emoji: '☕', text: 'On break' },
+        { emoji: '☕', text: 'Break' },
+        { emoji: '🎵', text: 'Music' },
     ];
 
     const currentPresence = user.presence?.status || 'online';
@@ -50,22 +47,18 @@ export default function StatusManager({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // 🔧 Fixed handlers with better error handling
     const handlePresenceChange = async (newStatus) => {
         try {
-            // Update UI immediately for better UX
             onStatusUpdate({ 
                 presence: { ...user.presence, status: newStatus, isManual: true } 
             });
             setShowDropdown(false);
             
-            // Then try to update on server
             if (updatePresenceStatus) {
                 await updatePresenceStatus(newStatus);
             }
         } catch (error) {
             console.error('Failed to update presence:', error);
-            // UI is already updated, no need to revert
         }
     };
 
@@ -73,7 +66,6 @@ export default function StatusManager({
         try {
             setSaving(true);
             
-            // Update UI immediately
             onStatusUpdate({
                 customStatus: {
                     text: status.text,
@@ -86,7 +78,6 @@ export default function StatusManager({
             setCustomEmoji(status.emoji);
             setShowDropdown(false);
             
-            // Then try to update on server
             if (updateUserCustomStatus) {
                 await updateUserCustomStatus({
                     text: status.text,
@@ -106,7 +97,6 @@ export default function StatusManager({
             setSaving(true);
             const isActive = !!(customText.trim() || customEmoji);
             
-            // Update UI immediately
             onStatusUpdate({
                 customStatus: {
                     text: customText.trim(),
@@ -118,7 +108,6 @@ export default function StatusManager({
             setIsEditingCustom(false);
             setShowDropdown(false);
             
-            // Then try to update on server
             if (updateUserCustomStatus) {
                 await updateUserCustomStatus({
                     text: customText.trim(),
@@ -135,13 +124,11 @@ export default function StatusManager({
 
     const clearStatus = async () => {
         try {
-            // Update UI immediately
             onStatusUpdate({ customStatus: { text: '', emoji: '', isActive: false } });
             setCustomText('');
             setCustomEmoji('');
             setShowDropdown(false);
             
-            // Then try to update on server
             if (updateUserCustomStatus) {
                 await updateUserCustomStatus({ text: '', emoji: '', isActive: false });
             }
@@ -154,12 +141,10 @@ export default function StatusManager({
         try {
             const newValue = !showLastSeen;
             
-            // Update UI immediately
             onStatusUpdate({
                 privacy: { ...user.privacy, showLastSeen: newValue }
             });
             
-            // Then try to update on server
             if (updatePrivacySettings) {
                 await updatePrivacySettings({ showLastSeen: newValue });
             }
@@ -168,15 +153,11 @@ export default function StatusManager({
         }
     };
 
-    const handleEmojiSelect = (emoji) => {
-        setCustomEmoji(emoji);
-    };
-
     const getCurrentStatusDisplay = () => {
         const presenceOption = presenceOptions.find(opt => opt.id === currentPresence);
         const statusText = hasCustomStatus 
             ? `${user.customStatus.emoji} ${user.customStatus.text}`
-            : presenceOption?.label || 'Online';
+            : presenceOption?.label || 'Available';
         
         return {
             text: statusText,
@@ -188,41 +169,49 @@ export default function StatusManager({
 
     return (
         <div className="relative mb-6" ref={dropdownRef}>
-            {/* Your existing JSX - exactly the same */}
-            <div className="bg-surface rounded-lg p-2">
+            {/* Main Status Card */}
+            <div className="bg-surface rounded-xl p-4 border border-background shadow-sm hover:shadow-md transition-all duration-300">
                 <div className="flex items-center justify-between">
+                    {/* Status Button */}
                     <button 
                         onClick={() => setShowDropdown(!showDropdown)}
-                        className="flex items-center gap-2 flex-1 hover:bg-background rounded px-2 py-1 transition-colors"
+                        className="flex items-center gap-3 flex-1 hover:bg-background/50 rounded-lg px-3 py-2 transition-all group"
                     >
-                        <div className={`w-3 h-3 ${currentStatus.color} rounded-full`} />
-                        <span className="text-sm text-primary truncate">
-                            {currentStatus.text}
-                        </span>
+                        <div className="relative">
+                            <div className={`w-3 h-3 ${currentStatus.color} rounded-full shadow-sm`} />
+                            {hasCustomStatus && (
+                                <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+                            )}
+                        </div>
+                        <div className="text-left flex-1">
+                            <div className="text-sm font-medium text-primary truncate">
+                                {currentStatus.text}
+                            </div>
+                        </div>
                         <ChevronDown 
-                            size={14} 
-                            className={`text-secondary transition-transform ml-auto ${
+                            size={16} 
+                            className={`text-secondary transition-all duration-300 group-hover:text-primary ${
                                 showDropdown ? 'rotate-180' : ''
                             }`} 
                         />
                     </button>
                     
-                    <div className="flex items-center gap-1.5 ml-2 p-3">
+                    {/* Privacy Toggle */}
+                    <div className="flex items-center gap-2 ml-4 pl-4 border-l border-background">
                         {showLastSeen ? (
-                            <Eye size={12} className="text-secondary" />
+                            <Eye size={14} className="text-green-500" />
                         ) : (
-                            <EyeOff size={12} className="text-secondary" />
+                            <EyeOff size={14} className="text-gray-400" />
                         )}
-                        <span className="text-xs text-secondary">Last seen</span>
                         <button
                             onClick={toggleLastSeen}
-                            className={`relative inline-flex h-3.5 w-6 items-center rounded-full transition-colors ${
+                            className={`relative inline-flex h-4 w-7 items-center rounded-full transition-all ${
                                 showLastSeen ? 'bg-primary' : 'bg-gray-300'
                             }`}
                         >
                             <span
-                                className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
-                                    showLastSeen ? 'translate-x-3' : 'translate-x-0.5'
+                                className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-sm transition-transform ${
+                                    showLastSeen ? 'translate-x-3.5' : 'translate-x-0.5'
                                 }`}
                             />
                         </button>
@@ -230,133 +219,140 @@ export default function StatusManager({
                 </div>
             </div>
             
-            {/* Keep all your existing dropdown JSX exactly the same */}
+            {/* Compact Dropdown */}
             {showDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-background rounded-lg shadow-lg z-50 p-3">
-                    {/* Presence options - In a grid */}
-                    <div className="mb-3">
-                        <p className="text-xs text-secondary font-medium mb-2">STATUS</p>
-                        <div className="grid grid-cols-4 gap-1">
-                            {presenceOptions.map((option) => (
-                                <button
-                                    key={option.id}
-                                    onClick={() => handlePresenceChange(option.id)}
-                                    className={`flex items-center gap-2 px-2 py-2 rounded text-sm transition-colors ${
-                                        currentPresence === option.id
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'hover:bg-background text-secondary'
-                                    }`}
-                                >
-                                    <div className={`w-2.5 h-2.5 ${option.color} rounded-full`} />
-                                    <span className="text-xs">{option.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    <div className="border-t border-background pt-3">
-                        {/* Custom status section */}
-                        {!isEditingCustom ? (
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-xs text-secondary font-medium">CUSTOM STATUS</p>
-                                    {hasCustomStatus && (
-                                        <button 
-                                            onClick={clearStatus}
-                                            className="text-xs text-red-500 hover:text-red-600"
-                                        >
-                                            Clear
-                                        </button>
-                                    )}
-                                </div>
-                                
-                                <button
-                                    onClick={() => setIsEditingCustom(true)}
-                                    className="w-full flex items-center gap-2 p-2 hover:bg-background rounded text-sm text-left mb-2"
-                                >
-                                    <Edit3 size={14} className="text-secondary" />
-                                    <span className="text-secondary">
-                                        {hasCustomStatus 
-                                            ? `${user.customStatus.emoji} ${user.customStatus.text}`
-                                            : 'Set a custom status'
-                                        }
-                                    </span>
-                                </button>
-
-                                <div className="flex gap-1">
-                                    {quickStatuses.map((status, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => handleQuickStatus(status)}
-                                            disabled={saving}
-                                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 hover:bg-background rounded text-xs transition-colors disabled:opacity-50"
-                                            title={status.text}
-                                        >
-                                            <span>{status.emoji}</span>
-                                            <span className="text-secondary truncate">{status.text}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <p className="text-xs text-secondary font-medium">CUSTOM STATUS</p>
-                                
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 flex items-center justify-center bg-background border border-background rounded text-sm">
-                                        {customEmoji || '😀'}
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={customText}
-                                        onChange={(e) => setCustomText(e.target.value)}
-                                        placeholder="What's your status?"
-                                        className="flex-1 px-2 py-1.5 text-sm border border-background rounded bg-background text-primary focus:outline-none focus:border-primary"
-                                        maxLength="30"
-                                        autoFocus
-                                    />
-                                </div>
-
-                                <div className="flex flex-wrap gap-1 p-2 bg-background rounded">
-                                    {commonEmojis.map((emoji, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => handleEmojiSelect(emoji)}
-                                            className={`w-6 h-6 text-sm hover:bg-primary/10 rounded transition-colors flex items-center justify-center ${
-                                                customEmoji === emoji ? 'bg-primary/20 ring-1 ring-primary' : ''
-                                            }`}
-                                            title={`Select ${emoji}`}
-                                        >
-                                            {emoji}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="flex justify-end gap-2">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-background rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="p-3">
+                        {/* Presence Options */}
+                        <div className="mb-3">
+                            <h3 className="text-xs font-medium text-secondary mb-2">Status</h3>
+                            <div className="grid grid-cols-2 gap-1">
+                                {presenceOptions.map((option) => (
                                     <button
-                                        onClick={() => {
-                                            setIsEditingCustom(false);
-                                            setCustomText(user.customStatus?.text || '');
-                                            setCustomEmoji(user.customStatus?.emoji || '');
-                                        }}
-                                        className="p-1.5 text-secondary hover:text-primary"
+                                        key={option.id}
+                                        onClick={() => handlePresenceChange(option.id)}
+                                        className={`flex items-center gap-2 px-2 py-2 rounded text-xs transition-all ${
+                                            currentPresence === option.id
+                                                ? 'bg-primary/10 text-primary'
+                                                : 'hover:bg-background text-secondary'
+                                        }`}
                                     >
-                                        <X size={14} />
+                                        <div className={`w-2 h-2 ${option.color} rounded-full`} />
+                                        <span className="truncate">{option.label}</span>
                                     </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Custom Status */}
+                        <div className="border-t border-background pt-3">
+                            {!isEditingCustom ? (
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="text-xs font-medium text-secondary">Message</h3>
+                                        {hasCustomStatus && (
+                                            <button 
+                                                onClick={clearStatus}
+                                                className="text-xs text-red-500 hover:text-red-600"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                    
                                     <button
-                                        onClick={handleSaveCustom}
-                                        disabled={saving}
-                                        className="p-1.5 text-green-500 hover:text-green-600 disabled:opacity-50"
+                                        onClick={() => setIsEditingCustom(true)}
+                                        className="w-full flex items-center gap-2 p-2 hover:bg-background rounded text-sm text-left mb-2"
                                     >
-                                        {saving ? (
-                                            <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />
+                                        {hasCustomStatus ? (
+                                            <>
+                                                <span>{user.customStatus.emoji}</span>
+                                                <span className="text-primary flex-1 truncate">{user.customStatus.text}</span>
+                                                <Edit3 size={12} className="text-secondary" />
+                                            </>
                                         ) : (
-                                            <Check size={14} />
+                                            <>
+                                                <Plus size={14} className="text-secondary" />
+                                                <span className="text-secondary">Set message</span>
+                                            </>
                                         )}
                                     </button>
+
+                                    {/* Quick Status */}
+                                    <div className="grid grid-cols-2 gap-1">
+                                        {quickStatuses.map((status, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleQuickStatus(status)}
+                                                className="flex items-center gap-1 px-2 py-1.5 hover:bg-background rounded text-xs"
+                                            >
+                                                <span className="text-sm">{status.emoji}</span>
+                                                <span className="text-secondary truncate">{status.text}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xs font-medium text-secondary">Edit Message</h3>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => {
+                                                    setIsEditingCustom(false);
+                                                    setCustomText(user.customStatus?.text || '');
+                                                    setCustomEmoji(user.customStatus?.emoji || '');
+                                                }}
+                                                className="p-1 text-secondary hover:text-primary"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                            <button
+                                                onClick={handleSaveCustom}
+                                                disabled={saving}
+                                                className="p-1 text-white bg-primary hover:bg-primary/90 rounded disabled:opacity-50"
+                                            >
+                                                {saving ? (
+                                                    <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+                                                ) : (
+                                                    <Check size={12} />
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-background border border-background rounded flex items-center justify-center text-lg">
+                                            {customEmoji || <Smile size={14} className="text-secondary" />}
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={customText}
+                                            onChange={(e) => setCustomText(e.target.value)}
+                                            placeholder="Your message"
+                                            className="flex-1 px-2 py-1.5 text-sm border border-background rounded bg-background text-primary focus:outline-none focus:border-primary"
+                                            maxLength="30"
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    {/* Emoji Row */}
+                                    <div className="flex gap-1 justify-center">
+                                        {quickEmojis.map((emoji, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => setCustomEmoji(emoji)}
+                                                className={`w-6 h-6 text-sm hover:bg-background rounded flex items-center justify-center ${
+                                                    customEmoji === emoji ? 'bg-primary/20' : ''
+                                                }`}
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

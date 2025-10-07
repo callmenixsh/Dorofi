@@ -17,9 +17,9 @@
   --theme-primary: #a470ff;
   --theme-secondary: #ff5aa4;
   --theme-accent: #2563EB;
-  --theme-background: #FFFFFF;
+  --theme-background: #fbf6ff;
   --theme-invert: #000000;
-  --theme-surface: #F8FAFC;
+  --theme-surface: #f5e9ff;
 }
 
 [data-theme="celestial-dark"] {
@@ -36,7 +36,7 @@
   --theme-primary: #0891b2;
   --theme-secondary: #0ea5e9;
   --theme-accent: #059669;
-  --theme-background: #FFFFFF;
+  --theme-background: #f1feff;
   --theme-invert: #000000;
   --theme-surface: #F0F9FF;
 }
@@ -74,9 +74,9 @@
   --theme-primary: #dc2626;
   --theme-secondary: #ea580c;
   --theme-accent: #f59e0b;
-  --theme-background: #FFFFFF;
+  --theme-background: #fff6f6;
   --theme-invert: #000000; 
-  --theme-surface: #FEF2F2;
+  --theme-surface: #ffe6e6;
 }
 
 [data-theme="flame-dark"] {
@@ -88,7 +88,6 @@
   --theme-surface: #2d1b1b;
 }
 
-/* 🎵 UNIFIED VOLUME SLIDER - One style for all */
 .volume-slider,
 .modal-volume-slider,
 .white-noise-slider {
