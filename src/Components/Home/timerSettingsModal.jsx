@@ -169,17 +169,20 @@ const TimerSettingsModal = () => {
 		}
 	};
 
-	const deletePreset = async (presetId) => {
-		try {
-			const response = await apiService.deleteTimerPreset(presetId);
-			if (response.success) {
-				await loadPresetsFromBackend();
-			}
-		} catch (error) {
-			console.error("Failed to delete preset:", error);
-			alert(error.message || "Failed to delete preset");
-		}
-	};
+const deletePreset = async (presetId) => {
+    try {
+        const response = await apiService.deleteTimerPreset(presetId);
+        if (response.success) {
+            await loadPresetsFromBackend();
+            console.log('✅ Preset deleted successfully');
+        }
+    } catch (error) {
+        console.error("Failed to delete preset:", error);
+        alert(error.message || "Failed to delete preset");
+    }
+};
+
+
 
 	// 🔥 FIXED - Apply preset with all 4 fields
 	const applyPreset = (preset) => {
@@ -523,11 +526,6 @@ const TimerSettingsModal = () => {
 															<div className="flex-1 min-w-0">
 																<h4 className="font-medium text-primary text-xs truncate">
 																	{preset.name}
-																	{preset.isDefault && (
-																		<span className="ml-1 text-xs text-secondary/60">
-																			(Default)
-																		</span>
-																	)}
 																</h4>
 																{/* Show all 4 values in preset display */}
 																<p className="text-xs text-secondary">
@@ -549,13 +547,10 @@ const TimerSettingsModal = () => {
 																>
 																	Apply
 																</button>
-																{/* 🔥 CHANGED: Remove isDefault check - allow deletion of all presets */}
 																<button
 																	onClick={() => deletePreset(preset._id)}
 																	className="p-1 text-secondary hover:text-accent hover:bg-accent/10 rounded transition-colors"
-																	title={`Delete ${
-																		preset.isDefault ? "default " : ""
-																	}preset`}
+																	title={`Delete preset`}
 																>
 																	<Trash2 size={10} />
 																</button>

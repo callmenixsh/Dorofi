@@ -99,6 +99,72 @@ const UniversalMusicPlayer = () => {
     if (newVol > 0 && isMuted) setIsMuted(false);
   };
 
+  // 🎵 KEYBOARD CONTROLS - Music + White Noise
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Don't trigger shortcuts when typing in inputs
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+      
+      switch (key) {
+        case 'm': // M - Play/Pause music
+          event.preventDefault();
+          handlePlayPause();
+          break;
+          
+        case 'n': // N - Skip to next track
+          event.preventDefault();
+          handleSkip('next');
+          break;
+
+        // 🌧️ WHITE NOISE CONTROLS
+        case '1': // 1 - Toggle first white noise (usually Rain)
+          event.preventDefault();
+          if (whiteNoiseTracks[0]) {
+            dispatch(toggleWhiteNoise({ name: whiteNoiseTracks[0].name }));
+            console.log(`🌧️ Toggled ${whiteNoiseTracks[0].name} via keyboard (1)`);
+          }
+          break;
+          
+        case '2': // 2 - Toggle second white noise (usually Underwater)
+          event.preventDefault();
+          if (whiteNoiseTracks[1]) {
+            dispatch(toggleWhiteNoise({ name: whiteNoiseTracks[1].name }));
+            console.log(`🌊 Toggled ${whiteNoiseTracks[1].name} via keyboard (2)`);
+          }
+          break;
+          
+        case '3': // 3 - Toggle third white noise (usually Waves)
+          event.preventDefault();
+          if (whiteNoiseTracks[2]) {
+            dispatch(toggleWhiteNoise({ name: whiteNoiseTracks[2].name }));
+            console.log(`🌊 Toggled ${whiteNoiseTracks[2].name} via keyboard (3)`);
+          }
+          break;
+          
+        case '4': // 4 - Toggle fourth white noise (usually Chirp)
+          event.preventDefault();
+          if (whiteNoiseTracks[3]) {
+            dispatch(toggleWhiteNoise({ name: whiteNoiseTracks[3].name }));
+            console.log(`🐦 Toggled ${whiteNoiseTracks[3].name} via keyboard (4)`);
+          }
+          break;
+          
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [musicEnabled, isRepeating, whiteNoiseTracks]); // Added whiteNoiseTracks to dependencies
+
   const currentMusicTrack = musicTracks.find(track => track.name === currentTrack);
   
   const allowedCompactPages = ['/', '/rooms'];

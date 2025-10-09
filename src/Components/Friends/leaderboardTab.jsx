@@ -1,4 +1,4 @@
-// components/friends/LeaderboardTab.jsx - Updated with optimal stats for each category
+// components/friends/LeaderboardTab.jsx - FIXED IST TIMEZONE COUNTDOWN
 import { 
     Crown, Medal, Award, Trophy, User, Calendar, Clock, Globe, 
     Flame, Target, Star
@@ -8,6 +8,13 @@ import { useState } from 'react';
 export default function LeaderboardTab({ user, friends, loading }) {
     const [imageErrors, setImageErrors] = useState({});
     const [activeLeaderboard, setActiveLeaderboard] = useState('daily'); 
+
+    // 🔥 FIXED: Helper function to get IST time (GMT+5:30)
+// 🔥 FIXED: Get IST time correctly without adding offset to local time
+const getISTTime = () => {
+    // Create a date in IST timezone directly
+    return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+};
 
     // Combine user and friends
     const allParticipants = [user, ...friends].filter(participant => participant);
@@ -212,12 +219,12 @@ export default function LeaderboardTab({ user, friends, loading }) {
         }
     };
 
+    // 🔥 FIXED: Use IST timezone for countdown calculations
     const getLeaderboardInfo = () => {
-        const now = new Date();
-        const istOffset = 5.5 * 60 * 60 * 1000;
-        const istTime = new Date(now.getTime() + istOffset);
+        const istTime = getISTTime(); // Use IST instead of local time
         
         if (activeLeaderboard === 'daily') {
+            // Calculate next day reset at midnight IST
             const tomorrow = new Date(istTime);
             tomorrow.setDate(tomorrow.getDate() + 1);
             tomorrow.setHours(0, 0, 0, 0);
@@ -231,7 +238,7 @@ export default function LeaderboardTab({ user, friends, loading }) {
                 resetInfo: (
                     <span className="flex items-center justify-center gap-1 text-secondary">
                         <Clock size={12} />
-                        Resets in {hoursLeft}h {minutesLeft}m
+                        Resets in {hoursLeft}h {minutesLeft}m (IST)
                     </span>
                 ),
                 tipInfo: (
@@ -242,6 +249,7 @@ export default function LeaderboardTab({ user, friends, loading }) {
                 )
             };
         } else if (activeLeaderboard === 'weekly') {
+            // Calculate next Monday at midnight IST
             const nextMonday = new Date(istTime);
             const daysUntilMonday = (8 - nextMonday.getDay()) % 7;
             const actualDaysUntilMonday = daysUntilMonday === 0 ? 7 : daysUntilMonday;
@@ -260,7 +268,7 @@ export default function LeaderboardTab({ user, friends, loading }) {
                 resetInfo: (
                     <span className="flex items-center justify-center gap-1 text-secondary">
                         <Calendar size={12} />
-                        Resets in {timeString}
+                        Resets in {timeString} (IST)
                     </span>
                 ),
                 tipInfo: (
@@ -449,7 +457,7 @@ export default function LeaderboardTab({ user, friends, loading }) {
                     </div>
                 )}
 
-                {/* Leaderboard Footer Info */}
+                {/* 🔥 FIXED: Leaderboard Footer Info with IST timezone */}
                 <div className="p-4 bg-background/50 border-t border-background rounded-b-lg">
                     <div className="text-center text-xs space-y-1">
                         {leaderboardInfo.resetInfo && <p>{leaderboardInfo.resetInfo}</p>}

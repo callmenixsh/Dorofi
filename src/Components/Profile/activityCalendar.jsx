@@ -1,4 +1,4 @@
-// components/Profile/ActivityCalendar.jsx - Clean Production Version
+// components/Profile/ActivityCalendar.jsx - Complete Fixed Version with Debug
 import { useState, useEffect } from 'react';
 import { BarChart3, Clock, Calendar, TrendingUp, Loader2 } from 'lucide-react';
 import apiService from '../../services/api';
@@ -17,21 +17,71 @@ export default function ActivityCalendar({ stats }) {
                 setIsLoading(true);
                 setError(null);
                 
-                const result = await apiService.getMonthlyActivity();
+                console.log("🔍 Fetching unified stats for ActivityCalendar...");
+                const result = await apiService.getUnifiedStats();
                 
-                if (result?.success && result?.monthlyData) {
-                    // Convert focus time from seconds to minutes
-                    const processedData = result.monthlyData.map(month => ({
-                        ...month,
-                        focusTime: Math.floor((month.focusTime || 0) / 60) // Convert to minutes
-                    }));
+                // 🔍 DEBUG: Full response
+                console.log("🔍 DEBUG - Full unified stats result:", JSON.stringify(result, null, 2));
+                
+                if (result?.success && result?.stats?.timer) {
+                    const timerStats = result.stats.timer;
+                    console.log("🔍 DEBUG - Timer stats:", timerStats);
+                    console.log("🔍 DEBUG - Monthly history:", timerStats.monthlyHistory);
                     
+                    const monthlyHistory = timerStats.monthlyHistory || [];
+                    
+                    if (monthlyHistory.length === 0) {
+                        console.log("⚠️ No monthly history found - showing empty state");
+                        setMonthlyData([]);
+                        return;
+                    }
+                    
+                    // Process the monthly history from User schema
+                    const processedData = [];
+                    const now = new Date();
+                    const currentYear = now.getFullYear();
+                    const currentMonth = now.getMonth() + 1; // JS months are 0-based
+                    
+                    console.log("🔍 Processing monthly data for:", { currentYear, currentMonth });
+                    
+                    // Generate last 6 months
+                    for (let i = 5; i >= 0; i--) {
+                        const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                        const targetYear = targetDate.getFullYear();
+                        const targetMonth = targetDate.getMonth() + 1;
+                        
+                        // Find corresponding data from backend
+                        const monthEntry = monthlyHistory.find(entry => 
+                            entry.year === targetYear && entry.month === targetMonth
+                        );
+                        
+                        console.log(`🔍 Month ${targetYear}-${targetMonth}:`, monthEntry);
+                        
+                        // Month names
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                              'July', 'August', 'September', 'October', 'November', 'December'];
+                        
+                        processedData.push({
+                            year: targetYear,
+                            month: targetMonth,
+                            name: `${fullMonthNames[targetMonth - 1]} ${targetYear}`,
+                            shortName: monthNames[targetMonth - 1],
+                            focusTime: monthEntry?.totalFocusTime || 0, // Already in minutes
+                            sessions: monthEntry?.totalSessions || 0,
+                            isCurrentMonth: targetYear === currentYear && targetMonth === currentMonth
+                        });
+                    }
+                    
+                    console.log("🔍 Final processed data:", processedData);
                     setMonthlyData(processedData);
                 } else {
+                    console.log("❌ Invalid response structure:", result);
                     setError('Invalid data format received');
                 }
             } catch (error) {
-                console.error('Failed to fetch monthly activity:', error);
+                console.error('❌ Failed to fetch monthly activity:', error);
                 setError(`Failed to load activity data: ${error.message}`);
             } finally {
                 setIsLoading(false);
@@ -51,11 +101,11 @@ export default function ActivityCalendar({ stats }) {
     };
     
     // Get max values for relative sizing
-    const maxFocusTime = Math.max(...monthlyData.map(m => m.focusTime || 0));
-    const maxSessions = Math.max(...monthlyData.map(m => m.sessions || 0));
+    const maxFocusTime = Math.max(...monthlyData.map(m => m.focusTime || 0), 1);
+    const maxSessions = Math.max(...monthlyData.map(m => m.sessions || 0), 1);
     
     const getBarHeight = (value, maxValue) => {
-        if (maxValue === 0) return 12;
+        if (maxValue === 0 || value === 0) return 12;
         const percentage = (value / maxValue) * 100;
         return Math.max((percentage / 100) * 180, 12);
     };
@@ -95,7 +145,10 @@ export default function ActivityCalendar({ stats }) {
         );
     }
 
-    if (monthlyData.length === 0) {
+    // Check if we have any data at all
+    const hasAnyData = monthlyData.some(month => month.focusTime > 0 || month.sessions > 0);
+    
+    if (!hasAnyData) {
         return (
             <div className="bg-surface rounded-lg p-6 mb-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -106,6 +159,7 @@ export default function ActivityCalendar({ stats }) {
                     <div>
                         <div className="text-secondary mb-2">No activity data available yet.</div>
                         <div className="text-sm text-secondary">Complete some timer sessions to see your progress!</div>
+                        <div className="text-xs text-gray-400 mt-2">Debug: {monthlyData.length} months loaded</div>
                     </div>
                 </div>
             </div>

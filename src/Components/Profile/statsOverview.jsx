@@ -1,4 +1,4 @@
-// components/Profile/StatsOverview.jsx - Fixed to fetch dailySessions properly
+// components/Profile/StatsOverview.jsx - FIXED
 import { Clock, Target, TrendingUp, Award, Calendar, BarChart3, Zap } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
@@ -31,18 +31,18 @@ export default function StatsOverview() {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { 
             month: 'short', 
-            day: 'numeric'
+            day: 'numeric' 
         });
     };
 
-    // Combine stats from both profile and timer sections
+    // 🔥 FIXED: Use correct field mapping
     const stats = {
-        // Daily stats from timer
+        // Daily stats from timer (FIXED FIELD NAMES)
         dailyFocusTime: timerStats?.dailyFocusTime || 0,
         dailySessions: timerStats?.dailySessions || 0,
         currentStreak: timerStats?.currentStreak || 0,
         
-        // Profile stats
+        // Profile stats (these are correct)
         totalFocusTime: profileStats?.totalFocusTime || 0,
         totalSessions: profileStats?.totalSessions || 0,
         longestStreak: profileStats?.longestStreak || 0,

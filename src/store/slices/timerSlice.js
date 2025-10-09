@@ -1,9 +1,9 @@
-// store/slices/timerSlice.js - Updated with simple achievement check
+// store/slices/timerSlice.js - FINAL FIXED VERSION
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToday, getTodayKey } from "../../utils/dateUtils";
 import api from "../../services/api";
 
-// 🔥 Import fetchUnifiedStats for reliable refresh
+// Import fetchUnifiedStats for reliable refresh
 import { fetchUnifiedStats } from "./statsSlice";
 
 // Async thunks for backend communication
@@ -57,7 +57,6 @@ export const syncSessionToBackend = createAsyncThunk(
     }
 );
 
-// Keep existing completeSessionWithStatsRefresh for compatibility
 export const completeSessionWithStatsRefresh = createAsyncThunk(
     "timer/completeSessionWithStatsRefresh",
     async (sessionData, { dispatch, getState, rejectWithValue }) => {
@@ -65,17 +64,17 @@ export const completeSessionWithStatsRefresh = createAsyncThunk(
             const { timer } = getState();
 
             if (timer?.isLoggedIn) {
-                console.log("🎯 Starting session completion with stats refresh...");
+                console.log("🎯 Starting session completion...");
 
                 // 1. Sync the session to backend
                 const sessionResult = await dispatch(
                     syncSessionToBackend(sessionData)
                 ).unwrap();
 
-                // 2. Wait a moment for backend processing
-                await new Promise((resolve) => setTimeout(resolve, 500));
+                // 2. Wait for backend processing
+                await new Promise((resolve) => setTimeout(resolve, 1000));
 
-                // 3. 🏆 Check achievements silently
+                // 3. Check achievements silently
                 try {
                     await api.checkAchievements();
                     console.log("🏆 Achievement check completed silently");
@@ -83,11 +82,10 @@ export const completeSessionWithStatsRefresh = createAsyncThunk(
                     console.log("🏆 Achievement check failed (non-critical):", error.message);
                 }
 
-                // 4. Refresh unified stats immediately
-                await dispatch(fetchUnifiedStats()).unwrap();
-
-                console.log("🎯 Session completed and stats refreshed successfully!");
-                return { sessionResult };
+                console.log("🎯 Session completed successfully!");
+                return { 
+                    sessionResult
+                };
             } else {
                 return null;
             }
@@ -140,7 +138,7 @@ const loadLocalStorage = () => {
         if (saved) {
             const data = JSON.parse(saved);
             return {
-                totalFocusTime: data.totalFocusTime || 0,
+                totalFocusTime: data.totalFocusTime > 1000 ? Math.floor(data.totalFocusTime / 60) : (data.totalFocusTime || 0),
                 sessions: data.sessions || 0,
                 streak: data.streak || 0,
                 lastActiveDate: data.lastActiveDate || getToday(),
@@ -159,7 +157,7 @@ const loadLocalStorage = () => {
 };
 
 const saveLocalStorage = (state) => {
-    if (state.isLoggedIn) return; // Don't save if logged in
+    if (state.isLoggedIn) return;
 
     try {
         const todayKey = getTodayKey();
@@ -195,7 +193,7 @@ const initialState = {
         initialTimeLeft: null,
     },
 
-    // Local stats (for offline users)
+    // Local stats now in minutes
     ...loadLocalStorage(),
 
     // Backend sync
@@ -212,7 +210,6 @@ const initialState = {
     showSettings: false,
 };
 
-// Set initial timeLeft based on settings
 initialState.timeLeft = initialState.settings.workDuration * 60;
 
 const timerSlice = createSlice({
@@ -255,7 +252,6 @@ const timerSlice = createSlice({
                 initialTimeLeft: null,
             };
 
-            // Reset timeLeft based on current mode
             const durations = {
                 work: state.settings.workDuration * 60,
                 shortBreak: state.settings.shortBreakDuration * 60,
@@ -272,17 +268,6 @@ const timerSlice = createSlice({
                     Math.ceil((state.currentSession.expectedEndTime - now) / 1000)
                 );
 
-                console.log("⏰ Timer sync:", {
-                    expectedEnd: new Date(
-                        state.currentSession.expectedEndTime
-                    ).toLocaleTimeString(),
-                    currentTime: new Date(now).toLocaleTimeString(),
-                    currentTimeLeft: state.timeLeft,
-                    shouldHaveTimeLeft: shouldHaveTimeLeft,
-                    difference: Math.abs(state.timeLeft - shouldHaveTimeLeft),
-                });
-
-                // Only update if there's a significant difference (more than 2 seconds)
                 if (Math.abs(state.timeLeft - shouldHaveTimeLeft) > 2) {
                     console.log(
                         "🔄 Correcting timer from",
@@ -293,7 +278,6 @@ const timerSlice = createSlice({
                     state.timeLeft = shouldHaveTimeLeft;
                 }
 
-                // Complete session if time is up
                 if (state.timeLeft === 0) {
                     console.log("⏰ Timer completed via sync");
                     timerSlice.caseReducers.completeSession(state);
@@ -310,27 +294,40 @@ const timerSlice = createSlice({
             }
         },
 
+        // 🔥 FIXED: Always update local state immediately for UI responsiveness
         completeSession: (state) => {
             const wasWorkSession = state.mode === "work";
 
             if (wasWorkSession) {
-                // Get actual session duration
                 const sessionDuration =
                     state.currentSession.initialTimeLeft !== null
                         ? state.currentSession.initialTimeLeft
                         : state.settings.workDuration * 60;
 
+                const sessionMinutes = Math.floor(sessionDuration / 60);
+
                 console.log("🏁 SESSION COMPLETE:", {
                     sessionDuration,
-                    sessionDurationMinutes: sessionDuration / 60,
+                    sessionMinutes,
                     isLoggedIn: state.isLoggedIn,
+                    beforeSessions: state.sessions,
+                    beforeFocusTime: state.totalFocusTime
                 });
 
-                // Update local stats only if not logged in
-                if (!state.isLoggedIn) {
-                    state.totalFocusTime += sessionDuration;
-                    state.sessions += 1;
+                // 🔥 CRITICAL FIX: ALWAYS update local state immediately
+                // This ensures UI shows correct values instantly
+                state.totalFocusTime += sessionMinutes;
+                state.sessions += 1;
 
+                console.log("📊 AFTER LOCAL UPDATE:", {
+                    sessions: state.sessions,
+                    totalFocusTime: state.totalFocusTime,
+                    sessionMinutes: sessionMinutes
+                });
+
+                // Handle different user states
+                if (!state.isLoggedIn) {
+                    // Offline users - handle streak and localStorage
                     const today = getToday();
                     if (state.lastActiveDate !== today) {
                         const yesterday = new Date(today);
@@ -342,21 +339,18 @@ const timerSlice = createSlice({
                         }
                         state.lastActiveDate = today;
                     }
-
                     saveLocalStorage(state);
-                }
-
-                state.currentSession.completedPomodoros += 1;
-
-                // Set backend sync flag for logged in users
-                if (state.isLoggedIn) {
+                } else {
+                    // 🔥 Online users - set sync flag for backend sync
+                    console.log("🌐 ONLINE - Setting sync flag for backend");
                     state.needsBackendSync = {
-                        sessionDuration,
+                        sessionDuration, // Send seconds to backend
                         sessionType: "work",
                         timestamp: Date.now(),
                     };
-                    console.log("🔄 Setting backend sync flag:", state.needsBackendSync);
                 }
+
+                state.currentSession.completedPomodoros += 1;
 
                 // Mode switching logic
                 if (
@@ -422,7 +416,6 @@ const timerSlice = createSlice({
             state.settings = newSettings;
             saveSettingsToStorage(newSettings);
 
-            // Update timeLeft if timer is not running and duration changed
             if (!state.isRunning) {
                 const durationMap = {
                     work: "workDuration",
@@ -467,12 +460,10 @@ const timerSlice = createSlice({
         setLoggedInState: (state, action) => {
             state.isLoggedIn = action.payload;
             if (action.payload) {
-                // Clear local storage when logging in
                 const todayKey = getTodayKey();
                 localStorage.removeItem(`dorofi_timer_${todayKey}`);
                 console.log("🔑 User logged in, cleared localStorage");
             } else {
-                // Clear backend data when logging out
                 state.backendStats = null;
                 state.lastSyncDate = null;
                 state.needsBackendSync = null;
@@ -485,13 +476,43 @@ const timerSlice = createSlice({
             state.needsBackendSync = null;
         },
 
+        // 🔥 FIXED: Only update if backend values are higher (prevents going backwards)
         updateStatsFromBackend: (state, action) => {
-            console.log("📊 Updating stats from backend:", action.payload);
+            console.log("🔍 DEBUG - updateStatsFromBackend:", {
+                receivedDailySessions: action.payload?.dailySessions,
+                receivedDailyFocusTime: action.payload?.dailyFocusTime,
+                currentSessions: state.sessions,
+                currentFocusTime: state.totalFocusTime,
+                payload: action.payload
+            });
+            
             if (action.payload) {
                 state.backendStats = action.payload;
-                state.totalFocusTime = action.payload.dailyFocusTime || 0;
-                state.sessions = action.payload.dailySessions || 0;
+                
+                const oldSessions = state.sessions;
+                const oldFocusTime = state.totalFocusTime;
+                
+                // 🔥 PROTECTION: Only update if backend values are higher or equal
+                // This prevents the race condition from showing lower values
+                const backendSessions = action.payload.dailySessions || 0;
+                const backendFocusTime = action.payload.dailyFocusTime || 0;
+                
+                if (backendSessions >= state.sessions) {
+                    state.sessions = backendSessions;
+                }
+                
+                if (backendFocusTime >= state.totalFocusTime) {
+                    state.totalFocusTime = backendFocusTime;
+                }
+                
                 state.streak = action.payload.currentStreak || 0;
+                
+                console.log("🔄 STATS CHANGED:", {
+                    sessions: `${oldSessions} → ${state.sessions} (backend: ${backendSessions})`,
+                    focusTime: `${oldFocusTime} → ${state.totalFocusTime} (backend: ${backendFocusTime}) (minutes)`,
+                    streak: state.streak
+                });
+                
                 state.allTimeStats = {
                     totalFocusTime: action.payload.totalFocusTime || 0,
                     totalSessions: action.payload.totalSessions || 0,
@@ -508,7 +529,6 @@ const timerSlice = createSlice({
         setTimeLeftDirect: (state, action) => {
             state.timeLeft = action.payload;
 
-            // Complete session if time reaches 0
             if (state.timeLeft <= 0) {
                 console.log("⏰ Timer completed via direct time set");
                 timerSlice.caseReducers.completeSession(state);
@@ -518,7 +538,6 @@ const timerSlice = createSlice({
 
     extraReducers: (builder) => {
         builder
-            // fetchUserStats
             .addCase(fetchUserStats.pending, (state) => {
                 state.isLoading = true;
             })
@@ -535,17 +554,20 @@ const timerSlice = createSlice({
                 console.error("❌ Failed to fetch user stats:", action.payload);
             })
 
-            // syncSessionToBackend
             .addCase(syncSessionToBackend.pending, (state) => {
                 state.isLoading = true;
             })
             .addCase(syncSessionToBackend.fulfilled, (state, action) => {
                 state.isLoading = false;
+                
+                // Update stats from backend response if available
                 if (action.payload?.stats) {
+                    console.log("📊 Updating from session sync:", action.payload.stats);
                     timerSlice.caseReducers.updateStatsFromBackend(state, {
                         payload: action.payload.stats,
                     });
                 }
+                
                 state.needsBackendSync = null;
                 console.log("✅ Backend sync completed");
             })
@@ -554,7 +576,6 @@ const timerSlice = createSlice({
                 console.error("❌ Failed to sync session to backend:", action.payload);
             })
 
-            // completeSessionWithStatsRefresh
             .addCase(completeSessionWithStatsRefresh.pending, (state) => {
                 state.isLoading = true;
             })
@@ -562,14 +583,11 @@ const timerSlice = createSlice({
                 state.isLoading = false;
                 state.needsBackendSync = null;
                 state.sessionJustCompleted = Date.now();
-                console.log("✅ Session completed with stats refresh and achievements!");
+                console.log("✅ Session completed!");
             })
             .addCase(completeSessionWithStatsRefresh.rejected, (state, action) => {
                 state.isLoading = false;
-                console.error(
-                    "❌ Failed to complete session with stats refresh:",
-                    action.payload
-                );
+                console.error("❌ Failed to complete session:", action.payload);
             });
     },
 });

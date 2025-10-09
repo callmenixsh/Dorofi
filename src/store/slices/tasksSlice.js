@@ -1,4 +1,4 @@
-// store/slices/tasksSlice.js - Updated with clean backend sync + edit functionality
+// store/slices/tasksSlice.js - Fixed for New Schema
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
@@ -33,10 +33,9 @@ export const syncTaskToBackend = createAsyncThunk(
 
             switch (action) {
                 case 'add':
-                    // 🔥 CLEAN - Only send essential fields to backend
+                    // 🔥 FIXED: Send clean task data with 'name'
                     const cleanTask = {
-                        id: task.id,
-                        text: task.text
+                        name: task.name
                     };
                     return await api.addTask(cleanTask);
                 case 'update':
@@ -108,18 +107,17 @@ const tasksSlice = createSlice({
     reducers: {
         addTask: (state, action) => {
             const newTask = {
-                id: Date.now().toString(),
-                text: action.payload,
-                completed: false,
+                _id: Date.now().toString(), // 🔥 FIXED: Use '_id' for consistency
+                name: action.payload, // 🔥 FIXED: Use 'name'
+                isCompleted: false, // 🔥 FIXED: Use 'isCompleted'
                 isPinned: false,
-                // 🔥 FRONTEND ONLY - timestamps for local use
+                // Frontend only - timestamps for local use
                 createdAt: new Date().toISOString(),
             };
             
             state.tasks.push(newTask);
             
             if (state.isLoggedIn) {
-                // Auto-sync to backend (will be handled by TaskModal)
                 console.log('📝 Task added, will sync to backend');
             } else {
                 saveTasksToStorage(state.tasks);
@@ -127,9 +125,9 @@ const tasksSlice = createSlice({
         },
         
         toggleTask: (state, action) => {
-            const task = state.tasks.find(t => t.id === action.payload);
+            const task = state.tasks.find(t => t._id === action.payload);
             if (task) {
-                task.completed = !task.completed;
+                task.isCompleted = !task.isCompleted; // 🔥 FIXED: Use 'isCompleted'
                 
                 if (!state.isLoggedIn) {
                     saveTasksToStorage(state.tasks);
@@ -141,22 +139,22 @@ const tasksSlice = createSlice({
             const taskId = action.payload;
             
             // Remove from pinned if it was pinned
-            if (state.pinnedTask?.id === taskId) {
+            if (state.pinnedTask?._id === taskId) {
                 state.pinnedTask = null;
                 savePinnedTaskToStorage(null);
             }
             
-            state.tasks = state.tasks.filter(t => t.id !== taskId);
+            state.tasks = state.tasks.filter(t => t._id !== taskId);
             
             if (!state.isLoggedIn) {
                 saveTasksToStorage(state.tasks);
             }
         },
 
-        // 🆕 NEW - Update task functionality
+        // Update task functionality
         updateTask: (state, action) => {
             const { taskId, updates } = action.payload;
-            const taskIndex = state.tasks.findIndex(task => task.id === taskId);
+            const taskIndex = state.tasks.findIndex(task => task._id === taskId);
             
             if (taskIndex !== -1) {
                 // Update the task
@@ -170,7 +168,7 @@ const tasksSlice = createSlice({
                 };
                 
                 // Update pinned task if this was the pinned one
-                if (state.pinnedTask?.id === taskId) {
+                if (state.pinnedTask?._id === taskId) {
                     state.pinnedTask = { ...state.pinnedTask, ...updates };
                     savePinnedTaskToStorage(state.pinnedTask);
                 }
@@ -186,10 +184,10 @@ const tasksSlice = createSlice({
         
         togglePinTask: (state, action) => {
             const taskId = action.payload;
-            const task = state.tasks.find(t => t.id === taskId);
+            const task = state.tasks.find(t => t._id === taskId);
             
             if (task) {
-                if (state.pinnedTask?.id === taskId) {
+                if (state.pinnedTask?._id === taskId) {
                     // Unpin
                     state.pinnedTask = null;
                     task.isPinned = false;
@@ -197,7 +195,7 @@ const tasksSlice = createSlice({
                 } else {
                     // Pin (and unpin any existing)
                     if (state.pinnedTask) {
-                        const oldPinned = state.tasks.find(t => t.id === state.pinnedTask.id);
+                        const oldPinned = state.tasks.find(t => t._id === state.pinnedTask._id);
                         if (oldPinned) oldPinned.isPinned = false;
                     }
                     
@@ -242,11 +240,12 @@ const tasksSlice = createSlice({
             .addCase(fetchTasks.fulfilled, (state, action) => {
                 state.isLoading = false;
                 if (action.payload.tasks) {
-                    // 🔥 Merge backend data with frontend-only fields
+                    // 🔥 FIXED: Merge backend data with frontend fields
                     state.tasks = action.payload.tasks.map(task => ({
-                        ...task,
-                        // Frontend-only fields
-                        isPinned: state.pinnedTask?.id === task.id,
+                        _id: task._id, // 🔥 Backend MongoDB ID
+                        name: task.name, // 🔥 FIXED: Use 'name'
+                        isCompleted: task.isCompleted || false, // 🔥 FIXED: Use 'isCompleted'
+                        isPinned: state.pinnedTask?._id === task._id,
                         createdAt: task.createdAt || new Date().toISOString(),
                     }));
                     state.lastSyncDate = Date.now();
@@ -263,10 +262,12 @@ const tasksSlice = createSlice({
             .addCase(syncTaskToBackend.fulfilled, (state, action) => {
                 state.isLoading = false;
                 if (action.payload?.tasks) {
-                    // 🔥 Update with fresh backend data + frontend fields
+                    // 🔥 FIXED: Update with fresh backend data + frontend fields
                     state.tasks = action.payload.tasks.map(task => ({
-                        ...task,
-                        isPinned: state.pinnedTask?.id === task.id,
+                        _id: task._id,
+                        name: task.name, // 🔥 FIXED: Use 'name'
+                        isCompleted: task.isCompleted || false, // 🔥 FIXED: Use 'isCompleted'
+                        isPinned: state.pinnedTask?._id === task._id,
                         createdAt: task.createdAt || new Date().toISOString(),
                     }));
                     state.lastSyncDate = Date.now();
@@ -284,7 +285,7 @@ export const {
     addTask,
     toggleTask,
     removeTask,
-    updateTask, // 🆕 NEW - Export the updateTask action
+    updateTask,
     togglePinTask,
     openTaskModal,
     closeTaskModal,

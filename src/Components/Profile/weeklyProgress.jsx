@@ -1,4 +1,4 @@
-// components/Profile/WeeklyProgress.jsx - Clean Production Version
+// components/Profile/WeeklyProgress.jsx - FIXED PROGRESS BAR
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
@@ -191,32 +191,22 @@ export default function WeeklyProgress() {
                 </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="relative mb-5">
-                <div className="w-full bg-background rounded-full h-3 overflow-hidden shadow-inner">
-                    <div
-                        className={`h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden ${
-                            isGoalCompleted 
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
-                                : 'bg-gradient-to-r from-primary to-primary/80'
-                        }`}
-                        style={{ width: `${Math.min(weeklyProgress, 100)}%` }}
-                    >
-                        {/* Animated shine effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
-                    </div>
-                </div>
-                
-                {/* Progress indicator dot */}
-                {weeklyProgress > 0 && (
-                    <div 
-                        className={`absolute top-1/2 transform -translate-y-1/2 w-2 h-2 rounded-full ${
-                            isGoalCompleted ? 'bg-green-500' : 'bg-primary'
-                        } shadow-lg transition-all duration-700`}
-                        style={{ left: `${Math.min(weeklyProgress, 100)}%` }}
-                    ></div>
-                )}
-            </div>
+{/* 🔥 SIMPLIFIED: Progress Bar without dot */}
+<div className="relative mb-5">
+    <div className="w-full bg-background rounded-full h-3 overflow-hidden shadow-inner">
+        <div
+            className={`h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden ${
+                isGoalCompleted 
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                    : 'bg-gradient-to-r from-primary to-primary/80'
+            }`}
+            style={{ width: `${Math.min(weeklyProgress, 100)}%` }}
+        >
+            {/* Animated shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+        </div>
+    </div>
+</div>
 
             {/* Bottom Row */}
             <div className="flex items-center justify-between">
@@ -332,7 +322,6 @@ export default function WeeklyProgress() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }

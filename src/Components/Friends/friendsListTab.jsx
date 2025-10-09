@@ -1,5 +1,6 @@
-// components/friends/FriendsListTab.jsx - Hide custom status when offline
+// components/friends/FriendsListTab.jsx - WITH CLICKABLE FRIEND CARDS
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import {
     Search,
     Users,
@@ -11,12 +12,19 @@ import {
 } from "lucide-react";
 
 export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [imageErrors, setImageErrors] = useState({});
     const [showRemoveModal, setShowRemoveModal] = useState(false);
     const [friendToRemove, setFriendToRemove] = useState(null);
     const [removing, setRemoving] = useState(false);
     const [hoveredCard, setHoveredCard] = useState(null);
+
+    // 🔥 UPDATED: Handle clicking on friend card
+    const handleFriendClick = (friend) => {
+        console.log('🔍 Navigating to profile for:', friend.username);
+        navigate(`/profile/${friend.username}`);
+    };
 
     const getHighResProfilePicture = (googlePicture) => {
         if (!googlePicture) return null;
@@ -178,7 +186,9 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
         return { hasCustom: false };
     };
 
-    const handleRemoveFriend = (friend) => {
+    const handleRemoveFriend = (friend, e) => {
+        // 🔥 IMPORTANT: Prevent event bubbling so card click doesn't trigger
+        e.stopPropagation();
         setFriendToRemove(friend);
         setShowRemoveModal(true);
     };
@@ -270,7 +280,9 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                             return (
                                 <div
                                     key={friendId}
-                                    className="bg-surface rounded-lg p-4 hover:bg-surface/80 transition-colors relative"
+                                    // 🔥 UPDATED: Make entire card clickable with better hover effects
+                                    onClick={() => handleFriendClick(friend)}
+                                    className="bg-surface rounded-lg p-4 hover:bg-surface/80 transition-all duration-200 relative cursor-pointer hover:shadow-md hover:scale-[1.02]"
                                     onMouseEnter={() => setHoveredCard(friendId)}
                                     onMouseLeave={() => setHoveredCard(null)}
                                 >
@@ -360,18 +372,21 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                                         </div>
                                     </div>
 
-                                    {/* Remove Friend Button - Absolutely positioned to avoid layout shift */}
+                                    {/* 🔥 UPDATED: Only Remove Button (Eye button removed) */}
                                     {isHovered && (
-                                        <button
-                                            onClick={() => handleRemoveFriend(friend)}
-                                            className="absolute top-8 right-4 p-2 bg-background hover:bg-red-500 hover:text-white rounded-lg transition-colors group"
-                                            title="Remove friend"
-                                        >
-                                            <X
-                                                size={16}
-                                                className="group-hover:text-white text-red-500"
-                                            />
-                                        </button>
+                                        <div className="absolute top-8 right-4 flex items-center  gap-2">
+                                            <button
+                                                onClick={(e) => handleRemoveFriend(friend, e)}
+                                                className="p-2 bg-background hover:bg-red-500 hover:text-white rounded-lg transition-colors group shadow-md"
+                                                title="Remove friend"
+                                            >
+                                                <X
+                                                    size={16}
+                                                    className="group-hover:text-white text-red-500"
+                                                />
+                                            </button>
+                                            
+                                        </div>
                                     )}
                                 </div>
                             );
@@ -407,9 +422,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                                     {friendToRemove.displayName || friendToRemove.name}
                                 </span>{" "}
                                 from your friends list?
-                            </p>
-                            <p className="text-sm text-secondary">
-                                You can always send them a friend request again later.
                             </p>
                         </div>
 

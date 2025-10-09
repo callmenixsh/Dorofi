@@ -16,6 +16,7 @@ import Rooms from "./Pages/rooms.jsx";
 import About from "./Pages/about.jsx";
 import Friends from "./Pages/friends.jsx";
 import Profile from "./Pages/profile.jsx";
+import FriendProfile from "./Pages/friendprofile.jsx";
 import Support from "./Pages/support.jsx";
 import Guide from "./Pages/guide.jsx";
 import Navbar from "./components/navbar";
@@ -150,6 +151,16 @@ const router = createBrowserRouter([
             <Layout>
                 <ProtectedRoute>
                     <Profile />
+                </ProtectedRoute>
+            </Layout>
+        ),
+    },
+    {
+        path: "/profile/:username",
+        element: (
+            <Layout>
+                <ProtectedRoute>
+                    <FriendProfile />
                 </ProtectedRoute>
             </Layout>
         ),

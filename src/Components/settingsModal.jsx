@@ -8,6 +8,9 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                'celestial-light';
     });
 
+    // 🔥 ADDED: Image error state like ProfileHeader
+    const [imageError, setImageError] = useState(false);
+
     // Lock body scroll when modal opens
     useEffect(() => {
         // Store original body style
@@ -21,6 +24,15 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
             document.body.style.overflow = originalStyle;
         };
     }, []);
+
+    // 🔥 ADDED: High-res profile picture function from ProfileHeader
+    const getHighResProfilePicture = (googlePicture) => {
+        if (!googlePicture) return null;
+        return googlePicture
+            .replace("s96-c", "s400-c")
+            .replace("=s96", "=s400")
+            .replace("sz=50", "sz=400");
+    };
 
     const themes = [
         {
@@ -222,7 +234,7 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                         </div>
                     </div>
 
-                    {/* User Section */}
+                    {/* 🔥 UPDATED: User Section with ProfileHeader-style image handling */}
                     {user && (
                         <div className="border-t border-surface/50 pt-6">
                             <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
@@ -231,17 +243,35 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                             </h3>
                             
                             <div className="flex items-center gap-4 p-4 bg-surface/50 rounded-lg mb-4 border border-surface/30">
-                                <img 
-                                    src={user.picture} 
-                                    alt={user.name}
-                                    className="w-12 h-12 rounded-full border-2 border-primary/20"
-                                />
+                                {/* 🔥 UPDATED: Profile Picture with same logic as ProfileHeader */}
+                                <div className="relative">
+                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 bg-background">
+                                        {user.picture && !imageError ? (
+                                            <img
+                                                src={getHighResProfilePicture(user.picture)}
+                                                alt={user.displayName || user.name}
+                                                className="w-full h-full object-cover"
+                                                onError={() => setImageError(true)}
+                                                onLoad={() => setImageError(false)}
+                                                crossOrigin="anonymous"
+                                                referrerPolicy="no-referrer"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-surface flex items-center justify-center">
+                                                <User size={18} className="text-secondary" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                
                                 <div className="flex-1">
-                                    <p className="text-primary font-semibold">{user.name}</p>
-                                    <p className="text-secondary text-sm">{user.email}</p>
+                                    <p className="text-primary font-semibold">
+                                        {user.displayName || user.name}
+                                    </p>
                                     {user.username && (
                                         <p className="text-secondary text-xs">@{user.username}</p>
                                     )}
+                                    <p className="text-secondary text-sm">{user.email}</p>
                                 </div>
                             </div>
                             

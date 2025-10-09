@@ -20,7 +20,6 @@ import ProfileHeader from "../components/Profile/profileHeader.jsx";
 import StatsOverview from "../components/Profile/statsOverview.jsx";
 import WeeklyProgress from "../components/Profile/weeklyProgress.jsx";
 import Achievements from "../components/Profile/achievements.jsx";
-import ActivityCalendar from "../components/Profile/activityCalendar.jsx";
 import LogoutModal from "../components/Profile/logoutModal.jsx";
 import StatusManager from "../components/Profile/statusManager.jsx";
 
@@ -300,8 +299,6 @@ export default function Profile() {
         {/* Achievements */}
         <Achievements/>
 
-        {/* Activity Calendar */}
-        <ActivityCalendar />
 
         {/* Logout Modal */}
         <LogoutModal 
