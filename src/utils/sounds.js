@@ -5,14 +5,11 @@ class SoundManager {
         this.isEnabled = true;
         this.volume = 0.7; // Default volume (0-1)
         
-        // Preload sounds
-        this.preloadSounds();
+    this.preloadSounds();
     }
 
     preloadSounds() {
         try {
-            // 🔊 Load your custom sound files
-            // Put your sound files in public/sounds/ folder
             this.sounds.set('work-complete', new Audio('/assets/sounds/break.mp3'));
             this.sounds.set('break-complete', new Audio('/assets/sounds/work.mp3'));
             
@@ -21,19 +18,18 @@ class SoundManager {
                 audio.volume = this.volume;
                 audio.preload = 'auto';
                 
-                // Handle loading errors gracefully
                 audio.addEventListener('error', (e) => {
                     console.warn('Failed to load sound:', e.target.src);
                 });
             });
             
-            console.log('🔊 Sounds preloaded successfully');
+            console.log('Sounds preloaded successfully');
         } catch (error) {
             console.warn('Failed to preload sounds:', error);
         }
     }
 
-    // 🔊 Play work session completion sound
+    // Play work session completion sound
     async playWorkCompleteSound() {
         if (!this.isEnabled) return;
         
@@ -50,7 +46,7 @@ class SoundManager {
         }
     }
 
-    // 🔊 Play break completion sound
+    // Play break completion sound
     async playBreakCompleteSound() {
         if (!this.isEnabled) return;
         
@@ -66,7 +62,7 @@ class SoundManager {
         }
     }
 
-    // 🔊 Test sounds (for settings)
+    // Test sounds (for settings)
     async testWorkSound() {
         console.log('🔊 Testing work completion sound');
         await this.playWorkCompleteSound();

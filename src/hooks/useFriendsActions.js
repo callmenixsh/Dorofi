@@ -19,17 +19,8 @@ export const useFriendsActions = () => {
   const dispatch = useDispatch();
 
   const fetchFriendsData = async () => {
-    console.log('🚀 fetchFriendsData starting...');
-    
     const token = localStorage.getItem("token");
-    console.log('🔐 Token check:', {
-      exists: !!token,
-      length: token ? token.length : 0,
-      preview: token ? token.substring(0, 20) + '...' : 'none'
-    });
-    
     if (!token) {
-      console.log('❌ No token found, clearing friends data');
       dispatch(setFriends([]));
       dispatch(setPendingIncoming([]));
       dispatch(setPendingOutgoing([]));
@@ -37,49 +28,24 @@ export const useFriendsActions = () => {
     }
 
     try {
-      console.log('⏳ Setting loading to true');
       dispatch(setLoading(true));
       dispatch(setError(null));
-      
-      console.log('📡 About to call apiService.getFriends()...');
-      console.log('📡 API service object:', apiService);
-      console.log('📡 getFriends method exists:', typeof apiService.getFriends);
-      
+
       const friendsData = await apiService.getFriends();
-      
-      console.log('✅ Friends API response received:', {
-        success: !!friendsData,
-        type: typeof friendsData,
-        keys: friendsData ? Object.keys(friendsData) : 'no keys',
-        friendsCount: friendsData?.friends?.length || 0,
-        incomingCount: friendsData?.incomingRequests?.length || 0,
-        outgoingCount: friendsData?.outgoingRequests?.length || 0
-      });
-      
-      console.log('📊 Full friends response:', friendsData);
-      
+
       dispatch(setFriends(friendsData.friends || []));
       dispatch(setPendingIncoming(friendsData.incomingRequests || []));
       dispatch(setPendingOutgoing(friendsData.outgoingRequests || []));
       dispatch(setFriendsInitialized(true));
-      
-      console.log('✅ All dispatch calls completed successfully');
-      
+
     } catch (error) {
-      console.error('❌ fetchFriendsData error caught:');
-      console.error('❌ Error object:', error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Error stack:', error.stack);
-      console.error('❌ Error name:', error.name);
-      
+      console.error('fetchFriendsData error:', error);
       dispatch(setError("Backend unavailable - showing basic friends page"));
       dispatch(setFriends([]));
       dispatch(setPendingIncoming([]));
       dispatch(setPendingOutgoing([]));
     } finally {
-      console.log('🏁 Setting loading to false (finally block)');
       dispatch(setLoading(false));
-      console.log('🏁 fetchFriendsData completed');
     }
   };
 

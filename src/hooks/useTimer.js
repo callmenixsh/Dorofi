@@ -23,18 +23,18 @@ export const useTimer = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }, []);
 
-    // 🔥 SUPER SIMPLE - Just tick every second, let the slice handle everything
+    // Tick every second; slice computes timeLeft from expectedEndTime
     useEffect(() => {
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
         }
 
+        // Use syncTimer to compute timeLeft from expectedEndTime so the timer
+        // remains accurate when the page is backgrounded and intervals are throttled.
         if (timer.isRunning && timer.timeLeft > 0) {
-            console.log('⏰ Timer started - simple tick approach');
-            
             intervalRef.current = setInterval(() => {
-                dispatch(tick());
+                dispatch({ type: 'timer/syncTimer' });
             }, 1000);
         }
 
@@ -46,7 +46,7 @@ export const useTimer = () => {
         };
     }, [timer.isRunning, timer.timeLeft, dispatch]);
 
-    // 🔥 ONLY CORRECT ON TAB VISIBILITY CHANGE
+    // Correct significant drift when tab visibility changes
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (!document.hidden && timer.isRunning && timer.currentSession?.expectedEndTime) {

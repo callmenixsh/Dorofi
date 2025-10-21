@@ -10,18 +10,17 @@ const StatsBar = React.memo(() => {
     const { isAuthenticated } = useAuth();
     
     const [showHourFormat, setShowHourFormat] = useState(true);
-    
-    const timerData = useSelector(useCallback((state) => ({
-        totalFocusTime: state.timer.totalFocusTime,
-        sessions: state.timer.sessions,
-        streak: state.timer.streak,
-        dailyGoalEnabled: state.timer.settings.dailyGoalEnabled,
-        dailyGoal: state.timer.settings.dailyGoal,
-        sessionJustCompleted: state.timer.sessionJustCompleted,
-        isLoggedIn: state.timer.isLoggedIn
-    }), []));
-    
-    const timerStats = useSelector(useCallback((state) => state.stats?.timer, []));
+
+    // Select primitives individually to avoid returning a new object reference
+    const totalFocusTime = useSelector(state => state.timer.totalFocusTime);
+    const sessions = useSelector(state => state.timer.sessions);
+    const streak = useSelector(state => state.timer.streak);
+    const dailyGoalEnabled = useSelector(state => state.timer.settings.dailyGoalEnabled);
+    const dailyGoal = useSelector(state => state.timer.settings.dailyGoal);
+    const sessionJustCompleted = useSelector(state => state.timer.sessionJustCompleted);
+    const isLoggedIn = useSelector(state => state.timer.isLoggedIn);
+
+    const timerStats = useSelector(state => state.stats?.timer);
 
     const displayStats = useMemo(() => {
         if (isAuthenticated && timerStats) {
@@ -32,11 +31,11 @@ const StatsBar = React.memo(() => {
             };
         }
         return {
-            focusTimeMinutes: Math.floor((timerData.totalFocusTime || 0) / 60),
-            sessions: timerData.sessions || 0,
-            streak: timerData.streak || 0,
+            focusTimeMinutes: Math.floor((totalFocusTime || 0) / 60),
+            sessions: sessions || 0,
+            streak: streak || 0,
         };
-    }, [isAuthenticated, timerStats, timerData.totalFocusTime, timerData.sessions, timerData.streak]);
+    }, [isAuthenticated, timerStats, totalFocusTime, sessions, streak]);
 
     const formatTimeHours = useCallback((minutes) => {
         const hours = Math.floor(minutes / 60);
@@ -53,10 +52,10 @@ const StatsBar = React.memo(() => {
     }, [showHourFormat, formatTimeHours, formatTimeMinutes]);
 
     const goalProgress = useMemo(() => {
-        return timerData.dailyGoalEnabled 
-            ? Math.min((displayStats.focusTimeMinutes / timerData.dailyGoal) * 100, 100) 
+        return dailyGoalEnabled 
+            ? Math.min((displayStats.focusTimeMinutes / dailyGoal) * 100, 100) 
             : 0;
-    }, [timerData.dailyGoalEnabled, displayStats.focusTimeMinutes, timerData.dailyGoal]);
+    }, [dailyGoalEnabled, displayStats.focusTimeMinutes, dailyGoal]);
 
     const toggleTimeFormat = useCallback(() => {
         setShowHourFormat(prev => !prev);
@@ -69,14 +68,14 @@ const StatsBar = React.memo(() => {
     }, [isAuthenticated, dispatch]);
 
     useEffect(() => {
-        if (timerData.sessionJustCompleted) {
+        if (sessionJustCompleted) {
             const timeoutId = setTimeout(() => {
                 dispatch(fetchUnifiedStats());
                 dispatch(clearSessionCompletedFlag());
             }, 500);
             return () => clearTimeout(timeoutId);
         }
-    }, [timerData.sessionJustCompleted, dispatch]);
+    }, [sessionJustCompleted, dispatch]);
 
     return (
         <div className="flex flex-col items-center mb-8">
@@ -132,10 +131,10 @@ const StatsBar = React.memo(() => {
             </div>
 
             {/* Daily Goal Card */}
-            {timerData.dailyGoalEnabled && (
+            {dailyGoalEnabled && (
                 <div 
                     className="w-full max-w-md px-4 py-2.5 rounded-xl bg-surface border border-background hover:border-primary/20 transition-all"
-                    title={`Daily Goal: ${formatTime(displayStats.focusTimeMinutes)} / ${formatTime(timerData.dailyGoal)}`}
+                    title={`Daily Goal: ${formatTime(displayStats.focusTimeMinutes)} / ${formatTime(dailyGoal)}`}
                 >
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -144,7 +143,7 @@ const StatsBar = React.memo(() => {
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="text-xs text-secondary">
-                                {formatTime(displayStats.focusTimeMinutes)} / {formatTime(timerData.dailyGoal)}
+                                {formatTime(displayStats.focusTimeMinutes)} / {formatTime(dailyGoal)}
                             </span>
                             <span className="text-xs font-medium text-primary">
                                 {Math.round(goalProgress)}%

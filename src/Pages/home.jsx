@@ -91,7 +91,6 @@ const Home = () => {
 
     useEffect(() => {
         if (user) {
-            console.log("✅ User logged in, updating Redux state");
 
             // Update BOTH timer and tasks logged in state
             dispatch(setLoggedInState(true));
@@ -113,7 +112,6 @@ const Home = () => {
             // Fetch tasks from backend
             dispatch(fetchTasks());
         } else {
-            console.log("❌ User logged out, updating Redux state");
 
             // Update BOTH timer and tasks logged in state
             dispatch(setLoggedInState(false));

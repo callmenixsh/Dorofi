@@ -1,9 +1,9 @@
-// store/slices/timerSlice.js - WITH SOUND AND NOTIFICATION SUPPORT
+// store/slices/timerSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToday, getTodayKey } from "../../utils/dateUtils";
 import api from "../../services/api";
 import soundManager from '../../utils/sounds';
-import notificationManager from '../../utils/notification'; // 🔔 ADD THIS IMPORT
+import notificationManager from '../../utils/notification';
 
 // Import fetchUnifiedStats for reliable refresh
 import { fetchUnifiedStats } from "./statsSlice";
@@ -13,11 +13,11 @@ export const fetchUserStats = createAsyncThunk(
     "timer/fetchUserStats",
     async (_, { getState, rejectWithValue }) => {
         try {
-            console.log("🔄 Fetching unified stats for timer");
+            console.log("Fetching unified stats for timer");
             const { timer } = getState();
             if (timer?.isLoggedIn) {
                 const response = await api.getUnifiedStats();
-                console.log("✅ Unified stats fetched:", response);
+                console.log("Unified stats fetched:", response);
 
                 if (response?.success && response?.stats?.timer) {
                     return {
@@ -42,18 +42,18 @@ export const syncSessionToBackend = createAsyncThunk(
         try {
             const { timer } = getState();
             if (timer?.isLoggedIn) {
-                console.log("🔄 Syncing session to backend:", sessionData);
+                console.log("Syncing session to backend:", sessionData);
                 const result = await api.recordSession({
                     sessionDuration: sessionData.sessionDuration,
                     sessionType: sessionData.sessionType || "work",
                 });
-                console.log("✅ Backend sync result:", result);
+                console.log("Backend sync result:", result);
                 return result;
             } else {
                 return null;
             }
-        } catch (error) {
-            console.error("❌ syncSessionToBackend error:", error);
+            } catch (error) {
+            console.error("syncSessionToBackend error:", error);
             return rejectWithValue(error.message);
         }
     }
@@ -66,30 +66,15 @@ export const completeSessionWithStatsRefresh = createAsyncThunk(
             const { timer } = getState();
 
             if (timer?.isLoggedIn) {
-                console.log("🎯 Starting session completion...");
-
-                const sessionResult = await dispatch(
-                    syncSessionToBackend(sessionData)
-                ).unwrap();
-
+                const sessionResult = await dispatch(syncSessionToBackend(sessionData)).unwrap();
+                // Allow backend a moment to process
                 await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                try {
-                    await api.checkAchievements();
-                    console.log("🏆 Achievement check completed silently");
-                } catch (error) {
-                    console.log("🏆 Achievement check failed (non-critical):", error.message);
-                }
-
-                console.log("🎯 Session completed successfully!");
-                return { 
-                    sessionResult
-                };
-            } else {
-                return null;
+                try { await api.checkAchievements(); } catch (error) { /* non-critical */ }
+                return { sessionResult };
             }
+            return null;
         } catch (error) {
-            console.error("❌ Error in completeSessionWithStatsRefresh:", error);
+            console.error('Error in completeSessionWithStatsRefresh:', error);
             return rejectWithValue(error.message);
         }
     }
@@ -258,18 +243,14 @@ const timerSlice = createSlice({
                     Math.ceil((state.currentSession.expectedEndTime - now) / 1000)
                 );
 
-                if (Math.abs(state.timeLeft - shouldHaveTimeLeft) > 2) {
-                    console.log(
-                        "🔄 Correcting timer from",
-                        state.timeLeft,
-                        "to",
-                        shouldHaveTimeLeft
-                    );
+                // Always correct to the wall-clock expected time when different.
+                // This ensures the timer doesn't get stuck at 1 second during
+                // background throttling.
+                if (state.timeLeft !== shouldHaveTimeLeft) {
                     state.timeLeft = shouldHaveTimeLeft;
                 }
 
                 if (state.timeLeft === 0) {
-                    console.log("⏰ Timer completed via sync");
                     timerSlice.caseReducers.completeSession(state);
                 }
             }
@@ -286,32 +267,19 @@ const timerSlice = createSlice({
 
         // 🔊🔔 UPDATED WITH SOUND AND NOTIFICATIONS
         completeSession: (state) => {
-            console.log("🏁 SESSION COMPLETE - PLAYING SOUND & NOTIFICATION");
-            try {
-                // 🔊 Play sound
-                if (state.settings.soundEnabled) {
-                    if (state.mode === "work") {
-                        console.log("🔊 Playing work completion sound");
-                        soundManager.playWorkCompleteSound();
-                    } else {
-                        console.log("🔊 Playing break completion sound");
-                        soundManager.playBreakCompleteSound();
+                try {
+                    if (state.settings.soundEnabled) {
+                        if (state.mode === 'work') soundManager.playWorkCompleteSound();
+                        else soundManager.playBreakCompleteSound();
                     }
-                }
-
-                // 🔔 Show notification
-                if (state.settings.notifications) {
-                    if (state.mode === "work") {
-                        notificationManager.showWorkComplete();
-                    } else if (state.mode === "longBreak") {
-                        notificationManager.showLongBreakComplete();
-                    } else {
-                        notificationManager.showBreakComplete();
+                    if (state.settings.notifications) {
+                        if (state.mode === 'work') notificationManager.showWorkComplete();
+                        else if (state.mode === 'longBreak') notificationManager.showLongBreakComplete();
+                        else notificationManager.showBreakComplete();
                     }
+                } catch (error) {
+                    console.error('Sound/Notification error:', error);
                 }
-            } catch (error) {
-                console.error('🔇 Sound/Notification error:', error);
-            }
 
             const wasWorkSession = state.mode === "work";
 
@@ -472,13 +440,11 @@ const timerSlice = createSlice({
             if (action.payload) {
                 const todayKey = getTodayKey();
                 localStorage.removeItem(`dorofi_timer_${todayKey}`);
-                console.log("🔑 User logged in, cleared localStorage");
             } else {
                 state.backendStats = null;
                 state.lastSyncDate = null;
                 state.needsBackendSync = null;
                 state.sessionJustCompleted = null;
-                console.log("🔑 User logged out");
             }
         },
 
@@ -514,11 +480,11 @@ const timerSlice = createSlice({
                 
                 state.streak = action.payload.currentStreak || 0;
                 
-                console.log("🔄 STATS CHANGED:", {
-                    sessions: `${oldSessions} → ${state.sessions} (backend: ${backendSessions})`,
-                    focusTime: `${oldFocusTime} → ${state.totalFocusTime} (backend: ${backendFocusTime}) (minutes)`,
-                    streak: state.streak
-                });
+                // console.log("🔄 STATS CHANGED:", {
+                //     sessions: `${oldSessions} → ${state.sessions} (backend: ${backendSessions})`,
+                //     focusTime: `${oldFocusTime} → ${state.totalFocusTime} (backend: ${backendFocusTime}) (minutes)`,
+                //     streak: state.streak
+                // });
                 
                 state.allTimeStats = {
                     totalFocusTime: action.payload.totalFocusTime || 0,

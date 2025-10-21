@@ -223,11 +223,9 @@ const tasksSlice = createSlice({
             if (action.payload) {
                 // Clear localStorage when logged in
                 localStorage.removeItem('dorofi_tasks');
-                console.log('🔑 User logged in, cleared local tasks');
             } else {
                 // When logging out, keep current tasks as local
                 saveTasksToStorage(state.tasks);
-                console.log('🔑 User logged out, saved tasks locally');
             }
         },
     },
@@ -249,7 +247,6 @@ const tasksSlice = createSlice({
                         createdAt: task.createdAt || new Date().toISOString(),
                     }));
                     state.lastSyncDate = Date.now();
-                    console.log('✅ Tasks synced from backend:', action.payload.tasks.length);
                 }
             })
             .addCase(fetchTasks.rejected, (state, action) => {

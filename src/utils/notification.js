@@ -9,9 +9,9 @@ class NotificationManager {
     async init() {
         if ('Notification' in window) {
             this.permission = Notification.permission;
-            console.log('🔔 Notification permission:', this.permission);
+            console.log('Notification permission:', this.permission);
         } else {
-            console.warn('⚠️ Browser does not support notifications');
+            console.warn('Browser does not support notifications');
         }
     }
 
@@ -55,7 +55,7 @@ class NotificationManager {
         if (Notification.permission !== 'granted') {
             const granted = await this.requestPermission();
             if (!granted) {
-                console.log('🔕 Notification permission denied');
+                console.log('Notification permission denied');
                 return;
             }
         }
@@ -80,7 +80,7 @@ class NotificationManager {
                 notification.close();
             };
 
-            console.log('🔔 Notification shown:', title);
+            console.log('Notification shown:', title);
         } catch (error) {
             console.error('❌ Notification error:', error);
         }
