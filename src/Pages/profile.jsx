@@ -16,12 +16,12 @@ import {
 import { fetchUnifiedStats } from '../store/slices/statsSlice';
 
 // Import modular components
-import ProfileHeader from "../components/Profile/profileHeader.jsx";
-import StatsOverview from "../components/Profile/statsOverview.jsx";
-import WeeklyProgress from "../components/Profile/weeklyProgress.jsx";
-import Achievements from "../components/Profile/achievements.jsx";
-import LogoutModal from "../components/Profile/logoutModal.jsx";
-import StatusManager from "../components/Profile/statusManager.jsx";
+import ProfileHeader from "../Components/Profile/profileHeader.jsx";
+import StatsOverview from "../Components/Profile/statsOverview.jsx";
+import WeeklyProgress from "../Components/Profile/weeklyProgress.jsx";
+import Achievements from "../Components/Profile/achievements.jsx";
+import LogoutModal from "../Components/Profile/logoutModal.jsx";
+import StatusManager from "../Components/Profile/statusManager.jsx";
 
 export default function Profile() {
   const dispatch = useDispatch();
