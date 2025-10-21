@@ -4,11 +4,11 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 import { useSelector } from 'react-redux';
 import { useFriendsActions } from "../hooks/useFriendsActions.js";
 import { Users, Trophy, Target, Bell, AlertCircle } from "lucide-react";
-import FriendsHeader from "../Components/friends/friendsHeader.jsx";
-import FriendsTabs from "../Components/friends/friendsTabs.jsx";
-import LeaderboardTab from "../Components/friends/leaderboardTab.jsx";
-import FriendsListTab from "../Components/friends/friendsListTab.jsx";
-import RequestsTab from "../Components/friends/requestsTab.jsx";
+import FriendsHeader from "../Components/Friends/friendsHeader.jsx";
+import FriendsTabs from "../Components/Friends/friendsTabs.jsx";
+import LeaderboardTab from "../Components/Friends/leaderboardTab.jsx";
+import FriendsListTab from "../Components/Friends/friendsListTab.jsx";
+import RequestsTab from "../Components/Friends/requestsTab.jsx";
 
 export default function Friends() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
