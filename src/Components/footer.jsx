@@ -131,7 +131,7 @@ const Footer = () => {
                         <h4 className="font-semibold text-primary mb-4">Features</h4>
                         <div className="space-y-2 text-sm">
                             <button
-                                onClick={() => handleNavigation('/timer')}
+                                onClick={() => handleNavigation('/')}
                                 className="block text-left text-secondary hover:text-primary transition-colors"
                             >
                                 Focus Timer

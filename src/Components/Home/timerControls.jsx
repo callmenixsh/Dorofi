@@ -1,4 +1,4 @@
-// Components/Home/timerControls.jsx - Enhanced with Konami Code Dev Mode
+// Components/Home/timerControls.jsx - Simplified Shortcuts with Confirmation
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -11,9 +11,7 @@ import {
     Clock,
     Target,
     X,
-    Volume2,
-    VolumeX,
-    Maximize,
+    AlertTriangle,
     Code,
 } from "lucide-react";
 import {
@@ -38,8 +36,7 @@ const TimerControls = () => {
     } = useSelector((state) => state.timer);
     
     const [showDevMenu, setShowDevMenu] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
     
     // 🎮 KONAMI CODE STATE
     const [konamiSequence, setKonamiSequence] = useState([]);
@@ -114,7 +111,6 @@ const TimerControls = () => {
     // 🎮 KONAMI CODE DETECTION
     useEffect(() => {
         const handleKonamiInput = (event) => {
-            // Don't trigger when typing in inputs
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
                 return;
             }
@@ -122,27 +118,23 @@ const TimerControls = () => {
             const newSequence = [...konamiSequence, event.code].slice(-KONAMI_CODE.length);
             setKonamiSequence(newSequence);
 
-            // Check if the sequence matches the Konami Code
             if (newSequence.length === KONAMI_CODE.length && 
                 newSequence.every((key, index) => key === KONAMI_CODE[index])) {
                 
                 console.log('🎮 KONAMI CODE ACTIVATED! Dev mode unlocked!');
                 setDevModeUnlocked(true);
                 setShowKonamiSuccess(true);
-                setKonamiSequence([]); // Reset sequence
+                setKonamiSequence([]);
 
-                // Show success message for 3 seconds
                 setTimeout(() => {
                     setShowKonamiSuccess(false);
                 }, 3000);
 
-                // Play a little celebration (optional)
                 if (typeof window !== 'undefined' && window.navigator?.vibrate) {
                     window.navigator.vibrate([100, 50, 100, 50, 100]);
                 }
             }
 
-            // Reset sequence if it gets too long without matching
             if (newSequence.length >= KONAMI_CODE.length && 
                 !KONAMI_CODE.every((key, index) => key === newSequence[index])) {
                 setKonamiSequence([]);
@@ -153,15 +145,16 @@ const TimerControls = () => {
         return () => document.removeEventListener('keydown', handleKonamiInput);
     }, [konamiSequence]);
 
-    // 🔥 KEYBOARD SHORTCUTS
+    // 🔥 SIMPLIFIED KEYBOARD SHORTCUTS - Only Space, R, S
     useEffect(() => {
         const handleKeyDown = (event) => {
-            // Don't trigger shortcuts when typing in inputs
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+            // Don't trigger shortcuts when typing in inputs or when confirmation is showing
+            if (event.target.tagName === 'INPUT' || 
+                event.target.tagName === 'TEXTAREA' || 
+                showResetConfirm) {
                 return;
             }
 
-            // Prevent default behavior for our shortcuts
             const key = event.key.toLowerCase();
             
             switch (key) {
@@ -170,35 +163,24 @@ const TimerControls = () => {
                     handleToggleTimer();
                     break;
                     
-                case 'r': // R - Reset current session
+                case 'r': // R - Reset timer (with confirmation for work mode)
                     event.preventDefault();
-                    handleResetTimer();
-                    break;
-                    
-                case 's': // S - Skip to break/work
-                    event.preventDefault();
-                    if (shouldShowSkipButton) {
-                        handleSkipBreak();
-                    } else {
-                        // If not in break mode, switch to break
-                        dispatch(switchMode({ mode: "shortBreak" }));
+                    if (shouldShowResetButton) {
+                        handleResetTimer();
                     }
                     break;
                     
-                case 'm': // M - Mute/Unmute sounds
+                case 's': // S - Skip break (only in break mode)
                     event.preventDefault();
-                    setIsMuted(prev => !prev);
-                    console.log('🔊 Audio toggled:', !isMuted);
+                    if (shouldShowSkipButton) {
+                        handleSkipBreak();
+                    }
                     break;
                     
-                case 'f': // F - Toggle fullscreen mode
-                    event.preventDefault();
-                    toggleFullscreen();
-                    break;
-                    
-                case 'escape': // ESC - Close dev menu
-                    if (devModeUnlocked && showDevMenu) {
-                        event.preventDefault();
+                case 'escape': // ESC - Close modals
+                    if (showResetConfirm) {
+                        setShowResetConfirm(false);
+                    } else if (devModeUnlocked && showDevMenu) {
                         setShowDevMenu(false);
                     }
                     break;
@@ -208,14 +190,11 @@ const TimerControls = () => {
             }
         };
 
-        // Add event listener
         document.addEventListener('keydown', handleKeyDown);
-        
-        // Cleanup
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isRunning, shouldShowSkipButton, isMuted, devModeUnlocked, showDevMenu]);
+    }, [isRunning, shouldShowResetButton, shouldShowSkipButton, showResetConfirm, devModeUnlocked, showDevMenu]);
 
     const handleToggleTimer = () => {
         if (isRunning) {
@@ -227,41 +206,23 @@ const TimerControls = () => {
 
     const handleResetTimer = () => {
         if (isBreakMode) {
+            // Break modes - reset immediately
             dispatch(switchMode({ mode: "work" }));
         } else {
-            dispatch(resetTimer());
+            // Work mode - show confirmation
+            setShowResetConfirm(true);
         }
+    };
+
+    const confirmReset = () => {
+        dispatch(resetTimer());
+        setShowResetConfirm(false);
     };
 
     const handleSkipBreak = () => {
         dispatch(switchMode({ mode: "work" }));
         dispatch(resetTimer());
     };
-
-    // 🔥 NEW FUNCTIONS FOR KEYBOARD SHORTCUTS
-    const toggleFullscreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().then(() => {
-                setIsFullscreen(true);
-            }).catch(err => {
-                console.log('Fullscreen error:', err);
-            });
-        } else {
-            document.exitFullscreen().then(() => {
-                setIsFullscreen(false);
-            });
-        }
-    };
-
-    // Listen for fullscreen changes
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement);
-        };
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, []);
 
     // 🔧 DEV FUNCTIONS
     const devCompleteSession = () => {
@@ -298,6 +259,37 @@ const TimerControls = () => {
                         <span className="font-bold">🎮 KONAMI CODE ACTIVATED!</span>
                     </div>
                     <div className="text-xs opacity-90 mt-1">Developer mode unlocked!</div>
+                </div>
+            )}
+
+            {/* ⚠️ RESET CONFIRMATION MODAL */}
+            {showResetConfirm && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+                    <div className="bg-surface rounded-2xl shadow-2xl p-6 max-w-sm mx-4 border border-background">
+                        <div className="flex items-start gap-4 mb-4">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                                <AlertTriangle size={20} className="text-orange-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-primary mb-1">Reset Work Timer?</h3>
+                                <p className="text-sm text-secondary">This will reset your current work session. This action cannot be undone.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowResetConfirm(false)}
+                                className="flex-1 px-4 py-2 bg-background text-secondary rounded-lg hover:bg-surface transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmReset}
+                                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                            >
+                                Reset
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -338,7 +330,7 @@ const TimerControls = () => {
                     </button>
                 </div>
 
-                {/* Right side - Skip Button */}
+                {/* Right side - Skip Button (Only in break mode) */}
                 <div
                     className={`absolute transition-all duration-300 ease-out ${
                         shouldShowSkipButton
@@ -359,7 +351,7 @@ const TimerControls = () => {
                 </div>
             </div>
 
-            {/* 🎮 DEV MODE TOGGLE BUTTON (only show when unlocked) */}
+            {/* 🎮 DEV MODE TOGGLE BUTTON */}
             {devModeUnlocked && (
                 <button
                     onClick={() => setShowDevMenu(!showDevMenu)}
@@ -371,147 +363,136 @@ const TimerControls = () => {
                 </button>
             )}
 
-            {/* 🧪 DEV MENU (only show when Konami unlocked AND toggled on) */}
+            {/* 🧪 DEV MENU */}
             {devModeUnlocked && showDevMenu && (
-                <>
-                    {/* Dev Panel */}
-                    <div className="fixed right-4 top-40 z-50 bg-surface border border-background rounded-xl shadow-2xl p-4 w-72 max-h-[80vh] overflow-y-auto">
-                        
-                        {/* Header with Konami Badge */}
-                        <div className="mb-4 p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Code size={16} className="text-primary" />
-                                    <span className="text-sm font-bold text-primary">DEV MODE</span>
-                                </div>
-                                <button
-                                    onClick={() => setShowDevMenu(false)}
-                                    className="p-1 rounded hover:bg-surface/50 transition-colors"
-                                >
-                                    <X size={14} className="text-secondary" />
-                                </button>
+                <div className="fixed right-4 top-40 z-50 bg-surface border border-background rounded-xl shadow-2xl p-4 w-72 max-h-[80vh] overflow-y-auto">
+                    
+                    {/* Header */}
+                    <div className="mb-4 p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Code size={16} className="text-primary" />
+                                <span className="text-sm font-bold text-primary">DEV MODE</span>
                             </div>
-                            <div className="text-xs text-secondary mt-1">🎮 Unlocked with Konami Code!</div>
-                        </div>
-                        
-                        {/* Keyboard Shortcuts Status */}
-                        <div className="mb-4 p-3 bg-background rounded-lg">
-                            <div className="text-xs font-semibold text-primary mb-2">Shortcuts Active:</div>
-                            <div className="flex flex-wrap gap-1 text-xs">
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded">Space</span>
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded">R</span>
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded">S</span>
-                                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">M {isMuted ? '(Muted)' : '(Unmuted)'}</span>
-                                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">F {isFullscreen ? '(Full)' : '(Normal)'}</span>
-                            </div>
-                        </div>
-
-                        {/* Current State */}
-                        <div className="mb-6 text-xs bg-background rounded-lg p-3">
-                            <div className="font-semibold text-primary mb-2">Current State:</div>
-                            <div className="space-y-1 text-secondary">
-                                <div className="flex justify-between">
-                                    <span>Mode:</span>
-                                    <span className="font-mono text-primary">{mode}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Time Left:</span>
-                                    <span className="font-mono text-primary">{timeLeft}s</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Sessions:</span>
-                                    <span className="font-mono text-primary">{sessions}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Focus Time:</span>
-                                    <span className="font-mono text-primary">{totalFocusTime}m</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Logged In:</span>
-                                    <span className={`font-mono ${isLoggedIn ? "text-green-600" : "text-red-600"}`}>
-                                        {isLoggedIn ? "Yes" : "No"}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Quick Timer Controls */}
-                        <div className="mb-6">
-                            <div className="grid grid-cols-3 gap-2">
-                                <button
-                                    onClick={() => devSetTimeLeft(5)}
-                                    className="px-3 py-2 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
-                                >
-                                    5s
-                                </button>
-                                <button
-                                    onClick={() => devSetTimeLeft(10)}
-                                    className="px-3 py-2 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
-                                >
-                                    10s
-                                </button>
-                                <button
-                                    onClick={() => devSetTimeLeft(1)}
-                                    className="px-3 py-2 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                                >
-                                    1s
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Session Simulation */}
-                        <div className="mb-6">
-                            <div className="space-y-3">
-                                <button
-                                    onClick={devCompleteSession}
-                                    className="w-full px-4 py-3 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center gap-2 font-medium"
-                                >
-                                    <Zap size={16} />
-                                    Complete 1 Session
-                                </button>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => devCompleteMultipleSessions(3)}
-                                        className="px-3 py-2 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                                    >
-                                        Complete 3
-                                    </button>
-                                    <button
-                                        onClick={() => devCompleteMultipleSessions(5)}
-                                        className="px-3 py-2 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                                    >
-                                        Complete 5
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Mode Controls */}
-                        <div className="mb-4">
                             <button
-                                onClick={devSwitchToWork}
-                                className="w-full px-4 py-3 text-sm bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2 font-medium"
+                                onClick={() => setShowDevMenu(false)}
+                                className="p-1 rounded hover:bg-surface/50 transition-colors"
                             >
-                                <Target size={16} />
-                                Switch to Work
+                                <X size={14} className="text-secondary" />
                             </button>
                         </div>
+                        <div className="text-xs text-secondary mt-1">🎮 Unlocked with Konami Code!</div>
+                    </div>
+                    
+                    {/* Keyboard Shortcuts */}
+                    <div className="mb-4 p-3 bg-background rounded-lg">
+                        <div className="text-xs font-semibold text-primary mb-2">Active Shortcuts:</div>
+                        <div className="flex flex-wrap gap-1 text-xs">
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded">Space</span>
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded">R</span>
+                            {isBreakMode && <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">S</span>}
+                        </div>
+                    </div>
 
-                        {/* Reset Dev Mode */}
-                        <div className="border-t border-surface pt-4">
+                    {/* Current State */}
+                    <div className="mb-6 text-xs bg-background rounded-lg p-3">
+                        <div className="font-semibold text-primary mb-2">Current State:</div>
+                        <div className="space-y-1 text-secondary">
+                            <div className="flex justify-between">
+                                <span>Mode:</span>
+                                <span className="font-mono text-primary">{mode}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Time Left:</span>
+                                <span className="font-mono text-primary">{timeLeft}s</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Sessions:</span>
+                                <span className="font-mono text-primary">{sessions}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Focus Time:</span>
+                                <span className="font-mono text-primary">{totalFocusTime}m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick Timer Controls */}
+                    <div className="mb-6">
+                        <div className="grid grid-cols-3 gap-2">
                             <button
-                                onClick={() => {
-                                    setDevModeUnlocked(false);
-                                    setShowDevMenu(false);
-                                    console.log('🎮 Dev mode locked. Enter Konami Code to unlock again!');
-                                }}
-                                className="w-full px-4 py-2 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                                onClick={() => devSetTimeLeft(5)}
+                                className="px-3 py-2 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
                             >
-                                🔒 Lock Dev Mode
+                                5s
+                            </button>
+                            <button
+                                onClick={() => devSetTimeLeft(10)}
+                                className="px-3 py-2 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
+                            >
+                                10s
+                            </button>
+                            <button
+                                onClick={() => devSetTimeLeft(1)}
+                                className="px-3 py-2 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                            >
+                                1s
                             </button>
                         </div>
                     </div>
-                </>
+
+                    {/* Session Simulation */}
+                    <div className="mb-6">
+                        <div className="space-y-3">
+                            <button
+                                onClick={devCompleteSession}
+                                className="w-full px-4 py-3 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center gap-2 font-medium"
+                            >
+                                <Zap size={16} />
+                                Complete 1 Session
+                            </button>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    onClick={() => devCompleteMultipleSessions(3)}
+                                    className="px-3 py-2 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                                >
+                                    Complete 3
+                                </button>
+                                <button
+                                    onClick={() => devCompleteMultipleSessions(5)}
+                                    className="px-3 py-2 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                                >
+                                    Complete 5
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mode Controls */}
+                    <div className="mb-4">
+                        <button
+                            onClick={devSwitchToWork}
+                            className="w-full px-4 py-3 text-sm bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2 font-medium"
+                        >
+                            <Target size={16} />
+                            Switch to Work
+                        </button>
+                    </div>
+
+                    {/* Reset Dev Mode */}
+                    <div className="border-t border-surface pt-4">
+                        <button
+                            onClick={() => {
+                                setDevModeUnlocked(false);
+                                setShowDevMenu(false);
+                                console.log('🎮 Dev mode locked. Enter Konami Code to unlock again!');
+                            }}
+                            className="w-full px-4 py-2 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                        >
+                            🔒 Lock Dev Mode
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );

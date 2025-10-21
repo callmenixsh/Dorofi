@@ -1,7 +1,7 @@
-// components/friends/FriendsHeader.jsx
+
 import { UserPlus } from 'lucide-react';
 import { useState } from 'react';
-import AddFriendModal from './AddFriendModal.jsx';
+import AddFriendModal from './addFriendModal.jsx';
 
 export default function FriendsHeader({ user, onSendFriendRequest, loading }) {
     const [showAddFriend, setShowAddFriend] = useState(false);

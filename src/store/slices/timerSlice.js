@@ -1,12 +1,14 @@
-// store/slices/timerSlice.js - FINAL FIXED VERSION
+// store/slices/timerSlice.js - WITH SOUND AND NOTIFICATION SUPPORT
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToday, getTodayKey } from "../../utils/dateUtils";
 import api from "../../services/api";
+import soundManager from '../../utils/sounds';
+import notificationManager from '../../utils/notification'; // 🔔 ADD THIS IMPORT
 
 // Import fetchUnifiedStats for reliable refresh
 import { fetchUnifiedStats } from "./statsSlice";
 
-// Async thunks for backend communication
+// ... (All your async thunks stay exactly the same) ...
 export const fetchUserStats = createAsyncThunk(
     "timer/fetchUserStats",
     async (_, { getState, rejectWithValue }) => {
@@ -66,15 +68,12 @@ export const completeSessionWithStatsRefresh = createAsyncThunk(
             if (timer?.isLoggedIn) {
                 console.log("🎯 Starting session completion...");
 
-                // 1. Sync the session to backend
                 const sessionResult = await dispatch(
                     syncSessionToBackend(sessionData)
                 ).unwrap();
 
-                // 2. Wait for backend processing
                 await new Promise((resolve) => setTimeout(resolve, 1000));
 
-                // 3. Check achievements silently
                 try {
                     await api.checkAchievements();
                     console.log("🏆 Achievement check completed silently");
@@ -96,7 +95,7 @@ export const completeSessionWithStatsRefresh = createAsyncThunk(
     }
 );
 
-// Helper functions
+// ... (All helper functions stay exactly the same) ...
 const loadSettingsFromStorage = () => {
     try {
         const savedSettings = localStorage.getItem("dorofi_timer_settings");
@@ -178,12 +177,9 @@ const saveLocalStorage = (state) => {
 
 // Initial state
 const initialState = {
-    // Timer state
     timeLeft: 1500,
     mode: "work",
     isRunning: false,
-
-    // Session tracking
     currentSession: {
         startTime: null,
         pausedTime: 0,
@@ -192,11 +188,7 @@ const initialState = {
         expectedEndTime: null,
         initialTimeLeft: null,
     },
-
-    // Local stats now in minutes
     ...loadLocalStorage(),
-
-    // Backend sync
     isLoggedIn: false,
     needsBackendSync: null,
     sessionJustCompleted: null,
@@ -204,8 +196,6 @@ const initialState = {
     isLoading: false,
     backendStats: null,
     allTimeStats: null,
-
-    // Settings
     settings: loadSettingsFromStorage(),
     showSettings: false,
 };
@@ -294,8 +284,35 @@ const timerSlice = createSlice({
             }
         },
 
-        // 🔥 FIXED: Always update local state immediately for UI responsiveness
+        // 🔊🔔 UPDATED WITH SOUND AND NOTIFICATIONS
         completeSession: (state) => {
+            console.log("🏁 SESSION COMPLETE - PLAYING SOUND & NOTIFICATION");
+            try {
+                // 🔊 Play sound
+                if (state.settings.soundEnabled) {
+                    if (state.mode === "work") {
+                        console.log("🔊 Playing work completion sound");
+                        soundManager.playWorkCompleteSound();
+                    } else {
+                        console.log("🔊 Playing break completion sound");
+                        soundManager.playBreakCompleteSound();
+                    }
+                }
+
+                // 🔔 Show notification
+                if (state.settings.notifications) {
+                    if (state.mode === "work") {
+                        notificationManager.showWorkComplete();
+                    } else if (state.mode === "longBreak") {
+                        notificationManager.showLongBreakComplete();
+                    } else {
+                        notificationManager.showBreakComplete();
+                    }
+                }
+            } catch (error) {
+                console.error('🔇 Sound/Notification error:', error);
+            }
+
             const wasWorkSession = state.mode === "work";
 
             if (wasWorkSession) {
@@ -314,8 +331,6 @@ const timerSlice = createSlice({
                     beforeFocusTime: state.totalFocusTime
                 });
 
-                // 🔥 CRITICAL FIX: ALWAYS update local state immediately
-                // This ensures UI shows correct values instantly
                 state.totalFocusTime += sessionMinutes;
                 state.sessions += 1;
 
@@ -325,9 +340,7 @@ const timerSlice = createSlice({
                     sessionMinutes: sessionMinutes
                 });
 
-                // Handle different user states
                 if (!state.isLoggedIn) {
-                    // Offline users - handle streak and localStorage
                     const today = getToday();
                     if (state.lastActiveDate !== today) {
                         const yesterday = new Date(today);
@@ -341,10 +354,9 @@ const timerSlice = createSlice({
                     }
                     saveLocalStorage(state);
                 } else {
-                    // 🔥 Online users - set sync flag for backend sync
                     console.log("🌐 ONLINE - Setting sync flag for backend");
                     state.needsBackendSync = {
-                        sessionDuration, // Send seconds to backend
+                        sessionDuration,
                         sessionType: "work",
                         timestamp: Date.now(),
                     };
@@ -352,7 +364,6 @@ const timerSlice = createSlice({
 
                 state.currentSession.completedPomodoros += 1;
 
-                // Mode switching logic
                 if (
                     state.currentSession.completedPomodoros >=
                     state.settings.sessionsUntilLongBreak
@@ -369,14 +380,12 @@ const timerSlice = createSlice({
                 state.timeLeft = state.settings.workDuration * 60;
             }
 
-            // Reset session data
             state.currentSession.startTime = null;
             state.currentSession.pausedTime = 0;
             state.currentSession.expectedEndTime = null;
             state.currentSession.initialTimeLeft = null;
             state.isRunning = false;
 
-            // Auto-start logic
             const shouldAutoStart = wasWorkSession
                 ? state.settings.autoStartBreaks
                 : state.settings.autoStartWork;
@@ -389,6 +398,7 @@ const timerSlice = createSlice({
             }
         },
 
+        // ... (All other reducers stay exactly the same) ...
         switchMode: (state, action) => {
             const { mode } = action.payload;
             state.mode = mode;
@@ -476,7 +486,6 @@ const timerSlice = createSlice({
             state.needsBackendSync = null;
         },
 
-        // 🔥 FIXED: Only update if backend values are higher (prevents going backwards)
         updateStatsFromBackend: (state, action) => {
             console.log("🔍 DEBUG - updateStatsFromBackend:", {
                 receivedDailySessions: action.payload?.dailySessions,
@@ -492,8 +501,6 @@ const timerSlice = createSlice({
                 const oldSessions = state.sessions;
                 const oldFocusTime = state.totalFocusTime;
                 
-                // 🔥 PROTECTION: Only update if backend values are higher or equal
-                // This prevents the race condition from showing lower values
                 const backendSessions = action.payload.dailySessions || 0;
                 const backendFocusTime = action.payload.dailyFocusTime || 0;
                 
@@ -560,7 +567,6 @@ const timerSlice = createSlice({
             .addCase(syncSessionToBackend.fulfilled, (state, action) => {
                 state.isLoading = false;
                 
-                // Update stats from backend response if available
                 if (action.payload?.stats) {
                     console.log("📊 Updating from session sync:", action.payload.stats);
                     timerSlice.caseReducers.updateStatsFromBackend(state, {

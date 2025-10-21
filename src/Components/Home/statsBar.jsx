@@ -1,16 +1,16 @@
-// Components/Home/statsBar.jsx - Ultra-lightweight version
-import React, { useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchUnifiedStats } from '../../store/slices/statsSlice';
 import { clearSessionCompletedFlag } from '../../store/slices/timerSlice';
-import { LogIn } from 'lucide-react';
+import { Target, Flame, Clock, LogIn, Zap } from 'lucide-react';
 
 const StatsBar = React.memo(() => {
     const dispatch = useDispatch();
     const { isAuthenticated } = useAuth();
     
-    // 🔥 ULTRA SELECTIVE - Only the bare minimum from timer state
+    const [showHourFormat, setShowHourFormat] = useState(true);
+    
     const timerData = useSelector(useCallback((state) => ({
         totalFocusTime: state.timer.totalFocusTime,
         sessions: state.timer.sessions,
@@ -21,10 +21,8 @@ const StatsBar = React.memo(() => {
         isLoggedIn: state.timer.isLoggedIn
     }), []));
     
-    // Unified stats (separate selector to prevent cascading updates)
     const timerStats = useSelector(useCallback((state) => state.stats?.timer, []));
 
-    // 🔥 MEMOIZED CALCULATIONS
     const displayStats = useMemo(() => {
         if (isAuthenticated && timerStats) {
             return {
@@ -40,11 +38,19 @@ const StatsBar = React.memo(() => {
         };
     }, [isAuthenticated, timerStats, timerData.totalFocusTime, timerData.sessions, timerData.streak]);
 
-    const formatTime = useCallback((minutes) => {
+    const formatTimeHours = useCallback((minutes) => {
         const hours = Math.floor(minutes / 60);
         const remainingMinutes = minutes % 60;
         return hours > 0 ? `${hours}h ${remainingMinutes}m` : `${minutes}m`;
     }, []);
+
+    const formatTimeMinutes = useCallback((minutes) => {
+        return `${minutes}m`;
+    }, []);
+
+    const formatTime = useCallback((minutes) => {
+        return showHourFormat ? formatTimeHours(minutes) : formatTimeMinutes(minutes);
+    }, [showHourFormat, formatTimeHours, formatTimeMinutes]);
 
     const goalProgress = useMemo(() => {
         return timerData.dailyGoalEnabled 
@@ -52,7 +58,10 @@ const StatsBar = React.memo(() => {
             : 0;
     }, [timerData.dailyGoalEnabled, displayStats.focusTimeMinutes, timerData.dailyGoal]);
 
-    // 🔥 MINIMAL EFFECTS - Only essential operations
+    const toggleTimeFormat = useCallback(() => {
+        setShowHourFormat(prev => !prev);
+    }, []);
+
     useEffect(() => {
         if (isAuthenticated) {
             dispatch(fetchUnifiedStats());
@@ -70,51 +79,86 @@ const StatsBar = React.memo(() => {
     }, [timerData.sessionJustCompleted, dispatch]);
 
     return (
-        <div className="flex items-center justify-center gap-16 mb-8">
-            {/* Focus Time */}
-            <div className="text-center">
-                <div className="text-2xl font-bold text-primary mb-1">
-                    {formatTime(displayStats.focusTimeMinutes)}
+        <div className="flex flex-col items-center mb-8">
+            <div className="flex items-center justify-center gap-6 mb-3">
+                {/* Focus Time - Clickable */}
+                <button
+                    onClick={toggleTimeFormat}
+                    className="px-5 py-3 rounded-xl bg-surface border border-background hover:border-primary/20 transition-all cursor-pointer active:scale-95"
+                    title={`Focus Time Today - Click to switch format (${showHourFormat ? 'hr/min' : 'minutes only'})`}
+                >
+                    <div className="flex items-center gap-3">
+                        <Clock size={18} className="text-primary" />
+                        <div className="text-xl font-bold text-primary">
+                            {formatTime(displayStats.focusTimeMinutes)}
+                        </div>
+                    </div>
+                </button>
+
+                {/* Sessions */}
+                <div 
+                    className="px-5 py-3 rounded-xl bg-surface border border-background hover:border-primary/20 transition-all"
+                    title="Sessions Completed"
+                >
+                    <div className="flex items-center gap-3">
+                        <Zap size={18} className="text-accent" />
+                        <div className="text-xl font-bold text-primary">
+                            {displayStats.sessions}
+                        </div>
+                    </div>
                 </div>
-                {timerData.dailyGoalEnabled && (
-                    <div className="w-20 h-1 bg-surface rounded-full mb-2">
+
+                {/* Streak */}
+                <div 
+                    className="px-5 py-3 rounded-xl bg-surface border border-background hover:border-accent/20 transition-all"
+                    title={isAuthenticated ? "Day Streak" : "Login for streaks"}
+                >
+                    {isAuthenticated ? (
+                        <div className="flex items-center gap-3">
+                            <Flame size={18} className="text-accent" />
+                            <div className="text-xl font-bold text-accent">
+                                {displayStats.streak}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <LogIn size={16} className="text-secondary" />
+                            <div className="text-sm font-medium text-secondary">
+                                Login
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Daily Goal Card */}
+            {timerData.dailyGoalEnabled && (
+                <div 
+                    className="w-full max-w-md px-4 py-2.5 rounded-xl bg-surface border border-background hover:border-primary/20 transition-all"
+                    title={`Daily Goal: ${formatTime(displayStats.focusTimeMinutes)} / ${formatTime(timerData.dailyGoal)}`}
+                >
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                            <Target size={14} className="text-primary" />
+                            <span className="text-xs font-medium text-primary">Daily Goal</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-secondary">
+                                {formatTime(displayStats.focusTimeMinutes)} / {formatTime(timerData.dailyGoal)}
+                            </span>
+                            <span className="text-xs font-medium text-primary">
+                                {Math.round(goalProgress)}%
+                            </span>
+                        </div>
+                    </div>
+                    <div className="h-2 bg-background rounded-full overflow-hidden">
                         <div 
-                            className="h-1 bg-primary rounded-full transition-all duration-500"
+                            className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-700"
                             style={{ width: `${goalProgress}%` }}
                         />
                     </div>
-                )}
-                <div className="text-sm text-secondary">
-                    {timerData.dailyGoalEnabled ? `Goal: ${timerData.dailyGoal}m` : 'Today'}
                 </div>
-            </div>
-
-            {/* Sessions */}
-            <div className="text-center">
-                <div className="text-2xl font-bold text-primary mb-1">
-                    {displayStats.sessions}
-                </div>
-                <div className="text-sm text-secondary">Sessions</div>
-            </div>
-
-            {/* Streak */}
-            <div className="text-center">
-                {isAuthenticated ? (
-                    <>
-                        <div className="text-2xl font-bold text-accent mb-1">
-                            {displayStats.streak}
-                        </div>
-                        <div className="text-sm text-secondary">Day Streak</div>
-                    </>
-                ) : (
-                    <>
-                        <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-surface/50 flex items-center justify-center">
-                            <LogIn size={20} className="text-secondary" />
-                        </div>
-                        <div className="text-xs text-secondary">Login for<br />streaks</div>
-                    </>
-                )}
-            </div>
+            )}
         </div>
     );
 });

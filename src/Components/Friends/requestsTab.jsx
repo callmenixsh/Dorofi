@@ -1,4 +1,3 @@
-// components/friends/RequestsTab.jsx - Your EXACT original working code
 import { useState } from 'react';
 import { Bell, Check, X, Clock, User } from 'lucide-react';
 
@@ -100,7 +99,6 @@ export default function RequestsTab({
                                 <div key={request._id} className="bg-background rounded-lg p-4 hover:bg-background/80 transition-colors">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                            {/* Profile Picture */}
                                             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 bg-surface">
                                                 {profilePicture && !hasImageError ? (
                                                     <img 
@@ -118,7 +116,6 @@ export default function RequestsTab({
                                                 )}
                                             </div>
                                             
-                                            {/* User Info */}
                                             <div>
                                                 <p className="font-medium text-primary">
                                                     {request.from?.displayName || request.from?.name}
@@ -132,7 +129,6 @@ export default function RequestsTab({
                                             </div>
                                         </div>
                                         
-                                        {/* Action Buttons */}
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleAccept(request._id)}
@@ -182,7 +178,6 @@ export default function RequestsTab({
                                 <div key={request._id} className="bg-background rounded-lg p-4 hover:bg-background/80 transition-colors">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                            {/* Profile Picture */}
                                             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 bg-surface">
                                                 {profilePicture && !hasImageError ? (
                                                     <img 
@@ -200,7 +195,6 @@ export default function RequestsTab({
                                                 )}
                                             </div>
                                             
-                                            {/* User Info */}
                                             <div>
                                                 <p className="font-medium text-primary">
                                                     {request.to?.displayName || request.to?.name}
@@ -214,7 +208,6 @@ export default function RequestsTab({
                                             </div>
                                         </div>
                                         
-                                        {/* Cancel Button */}
                                         <button
                                             onClick={() => handleCancel(request._id)}
                                             disabled={isProcessing}

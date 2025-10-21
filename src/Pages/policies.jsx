@@ -1,11 +1,32 @@
-// Pages/Policies.jsx - Simplified Policies Page
-import React, { useState } from 'react';
+// Pages/Policies.jsx - With URL query parameter support
+import React, { useState, useEffect } from 'react';
 import { FileText, Shield, HelpCircle, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
 const Policies = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('privacy');
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get tab from URL query parameter, default to 'privacy'
+  const tabFromUrl = searchParams.get('tab') || 'privacy';
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['privacy', 'terms', 'faq'].includes(tab)) {
+      setActiveTab(tab);
+    } else {
+      setActiveTab('privacy');
+    }
+  }, [searchParams]);
+
+  // Update URL when tab changes
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
+  };
 
   const tabs = [
     { id: 'privacy', label: 'Privacy', icon: Shield },
@@ -17,19 +38,11 @@ const Policies = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-6 py-16">
         
-        {/* Back Navigation */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-secondary hover:text-primary transition-colors mb-8"
-        >
-          <ArrowLeft size={20} />
-          <span>Back</span>
-        </button>
 
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-primary mb-4">Policies</h1>
-          <p className="text-secondary">Privacy, terms, and frequently asked questions</p>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-primary mb-2">Legal & Help</h1>
+          <p className="text-secondary">Privacy, terms, and common questions</p>
         </div>
 
         {/* Tabs */}
@@ -38,10 +51,10 @@ const Policies = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-background'
                     : 'text-secondary hover:text-primary'
                 }`}
               >
@@ -84,7 +97,7 @@ const PrivacyContent = () => (
 
       <div>
         <h3 className="font-semibold text-primary mb-2">Your Data Rights</h3>
-        <p className="text-sm">You can have your data exported, or deleted anytime.</p>
+        <p className="text-sm">You can have your data exported or deleted anytime.</p>
       </div>
 
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
@@ -150,7 +163,7 @@ const FAQContent = () => {
     },
     {
       question: "Can I delete my account?",
-      answer: "Yes, you can permanently delete your account by contacting."
+      answer: "Yes, you can permanently delete your account by contacting support."
     }
   ];
 

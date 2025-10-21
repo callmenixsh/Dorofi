@@ -1,4 +1,3 @@
-// components/friends/FriendsTabs.jsx
 export default function FriendsTabs({ tabs, activeTab, setActiveTab }) {
     return (
         <div className="bg-surface rounded-lg p-1 mb-6">
@@ -16,7 +15,6 @@ export default function FriendsTabs({ tabs, activeTab, setActiveTab }) {
                         <tab.icon size={18} />
                         {tab.label}
                         
-                        {/* Badge ONLY for requests tab */}
                         {tab.id === 'requests' && tab.count !== undefined && tab.count > 0 && (
                             <span className={`flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full animate-pulse ${
                                 activeTab === tab.id

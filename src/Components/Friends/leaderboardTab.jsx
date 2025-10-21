@@ -1,4 +1,3 @@
-// components/friends/LeaderboardTab.jsx - FIXED IST TIMEZONE COUNTDOWN
 import { 
     Crown, Medal, Award, Trophy, User, Calendar, Clock, Globe, 
     Flame, Target, Star
@@ -9,17 +8,12 @@ export default function LeaderboardTab({ user, friends, loading }) {
     const [imageErrors, setImageErrors] = useState({});
     const [activeLeaderboard, setActiveLeaderboard] = useState('daily'); 
 
-    // 🔥 FIXED: Helper function to get IST time (GMT+5:30)
-// 🔥 FIXED: Get IST time correctly without adding offset to local time
 const getISTTime = () => {
-    // Create a date in IST timezone directly
     return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
 };
 
-    // Combine user and friends
     const allParticipants = [user, ...friends].filter(participant => participant);
 
-    // Enhanced sorting with proper tie-breaking: Time → Streak/Goal% → Sessions
     const sortedParticipants = [...allParticipants].sort((a, b) => {
         let timeA, timeB, secondaryA, secondaryB;
         
@@ -31,7 +25,6 @@ const getISTTime = () => {
         } else if (activeLeaderboard === 'weekly') {
             timeA = a.stats?.weeklyFocusTime || 0;
             timeB = b.stats?.weeklyFocusTime || 0;
-            // Goal progress as secondary metric
             const goalA = a.stats?.weeklyGoal || 300;
             const goalB = b.stats?.weeklyGoal || 300;
             secondaryA = goalA > 0 ? (timeA / goalA) * 100 : 0;
@@ -43,23 +36,18 @@ const getISTTime = () => {
             secondaryB = b.stats?.longestStreak || 0;
         }
 
-        // 1st priority: Focus time
         if (timeB !== timeA) {
             return timeB - timeA;
         }
-        // 2nd priority: Secondary metric (streak or goal%)
         if (secondaryB !== secondaryA) {
             return secondaryB - secondaryA;
         }
-        // If all stats are equal, they have same rank
         return 0;
     });
 
-    // Calculate actual ranks with ties
     const participantsWithRanks = sortedParticipants.map((participant, index) => {
         let actualRank = 1;
         
-        // Find actual rank by counting participants with better stats
         for (let i = 0; i < index; i++) {
             const prev = sortedParticipants[i];
             const curr = participant;
@@ -85,7 +73,6 @@ const getISTTime = () => {
                 currSecondary = curr.stats?.longestStreak || 0;
             }
             
-            // Check if previous participant has better stats
             if (prevTime > currTime || 
                 (prevTime === currTime && prevSecondary > currSecondary)) {
                 actualRank++;
@@ -113,7 +100,6 @@ const getISTTime = () => {
         setImageErrors(prev => ({ ...prev, [participantId]: true }));
     };
 
-    // Check if participant has any stats in current category
     const hasStats = (participant) => {
         if (activeLeaderboard === 'daily') {
             return (participant.stats?.dailyFocusTime || 0) > 0 || 
@@ -126,9 +112,7 @@ const getISTTime = () => {
         }
     };
 
-    // Updated ranking system - only medals for users with stats
     const getRankStyling = (rank, participant) => {
-        // If user has no stats, show serial number regardless of rank
         if (!hasStats(participant)) {
             return {
                 bgColor: 'bg-transparent border-transparent hover:bg-surface/50',
@@ -139,7 +123,6 @@ const getISTTime = () => {
             };
         }
         
-        // Only give medals to users with stats
         switch (rank) {
             case 1: return {
                 bgColor: 'bg-gradient-to-r from-yellow-400/10 to-amber-500/10 border border-yellow-400/30',
@@ -182,10 +165,8 @@ const getISTTime = () => {
         }
     };
 
-    // 🔥 UPDATED - Optimal secondary stats for each category
     const getSecondaryStats = (participant) => {
         if (activeLeaderboard === 'daily') {
-            // Daily: Focus Time + Current Streak
             const currentStreak = participant.stats?.currentStreak || 0;
             return [
                 { 
@@ -195,7 +176,6 @@ const getISTTime = () => {
                 }
             ];
         } else if (activeLeaderboard === 'weekly') {
-            // Weekly: Focus Time + Goal Progress %
             const weeklyTime = participant.stats?.weeklyFocusTime || 0;
             const weeklyGoal = participant.stats?.weeklyGoal || 300;
             const goalPercent = Math.round((weeklyTime / weeklyGoal) * 100);
@@ -207,7 +187,6 @@ const getISTTime = () => {
                 }
             ];
         } else {
-            // All-time: Total Focus Time + Longest Streak
             const longestStreak = participant.stats?.longestStreak || 0;
             return [
                 { 
@@ -219,12 +198,10 @@ const getISTTime = () => {
         }
     };
 
-    // 🔥 FIXED: Use IST timezone for countdown calculations
     const getLeaderboardInfo = () => {
-        const istTime = getISTTime(); // Use IST instead of local time
+        const istTime = getISTTime();
         
         if (activeLeaderboard === 'daily') {
-            // Calculate next day reset at midnight IST
             const tomorrow = new Date(istTime);
             tomorrow.setDate(tomorrow.getDate() + 1);
             tomorrow.setHours(0, 0, 0, 0);
@@ -249,7 +226,6 @@ const getISTTime = () => {
                 )
             };
         } else if (activeLeaderboard === 'weekly') {
-            // Calculate next Monday at midnight IST
             const nextMonday = new Date(istTime);
             const daysUntilMonday = (8 - nextMonday.getDay()) % 7;
             const actualDaysUntilMonday = daysUntilMonday === 0 ? 7 : daysUntilMonday;
@@ -315,7 +291,6 @@ const getISTTime = () => {
     return (
         <div className="space-y-4">
             <div className="bg-surface rounded-lg">
-                {/* Header with Tabs */}
                 <div className="p-6 border-b border-background">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xl font-semibold text-primary flex items-center gap-2">
@@ -324,7 +299,6 @@ const getISTTime = () => {
                         </h3>
                     </div>
 
-                    {/* 3 Leaderboard Type Tabs */}
                     <div className="flex bg-background rounded-lg p-1">
                         <button
                             onClick={() => setActiveLeaderboard('daily')}
@@ -381,7 +355,6 @@ const getISTTime = () => {
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        {/* Rank Display */}
                                         <div className="flex items-center justify-center w-10">
                                             {styling.icon || (
                                                 <span className={`font-bold text-sm ${styling.textColor}`}>
@@ -390,7 +363,6 @@ const getISTTime = () => {
                                             )}
                                         </div>
                                         
-                                        {/* Profile Picture */}
                                         <div className="relative">
                                             <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${styling.profileBorder} bg-surface`}>
                                                 {profilePicture && !hasImageError ? (
@@ -410,7 +382,6 @@ const getISTTime = () => {
                                             </div>
                                         </div>
                                         
-                                        {/* User Info */}
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <h3 className="font-medium text-primary">
@@ -426,7 +397,6 @@ const getISTTime = () => {
                                         </div>
                                     </div>
                                     
-                                    {/* Stats */}
                                     <div className="text-right">
                                         <p className="font-semibold text-primary text-lg">
                                             {getPrimaryMetric(participant)}
@@ -446,7 +416,6 @@ const getISTTime = () => {
                     })}
                 </div>
                 
-                {/* Empty State for Single User */}
                 {participantsWithRanks.length === 1 && (
                     <div className="p-8 text-center border-t border-background">
                         <Trophy size={48} className="text-secondary mx-auto mb-4" />
@@ -457,7 +426,6 @@ const getISTTime = () => {
                     </div>
                 )}
 
-                {/* 🔥 FIXED: Leaderboard Footer Info with IST timezone */}
                 <div className="p-4 bg-background/50 border-t border-background rounded-b-lg">
                     <div className="text-center text-xs space-y-1">
                         {leaderboardInfo.resetInfo && <p>{leaderboardInfo.resetInfo}</p>}

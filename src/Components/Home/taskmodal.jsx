@@ -79,7 +79,6 @@ const TaskModal = () => {
 
     const handleRemoveTask = async (taskId) => {
         if (isLoggedIn) {
-            // Sync to backend
             dispatch(
                 syncTaskToBackend({
                     action: "delete",
@@ -95,7 +94,6 @@ const TaskModal = () => {
         const task = tasks.find((t) => t._id === taskId);
         dispatch(togglePinTask(taskId));
 
-        // Link pinned task to current session (local only)
         if (task && !task.isPinned) {
             dispatch(linkTaskToSession(task));
         } else {
@@ -103,10 +101,9 @@ const TaskModal = () => {
         }
     };
 
-    // Edit task functionality
     const startEditing = (task) => {
         setEditingTaskId(task._id);
-        setEditingText(task.name); // 🔥 FIXED: Use 'name'
+        setEditingText(task.name); 
     };
 
     const cancelEditing = () => {
@@ -116,12 +113,10 @@ const TaskModal = () => {
 
     const saveEdit = async (taskId) => {
         if (editingText.trim() && editingText.trim() !== tasks.find(t => t._id === taskId)?.name) {
-            const updatedTask = { name: editingText.trim() }; // 🔥 FIXED: Use 'name'
+            const updatedTask = { name: editingText.trim() }; 
             
-            // Update local state
             dispatch(updateTask({ taskId, updates: updatedTask }));
 
-            // Sync to backend if logged in
             if (isLoggedIn) {
                 dispatch(
                     syncTaskToBackend({

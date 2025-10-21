@@ -1,4 +1,3 @@
-// components/friends/FriendsListTab.jsx - WITH CLICKABLE FRIEND CARDS
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import {
@@ -20,7 +19,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
     const [removing, setRemoving] = useState(false);
     const [hoveredCard, setHoveredCard] = useState(null);
 
-    // 🔥 UPDATED: Handle clicking on friend card
     const handleFriendClick = (friend) => {
         console.log('🔍 Navigating to profile for:', friend.username);
         navigate(`/profile/${friend.username}`);
@@ -38,7 +36,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
         setImageErrors((prev) => ({ ...prev, [friendId]: true }));
     };
 
-    // Sort friends alphabetically by display name or name
     const sortedFriends = [...friends].sort((a, b) => {
         const nameA = (a.displayName || a.name || "").toLowerCase();
         const nameB = (b.displayName || b.name || "").toLowerCase();
@@ -77,7 +74,7 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
             case "busy":
                 return "Busy";
             case "invisible":
-                return "Offline"; // Show as offline for invisible users
+                return "Offline"; 
             case "offline":
             default:
                 return "Offline";
@@ -85,7 +82,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
     };
 
     const getPresenceStatus = (friend) => {
-        // If privacy is hidden, show that
         if (friend.privacy?.showLastSeen === false) {
             return {
                 status: "offline",
@@ -104,9 +100,7 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
             ? Math.floor((now - lastSeen) / (1000 * 60))
             : null;
 
-        // If user manually set status, use that
         if (friend.presence?.isManual && friend.presence?.status) {
-            // If user is invisible, always show as offline
             if (friend.presence.status === 'invisible') {
                 return {
                     status: "offline",
@@ -122,7 +116,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
             };
         }
 
-        // Auto-detect based on last seen
         if (diffInMinutes === null) {
             return { status: "offline", color: "text-gray-400", text: "Never seen" };
         }
@@ -152,14 +145,11 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
     };
 
     const getCustomStatusDisplay = (friend) => {
-        // If user is invisible, don't show custom status
         if (friend.presence?.isManual && friend.presence?.status === 'invisible') {
             return { hasCustom: false };
         }
         
-        // If user is offline (not manually set to away/busy), don't show custom status
         if (friend.presence?.status === 'offline' || !friend.presence?.isManual) {
-            // Check if user is actually online/away/busy based on activity
             const now = new Date();
             const lastSeen = friend.presence?.lastSeen
                 ? new Date(friend.presence.lastSeen)
@@ -170,7 +160,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                 ? Math.floor((now - lastSeen) / (1000 * 60))
                 : null;
 
-            // Only show custom status if user is recently active (less than 15 minutes)
             if (diffInMinutes === null || diffInMinutes >= 15) {
                 return { hasCustom: false };
             }
@@ -187,7 +176,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
     };
 
     const handleRemoveFriend = (friend, e) => {
-        // 🔥 IMPORTANT: Prevent event bubbling so card click doesn't trigger
         e.stopPropagation();
         setFriendToRemove(friend);
         setShowRemoveModal(true);
@@ -225,7 +213,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
     return (
         <>
             <div>
-                {/* Search Bar with Friend Count */}
                 {friends.length > 0 && (
                     <div className="relative mb-4">
                         <Search
@@ -247,7 +234,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                     </div>
                 )}
 
-                {/* Friends List */}
                 {filteredFriends.length === 0 ? (
                     <div className="bg-surface rounded-lg p-8 text-center">
                         <Users size={48} className="text-secondary mx-auto mb-4" />
@@ -280,7 +266,6 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                             return (
                                 <div
                                     key={friendId}
-                                    // 🔥 UPDATED: Make entire card clickable with better hover effects
                                     onClick={() => handleFriendClick(friend)}
                                     className="bg-surface rounded-lg p-4 hover:bg-surface/80 transition-all duration-200 relative cursor-pointer hover:shadow-md hover:scale-[1.02]"
                                     onMouseEnter={() => setHoveredCard(friendId)}
@@ -331,9 +316,7 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                                                     @{friend.username || "no-username"}
                                                 </p>
 
-                                                {/* Status Display - Only show custom status if online/away/busy */}
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    {/* Show custom status only if user is active and has one */}
                                                     {customStatus.hasCustom && (presenceStatus.status === "online" || presenceStatus.status === "away" || presenceStatus.status === "busy") ? (
                                                         <span className="text-xs text-primary font-medium">
                                                             {customStatus.emoji} {customStatus.text}
@@ -347,9 +330,8 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                                             </div>
                                         </div>
 
-                                        {/* Right Side - Fixed Width Container */}
+                                            {/* Current Streak Display */}
                                         <div className="flex items-center justify-end w-32">
-                                            {/* Current Streak Display - Always takes space */}
                                             <div className="text-right text-sm min-w-0 flex-1 mr-12">
                                                 <p
                                                     className={`font-medium flex items-center justify-end gap-1 ${
@@ -372,7 +354,7 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                                         </div>
                                     </div>
 
-                                    {/* 🔥 UPDATED: Only Remove Button (Eye button removed) */}
+                                    {/*Remove friend  */}
                                     {isHovered && (
                                         <div className="absolute top-8 right-4 flex items-center  gap-2">
                                             <button
