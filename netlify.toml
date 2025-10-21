@@ -6,3 +6,9 @@
 [context.production.environment]
   # Hint to Netlify about Node version to use during build (Netlify may respect engines too)
   NODE_VERSION = "20"
+
+[context.production]
+  # If you intentionally include env values in the build output (e.g. public VITE_* keys),
+  # you can omit them from secret scanning. Prefer setting these via Netlify UI instead.
+  [context.production.environment]
+    SECRETS_SCAN_OMIT_KEYS = "VITE_API_URL,VITE_GOOGLE_CLIENT_ID"
