@@ -5,4 +5,4 @@
 
 [context.production.environment]
   # Hint to Netlify about Node version to use during build (Netlify may respect engines too)
-  NODE_VERSION = "22"
+  NODE_VERSION = "20"
