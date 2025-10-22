@@ -73,12 +73,8 @@ Dorofi is a modern, feature-rich Pomodoro timer application that helps you boost
    npm run dev
    ```
 
-5. Start the backend server (in a separate terminal):
-   ```bash
-   cd BE-Dorofi
-   npm install
-   npm start
-   ```
+5. Start the backend server:
+Is private at the moment
 
 ## Available Scripts
 
