@@ -1,10 +1,6 @@
 // src/hooks/useThemeAssets.js
 import { useEffect, useState } from 'react';
 
-// Debug helper
-const debug = (message, ...args) => {
-    console.log(`[ThemeAssets] ${message}`, ...args);
-};
 
 // Theme mapping to match settings modal
 const themeMapping = {
@@ -21,44 +17,39 @@ const themeMapping = {
 // Theme assets configuration
 const themeAssets = {
     'celestial': {
-        favicon: '/public/assets/celestial.png',
-        logo: '/public/assets/celestial.png',
+        favicon: './assets/celestial.png',
+        logo: '/assets/celestial.png',
         logoClass: 'filter hue-rotate-[0deg] brightness-100 saturate-100'
     },
     'ocean': {
-        favicon: '/public/assets/celestial.png',
-        logo: '/public/assets/celestial.png',
+        favicon: '/assets/celestial.png',
+        logo: '/assets/celestial.png',
         logoClass: 'filter hue-rotate-[260deg] brightness-100 saturate-100'
     },
     'flame': {
-        favicon: '/public/assets/celestial.png',
-        logo: '/public/assets/celestial.png',
+        favicon: '/assets/celestial.png',
+        logo: '/assets/celestial.png',
         logoClass: 'filter hue-rotate-[70deg] brightness-100 saturate-100'
     },
     'void': {
-        favicon: '/public/assets/celestial.png',
-        logo: '/public/assets/celestial.png',
+        favicon: '/assets/celestial.png',
+        logo: '/assets/celestial.png',
         logoClass: 'filter hue-rotate-0 brightness-100 saturate-0'
     }
 };
 
 const getBaseTheme = (fullTheme) => {
-    debug('Getting base theme for:', fullTheme);
     const baseTheme = themeMapping[fullTheme];
-    debug('Mapped to base theme:', baseTheme);
     return baseTheme || 'celestial';
 };
 
 export const useThemeAssets = () => {
-    debug('Hook initialized');
 
     const [currentTheme, setCurrentTheme] = useState(() => {
         const fullTheme = document.documentElement.getAttribute('data-theme') || 
                          localStorage.getItem('theme') || 
                          'celestial-light';
-        debug('Initial full theme:', fullTheme);
         const baseTheme = getBaseTheme(fullTheme);
-        debug('Initial base theme:', baseTheme);
         return baseTheme;
     });
 
@@ -77,7 +68,6 @@ export const useThemeAssets = () => {
             const baseTheme = themeMapping[fullTheme] || 'celestial';
             
             if (baseTheme !== currentTheme) {
-                console.log('Theme changed:', fullTheme, '→', baseTheme);
                 setCurrentTheme(baseTheme);
                 updateFavicon(baseTheme);
             }
@@ -99,6 +89,5 @@ export const useThemeAssets = () => {
 
     // Return the current theme's assets
     const assets = themeAssets[currentTheme] || themeAssets['celestial'];
-    debug('Returning assets for theme:', currentTheme, assets);
     return assets;
 };
