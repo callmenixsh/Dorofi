@@ -113,7 +113,7 @@ export default function ProfileHeader({
                     <div>
                         {/* Display Name */}
                         {isEditingDisplay ? (
-                            <div className="flex  items-center gap-2 mb-1">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
                                 <input
                                     type="text"
                                     value={editedDisplayName}
@@ -121,7 +121,7 @@ export default function ProfileHeader({
                                         setEditedDisplayName(e.target.value);
                                         setError("");
                                     }}
-                                    className="text-xl font-bold bg-background border border-primary rounded px-2 py-1 text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                    className="text-xl  font-bold bg-background border border-primary rounded px-2 py-1 text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     autoFocus
                                     maxLength={50}
                                     disabled={saving}
@@ -149,7 +149,7 @@ export default function ProfileHeader({
                                 </button>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center justify-center gap-2 mb-1">
                                 <h1 className="text-2xl font-bold text-primary">
                                     {currentUser.displayName || currentUser.name}
                                 </h1>
@@ -165,7 +165,7 @@ export default function ProfileHeader({
 
                         {/* Username */}
                         {isEditingUsername ? (
-                            <div className="flex text-center items-center gap-2 mb-1">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -219,7 +219,7 @@ export default function ProfileHeader({
                                 </button>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
                                 <p className="text-accent">
                                     @{currentUser.username || 'Set username'}
                                 </p>
