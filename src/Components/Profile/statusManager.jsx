@@ -225,7 +225,8 @@ export default function StatusManager({
 
             {/* Cool Modal Background */}
             {showModal && (
-                <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-primary/10 to-accent/20 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 min-h-screen">
+
                     <div 
                         ref={modalRef}
                         className="relative w-full max-w-sm sm:max-w-md bg-background/95 backdrop-blur-xl rounded-xl border border-primary/20 shadow-2xl max-h-[85vh] flex flex-col overflow-hidden"

@@ -79,7 +79,7 @@ const StatsBar = React.memo(() => {
 
     return (
         <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center justify-center gap-6 mb-3">
+            <div className="flex items-center justify-center gap-3 mb-3">
                 {/* Focus Time - Clickable */}
                 <button
                     onClick={toggleTimeFormat}

@@ -8,7 +8,7 @@ export default function FriendsHeader({ user, onSendFriendRequest, loading }) {
 
     return (
         <>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row gap-2 items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-primary">Friends & Leaderboard</h1>
                 <button
                     onClick={() => setShowAddFriend(true)}
@@ -16,7 +16,7 @@ export default function FriendsHeader({ user, onSendFriendRequest, loading }) {
                     disabled={loading}
                 >
                     <UserPlus size={18} />
-                    Add Friend
+                    Add
                 </button>
             </div>
 

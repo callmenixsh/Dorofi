@@ -18,7 +18,7 @@ export default function Friends() {
   const getInitialTab = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab');
-    const validTabs = ['leaderboard', 'friends', 'requests', 'challenges'];
+    const validTabs = ['leaderboard', 'friends', 'requests'];
     return validTabs.includes(tabFromUrl) ? tabFromUrl : 'leaderboard';
   };
 
@@ -164,11 +164,6 @@ export default function Friends() {
       icon: Bell,
       count: pendingIncoming.length,
     },
-    {
-      id: "challenges",
-      label: "Challenges",
-      icon: Target,
-    },
   ];
 
   return (
@@ -235,17 +230,6 @@ export default function Friends() {
           />
         )}
 
-        {activeTab === "challenges" && (
-          <div className="bg-surface rounded-lg p-8 text-center">
-            <Target size={48} className="text-secondary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-primary mb-2">
-              Challenges Coming Soon!
-            </h3>
-            <p className="text-secondary">
-              Weekly challenges and group goals will be available here.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

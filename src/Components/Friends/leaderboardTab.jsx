@@ -4,15 +4,19 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+
 export default function LeaderboardTab({ user, friends, loading }) {
     const [imageErrors, setImageErrors] = useState({});
     const [activeLeaderboard, setActiveLeaderboard] = useState('daily'); 
 
-const getISTTime = () => {
-    return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
-};
+
+    const getISTTime = () => {
+        return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+    };
+
 
     const allParticipants = [user, ...friends].filter(participant => participant);
+
 
     const sortedParticipants = [...allParticipants].sort((a, b) => {
         let timeA, timeB, secondaryA, secondaryB;
@@ -36,6 +40,7 @@ const getISTTime = () => {
             secondaryB = b.stats?.longestStreak || 0;
         }
 
+
         if (timeB !== timeA) {
             return timeB - timeA;
         }
@@ -44,6 +49,7 @@ const getISTTime = () => {
         }
         return 0;
     });
+
 
     const participantsWithRanks = sortedParticipants.map((participant, index) => {
         let actualRank = 1;
@@ -82,11 +88,13 @@ const getISTTime = () => {
         return { ...participant, rank: actualRank };
     });
 
+
     const formatTime = (minutes) => {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
     };
+
 
     const getHighResProfilePicture = (googlePicture) => {
         if (!googlePicture) return null;
@@ -96,9 +104,11 @@ const getISTTime = () => {
             .replace("sz=50", "sz=200");
     };
 
+
     const handleImageError = (participantId) => {
         setImageErrors(prev => ({ ...prev, [participantId]: true }));
     };
+
 
     const hasStats = (participant) => {
         if (activeLeaderboard === 'daily') {
@@ -111,6 +121,7 @@ const getISTTime = () => {
                    (participant.stats?.longestStreak || 0) > 0;
         }
     };
+
 
     const getRankStyling = (rank, participant) => {
         if (!hasStats(participant)) {
@@ -155,6 +166,7 @@ const getISTTime = () => {
         }
     };
 
+
     const getPrimaryMetric = (participant) => {
         if (activeLeaderboard === 'daily') {
             return formatTime(participant.stats?.dailyFocusTime || 0);
@@ -165,13 +177,14 @@ const getISTTime = () => {
         }
     };
 
+
     const getSecondaryStats = (participant) => {
         if (activeLeaderboard === 'daily') {
             const currentStreak = participant.stats?.currentStreak || 0;
             return [
                 { 
                     icon: <Flame size={12} className={currentStreak > 0 ? 'text-orange-500' : 'text-secondary'} />, 
-                    value: `${currentStreak} day streak`,
+                    value: `${currentStreak}`,
                     className: currentStreak > 0 ? 'text-orange-500' : 'text-secondary'
                 }
             ];
@@ -182,7 +195,7 @@ const getISTTime = () => {
             return [
                 { 
                     icon: <Target size={12} className={goalPercent >= 100 ? 'text-green-500' : goalPercent >= 50 ? 'text-yellow-500' : 'text-secondary'} />, 
-                    value: `${goalPercent}% of goal`,
+                    value: `${goalPercent}% goal`,
                     className: goalPercent >= 100 ? 'text-green-500' : goalPercent >= 50 ? 'text-yellow-500' : 'text-secondary'
                 }
             ];
@@ -190,13 +203,14 @@ const getISTTime = () => {
             const longestStreak = participant.stats?.longestStreak || 0;
             return [
                 { 
-                    icon: <Star size={12} className={longestStreak > 0 ? 'text-purple-500' : 'text-secondary'} />, 
-                    value: `${longestStreak} day best streak`,
+                    icon: <Flame size={12} className={longestStreak > 0 ? 'text-purple-500' : 'text-secondary'} />, 
+                    value: `${longestStreak}`,
                     className: longestStreak > 0 ? 'text-purple-500' : 'text-secondary'
                 }
             ];
         }
     };
+
 
     const getLeaderboardInfo = () => {
         const istTime = getISTTime();
@@ -211,7 +225,7 @@ const getISTTime = () => {
             const minutesLeft = Math.floor((timeUntilReset % (1000 * 60 * 60)) / (1000 * 60));
             
             return {
-                title: "Today's Focus Battle",
+                title: "Today's Focus ",
                 resetInfo: (
                     <span className="flex items-center justify-center gap-1 text-secondary">
                         <Clock size={12} />
@@ -267,6 +281,7 @@ const getISTTime = () => {
         }
     };
 
+
     if (loading) {
         return (
             <div className="bg-surface rounded-lg p-6 text-center">
@@ -275,6 +290,7 @@ const getISTTime = () => {
             </div>
         );
     }
+
 
     if (participantsWithRanks.length === 0) {
         return (
@@ -286,7 +302,9 @@ const getISTTime = () => {
         );
     }
 
+
     const leaderboardInfo = getLeaderboardInfo();
+
 
     return (
         <div className="space-y-4">
@@ -298,6 +316,7 @@ const getISTTime = () => {
                             {leaderboardInfo.title}
                         </h3>
                     </div>
+
 
                     <div className="flex bg-background rounded-lg p-1">
                         <button
@@ -349,7 +368,7 @@ const getISTTime = () => {
                         return (
                             <div 
                                 key={participantId}
-                                className={`rounded-lg p-4 transition-all hover:shadow-md ${styling.bgColor} ${
+                                className={`rounded-lg p-2 transition-all hover:shadow-md ${styling.bgColor} ${
                                     isCurrentUser ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
                                 }`}
                             >
@@ -387,9 +406,6 @@ const getISTTime = () => {
                                                 <h3 className="font-medium text-primary">
                                                     {participant.displayName || participant.name}
                                                 </h3>
-                                                {isCurrentUser && (
-                                                    <span className="text-xs bg-primary text-background px-2 py-1 rounded-full">You</span>
-                                                )}
                                             </div>
                                             <p className="text-sm text-secondary">
                                                 @{participant.username || 'no-username'}

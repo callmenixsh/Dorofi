@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Timer, Heart, Github, AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useThemeAssets } from '../hooks/useThemeAssets';
+
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
@@ -11,6 +13,18 @@ const Footer = () => {
         isChecking: true,
         lastChecked: null
     });
+
+    // Separate component for the themed logo
+    const ThemeLogo = () => {
+      const themeAssets = useThemeAssets();
+      return (
+        <img 
+          src={themeAssets.logo} 
+          alt="Dorofi Logo" 
+          className={`w-12 h-12 ${themeAssets.logoClass}`} 
+        />
+      );
+    };
 
     const handleNavigation = (path) => {
         navigate(path);
@@ -100,9 +114,7 @@ const Footer = () => {
                     {/* Brand Section - Wider */}
                     <div className="md:col-span-2">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
-                                <Timer size={20} className="text-background" />
-                            </div>
+            <ThemeLogo />
                             <span
                                 className="text-2xl font-bold text-primary"
                                 style={{ fontFamily: "Joti One" }}

@@ -86,8 +86,8 @@ export default function ProfileHeader({
 
     return (
         <div className="bg-surface rounded-lg p-6 mb-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
                     {/* Profile Picture */}
                     <div className="relative">
                         <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-primary bg-background">
@@ -113,7 +113,7 @@ export default function ProfileHeader({
                     <div>
                         {/* Display Name */}
                         {isEditingDisplay ? (
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex  items-center gap-2 mb-1">
                                 <input
                                     type="text"
                                     value={editedDisplayName}
@@ -165,7 +165,7 @@ export default function ProfileHeader({
 
                         {/* Username */}
                         {isEditingUsername ? (
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex text-center items-center gap-2 mb-1">
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -242,7 +242,7 @@ export default function ProfileHeader({
                             </div>
                         )}
 
-                        <p className="text-sm text-secondary">
+                        <p className="text-sm text-secondary sm:text-left text-center">
                             Member since {new Date(currentUser.createdAt || Date.now()).toLocaleDateString()}
                         </p>
                     </div>

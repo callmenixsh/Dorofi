@@ -1,7 +1,20 @@
 // Pages/About.jsx - Cleaned About Page with Subtle Founder Section
 import React from 'react';
-import { Timer, Users, Clock, Target, Trophy, TrendingUp, Heart, Zap, Github, ExternalLink } from 'lucide-react';
+import { Users, Clock, Target, Trophy, TrendingUp, Heart, Zap, Github, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useThemeAssets } from '../hooks/useThemeAssets';
+
+// Separate component for the themed logo
+const ThemeLogo = () => {
+  const themeAssets = useThemeAssets();
+  return (
+    <img 
+      src={themeAssets.logo} 
+      alt="Dorofi Logo" 
+      className={`w-20 h-20 ${themeAssets.logoClass}`} 
+    />
+  );
+};
 
 const About = () => {
   const navigate = useNavigate();
@@ -22,9 +35,8 @@ const About = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-4 mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center">
-              <Timer size={36} className="text-white" />
-            </div>
+            {/* Move hook to component level */}
+            <ThemeLogo />
             <h1 className="text-5xl font-bold text-primary" style={{ fontFamily: "Joti One" }}>
               Dorofi
             </h1>
