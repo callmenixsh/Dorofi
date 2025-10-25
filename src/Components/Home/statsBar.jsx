@@ -84,7 +84,7 @@ const StatsBar = React.memo(() => {
                 <button
                     onClick={toggleTimeFormat}
                     className="px-5 py-3 rounded-xl bg-surface border border-background hover:border-primary/20 transition-all cursor-pointer active:scale-95"
-                    title={`Focus Time Today - Click to switch format (${showHourFormat ? 'hr/min' : 'minutes only'})`}
+                    title={`Focus Time Today - Click to switch format (${showHourFormat ? 'hr:min' : 'mins'})`}
                 >
                     <div className="flex items-center gap-3">
                         <Clock size={18} className="text-primary" />

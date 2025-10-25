@@ -149,7 +149,7 @@ export default function ProfileHeader({
                                 </button>
                             </div>
                         ) : (
-                            <div className="flex items-center justify-center gap-2 mb-1">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
                                 <h1 className="text-2xl font-bold text-primary">
                                     {currentUser.displayName || currentUser.name}
                                 </h1>
