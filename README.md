@@ -1,5 +1,5 @@
 
-# Dorofi - Focus Better with the Pomodoro Technique <img align="center" src="https://github.com/callmenixsh/Dorofi/blob/main/public/assets/celestial.png" width="100" style="border:none;" />
+# Dorofi - Focus and Compete Together <img align="center" src="https://github.com/callmenixsh/Dorofi/blob/main/public/assets/celestial.png" width="100" style="border:none;" />
 
 
 Dorofi is a modern, feature-rich Pomodoro timer application that helps you boost productivity through focused work sessions and smart break management.
