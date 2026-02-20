@@ -1,9 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/svg+xml" href="./public/assets/celestial.png" />
+		<link
+			rel="icon"
+			type="image/svg+xml"
+			href="./public/assets/celestial.png"
+		/>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -18,9 +22,33 @@
 		<script>
 			(function () {
 				const savedTheme = localStorage.getItem("theme") || "celestial-light";
-				console.log('Initial theme load:', savedTheme);
+				console.log("Initial theme load:", savedTheme);
 				document.documentElement.setAttribute("data-theme", savedTheme);
-				console.log('Set data-theme attribute to:', document.documentElement.getAttribute('data-theme'));
+				console.log(
+					"Set data-theme attribute to:",
+					document.documentElement.getAttribute("data-theme"),
+				);
+			})();
+		</script>
+		<script type="module">
+			(function () {
+				const key = "visteria_Dorofi";
+				console.log("Tracking dorofi");
+				if (sessionStorage.getItem(key)) return;
+				sessionStorage.setItem(key, "1");
+				fetch("https://visteria.vercel.app/api/visits/track", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						siteId: "Dorofi",
+						siteUrl: "https://dorofi.netlify.app/",
+						url: location.href,
+						referrer: document.referrer,
+						userAgent: navigator.userAgent,
+						visitedAt: new Date().toISOString(),
+					}),
+					keepalive: true,
+				}).catch(() => {});
 			})();
 		</script>
 		<script type="module" src="/src/main.jsx"></script>
