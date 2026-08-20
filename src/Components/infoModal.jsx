@@ -14,9 +14,11 @@ export default function InfoModal({ onClose, user, onLoginPrompt }) {
     }, []);
 
     const shortcuts = [
+        { key: '/', action: 'Open Shortcuts', category: 'Help' },
         { key: 'Space', action: 'Start/Pause timer', category: 'Timer Control' },
         { key: 'R', action: 'Reset timer', category: 'Timer Control' },
         { key: 'S', action: 'Skip break', category: 'Timer Control' },
+        { key: 'Tab', action: 'Open User List', category: 'Room Control' },
         { key: 'F', action: 'Toggle focus mode', category: 'Display' },
         { key: 'N', action: 'Next Lofi', category: 'Audio' },
         { key: 'M', action: 'Play/Pause Lofi', category: 'Audio' },

@@ -6,6 +6,7 @@ import tasksReducer from './slices/tasksSlice';
 import profileReducer from './slices/profileSlice'; // 🆕 Make sure this exists
 import friendsReducer from './slices/friendsSlice';
 import statsReducer from './slices/statsSlice';
+import roomsReducer from './slices/roomsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     profile: profileReducer,
     friends: friendsReducer,
     stats: statsReducer, 
+    rooms: roomsReducer,
   },
-  devTools: process.env.NODE_ENV !== 'production'
+  devTools: import.meta.env.MODE !== 'production'
 });

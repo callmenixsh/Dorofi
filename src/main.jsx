@@ -13,6 +13,7 @@ import { store } from './store'; // 🆕 Redux Store
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import Home from "./Pages/home.jsx";
 import Rooms from "./Pages/rooms.jsx";
+import RoomSession from "./Pages/RoomSession.jsx";
 import About from "./Pages/about.jsx";
 import Friends from "./Pages/friends.jsx";
 import Profile from "./Pages/profile.jsx";
@@ -107,6 +108,14 @@ const router = createBrowserRouter([
         element: (
             <Layout>
                 <Rooms />
+            </Layout>
+        ),
+    },
+    {
+        path: "/rooms/:roomId",
+        element: (
+            <Layout>
+                <RoomSession />
             </Layout>
         ),
     },

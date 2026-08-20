@@ -25,6 +25,25 @@ export default function DorofiNavbar() {
     const actionTrayRef = useRef(null);
     const navigate = useNavigate();
 
+    // Keyboard shortcut for '/' to open info modal
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === '/') {
+                event.preventDefault();
+                if (!event.target.matches('input, textarea')) {
+                    setIsInfoOpen(true);
+                    setShowActionTray(false);
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
+
     // Close action tray when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
