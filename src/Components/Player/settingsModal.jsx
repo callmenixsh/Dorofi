@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
     Settings,
     X,
@@ -36,10 +36,16 @@ const SettingsModal = ({
     getWhiteNoiseIcon,
 }) => {
     const dispatch = useDispatch();
+    const [closing, setClosing] = useState(false);
+
+    const handleClose = useCallback(() => {
+        setClosing(true);
+        setTimeout(() => dispatch(closeModal()), 140);
+    }, [dispatch]);
 
     return (
-        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
-            <div className="w-full max-w-xs sm:max-w-2xl lg:max-w-4xl max-h-[90vh] sm:max-h-[85vh] bg-surface/95 rounded-2xl sm:rounded-3xl border border-primary/20 overflow-hidden">
+        <div className={`fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+            <div className={`w-full max-w-xs sm:max-w-2xl lg:max-w-4xl max-h-[90vh] sm:max-h-[85vh] bg-surface/95 rounded-2xl sm:rounded-3xl border border-primary/20 overflow-hidden ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-surface/50">
                     <h2 className="text-lg sm:text-2xl font-bold text-primary flex items-center gap-2 sm:gap-3">
                         <Settings2 size={20} className="sm:w-6 sm:h-6" />
@@ -47,7 +53,7 @@ const SettingsModal = ({
                         <span className="sm:hidden">Audio</span>
                     </h2>
                     <button
-                        onClick={() => dispatch(closeModal())}
+                        onClick={handleClose}
                         className="group w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-surface/50 flex items-center justify-center transition-colors"
                         title="Close settings"
                     >

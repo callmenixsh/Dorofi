@@ -279,4 +279,61 @@ body.has-compact-music-player {
   scrollbar-width: none;
 }
 
+/* ─── Page & Modal Transitions ─── */
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modal-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.97) translateY(8px); }
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes backdrop-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes progress-slide {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes progress-fade {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.animate-page-in {
+  animation: page-in 0.2s ease-out both;
+}
+
+.animate-modal-in {
+  animation: modal-in 0.18s ease-out both;
+}
+
+.animate-modal-out {
+  animation: modal-out 0.14s ease-in both;
+}
+
+.animate-backdrop-in {
+  animation: backdrop-in 0.15s ease-out both;
+}
+
+.animate-backdrop-out {
+  animation: backdrop-out 0.12s ease-in both;
+}
+
 

@@ -1,9 +1,15 @@
 // InfoModal.jsx - COMPLETE with Features Tab
 import { X, Keyboard, Zap, Play, Timer, Users, Settings, Trophy, Volume2, TrendingUp, Bug, ExternalLink } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export default function InfoModal({ onClose, user, onLoginPrompt }) {
     const [activeTab, setActiveTab] = useState('shortcuts');
+    const [closing, setClosing] = useState(false);
+
+    const handleClose = useCallback(() => {
+        setClosing(true);
+        setTimeout(() => onClose(), 140);
+    }, [onClose]);
 
     useEffect(() => {
         const originalOverflow = document.body.style.overflow;
@@ -35,8 +41,8 @@ export default function InfoModal({ onClose, user, onLoginPrompt }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative">
+        <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+            <div className={`bg-background rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
                 <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
                     <div className="flex items-center gap-4">
@@ -48,8 +54,8 @@ export default function InfoModal({ onClose, user, onLoginPrompt }) {
                                 Welcome to Dorofi
                             </h2>
                         </div>
-                        <button 
-                            onClick={onClose}
+                        <button
+                            onClick={handleClose}
                             className="rounded-full p-2 hover:bg-surface/80 transition-colors"
                             aria-label="Close"
                         >

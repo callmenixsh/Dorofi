@@ -1,5 +1,5 @@
 // src/main.jsx - Updated with Redux Provider
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -7,9 +7,11 @@ import {
     createBrowserRouter,
     RouterProvider,
     Navigate,
+    Outlet,
+    useLocation,
 } from "react-router-dom";
-import { Provider } from 'react-redux'; // 🆕 Redux Provider
-import { store } from './store'; // 🆕 Redux Store
+import { Provider } from 'react-redux';
+import { store } from './store';
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import Home from "./Pages/home.jsx";
 import Rooms from "./Pages/rooms.jsx";
@@ -24,7 +26,7 @@ import Navbar from "./Components/navbar.jsx";
 import Footer from "./Components/footer.jsx";
 import Notfound from "./Components/notfound.jsx";
 import UniversalMusicPlayer from "./Components/Player/musicPlayer.jsx";
-import Policies from "./Pages/policies.jsx"; 
+import Policies from "./Pages/policies.jsx";
 import "./index.css";
 
 // Get Google Client ID with validation
@@ -46,15 +48,62 @@ const ThemeInitializer = ({ children }) => {
     return children;
 };
 
-// Layout Component
-const Layout = ({ children }) => (
-    <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-grow min-h-full">{children}</div>
-        <UniversalMusicPlayer />
-        <Footer />
-    </div>
-);
+// Layout Component with page transitions and loading indicator
+const Layout = () => {
+    const location = useLocation();
+    const [showLoading, setShowLoading] = useState(false);
+    const [pageKey, setPageKey] = useState(location.key);
+    const firstLoad = useRef(true);
+    const timerRef = useRef(null);
+
+    // Detect route changes
+    useEffect(() => {
+        if (firstLoad.current) {
+            firstLoad.current = false;
+            setPageKey(location.key);
+            return;
+        }
+
+        setShowLoading(true);
+        setPageKey(location.key);
+
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setShowLoading(false), 400);
+
+        return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    }, [location.key]);
+
+    return (
+        <div className="min-h-screen flex flex-col">
+            <Navbar />
+
+            {/* Loading bar */}
+            <div className="relative h-0">
+                <div
+                    className={`absolute top-0 left-0 right-0 h-[2px] z-50 overflow-hidden transition-opacity duration-150 ${
+                        showLoading ? 'opacity-100' : 'opacity-0'
+                    }`}
+                >
+                    <div
+                        className="h-full rounded-full"
+                        style={{
+                            backgroundColor: 'var(--color-primary)',
+                            animation: 'progress-slide 0.4s ease-out forwards',
+                        }}
+                    />
+                </div>
+            </div>
+
+            {/* Page content with fade-in animation */}
+            <div key={pageKey} className="flex-grow min-h-full animate-page-in">
+                <Outlet />
+            </div>
+
+            <UniversalMusicPlayer />
+            <Footer />
+        </div>
+    );
+};
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -80,108 +129,59 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
+// Error Layout (standalone, no Outlet needed)
+const ErrorLayout = ({ children }) => (
+    <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow min-h-full">{children}</div>
+        <UniversalMusicPlayer />
+        <Footer />
+    </div>
+);
+
 // Router Configuration
 const router = createBrowserRouter([
     {
-        path: "/",
-        element: (
-            <Layout>
-                <Home />
-            </Layout>
-        ),
+        element: <Layout />,
         errorElement: (
-            <Layout>
+            <ErrorLayout>
                 <Notfound />
-            </Layout>
+            </ErrorLayout>
         ),
-    },
-    {
-        path: "/about",
-        element: (
-            <Layout>
-                <About />
-            </Layout>
-        ),
-    },
-    {
-        path: "/rooms",
-        element: (
-            <Layout>
-                <Rooms />
-            </Layout>
-        ),
-    },
-    {
-        path: "/rooms/:roomId",
-        element: (
-            <Layout>
-                <RoomSession />
-            </Layout>
-        ),
-    },
-    {
-        path: "/policies",
-        element: (
-            <Layout>
-                <Policies />
-            </Layout>
-        ),
-    },
-    {
-        path: "/guide",
-        element: (
-            <Layout>
-                <Guide />
-            </Layout>
-        ),
-    },
-    {
-        path: "/support",
-        element: (
-            <Layout>
-                <Support />
-            </Layout>
-        ),
-    },
-    // PROTECTED ROUTES - Require authentication
-    {
-        path: "/friends",
-        element: (
-            <Layout>
-                <ProtectedRoute>
-                    <Friends />
-                </ProtectedRoute>
-            </Layout>
-        ),
-    },
-    {
-        path: "/profile",
-        element: (
-            <Layout>
-                <ProtectedRoute>
-                    <Profile />
-                </ProtectedRoute>
-            </Layout>
-        ),
-    },
-    {
-        path: "/profile/:username",
-        element: (
-            <Layout>
-                <ProtectedRoute>
-                    <FriendProfile />
-                </ProtectedRoute>
-            </Layout>
-        ),
-    },
-    // 404 Route
-    {
-        path: "*",
-        element: (
-            <Layout>
-                <Notfound />
-            </Layout>
-        ),
+        children: [
+            { path: "/", element: <Home /> },
+            { path: "/about", element: <About /> },
+            { path: "/rooms", element: <Rooms /> },
+            { path: "/rooms/:roomId", element: <RoomSession /> },
+            { path: "/policies", element: <Policies /> },
+            { path: "/guide", element: <Guide /> },
+            { path: "/support", element: <Support /> },
+            {
+                path: "/friends",
+                element: (
+                    <ProtectedRoute>
+                        <Friends />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: "/profile",
+                element: (
+                    <ProtectedRoute>
+                        <Profile />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: "/profile/:username",
+                element: (
+                    <ProtectedRoute>
+                        <FriendProfile />
+                    </ProtectedRoute>
+                ),
+            },
+            { path: "*", element: <Notfound /> },
+        ],
     },
 ]);
 

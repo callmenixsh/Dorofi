@@ -1,5 +1,5 @@
 // Components/Home/TimerSettingsModal.jsx - FIXED with Sessions until Long Break
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
 	X,
@@ -41,8 +41,21 @@ const TimerSettingsModal = () => {
 	const [isCreatingPreset, setIsCreatingPreset] = useState(false);
 	const [newPresetName, setNewPresetName] = useState("");
 
+	// Exit animation state
+	const [closing, setClosing] = useState(false);
+
 	// Check if timer is actively running (not paused)
 	const isTimerActive = isRunning && timeLeft > 0;
+
+	const handleClose = useCallback(() => {
+		setClosing(true);
+		setTimeout(() => {
+			setFormData(settings);
+			setActiveTab("durations");
+			dispatch(toggleSettings());
+			setClosing(false);
+		}, 140);
+	}, [dispatch, settings]);
 
 	// Lock body scroll when modal is open
 	useEffect(() => {
@@ -108,9 +121,7 @@ const TimerSettingsModal = () => {
 	};
 
 	const handleCancel = () => {
-		setFormData(settings);
-		setActiveTab("durations");
-		dispatch(toggleSettings());
+		handleClose();
 	};
 
 	const resetToDefaults = () => {
@@ -254,11 +265,11 @@ const deletePreset = async (presetId) => {
 
 	return (
 		<div
-			className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
+			className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}
 			onClick={handleCancel}
 		>
 			<div
-				className="bg-background rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden border border-primary/20"
+				className={`bg-background rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden border border-primary/20 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}

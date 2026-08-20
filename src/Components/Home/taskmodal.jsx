@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { X, Plus, Check, Trash2, Pin, Target, Edit3, Save, XCircle } from "lucide-react";
 import {
@@ -22,6 +22,12 @@ const TaskModal = () => {
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [editingText, setEditingText] = useState("");
     const [activeTaskId, setActiveTaskId] = useState(null);
+    const [closing, setClosing] = useState(false);
+
+    const handleClose = useCallback(() => {
+        setClosing(true);
+        setTimeout(() => dispatch(closeTaskModal()), 140);
+    }, [dispatch]);
 
     useEffect(() => {
         if (showTaskModal) {
@@ -138,8 +144,8 @@ const TaskModal = () => {
     const completedTasks = tasks.filter((task) => task.isCompleted);
 
     return (
-        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
-            <div className="bg-background rounded-xl shadow-2xl w-full max-w-md sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-primary/20">
+        <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+            <div className={`bg-background rounded-xl shadow-2xl w-full max-w-md sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-primary/20 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-surface/50 bg-gradient-to-r from-primary/5 to-accent/5">
                     <div>
@@ -151,7 +157,7 @@ const TaskModal = () => {
                         )}
                     </div>
                     <button
-                        onClick={() => dispatch(closeTaskModal())}
+                        onClick={handleClose}
                         className="rounded-full p-2 hover:bg-surface/80 transition-colors"
                         aria-label="Close"
                     >

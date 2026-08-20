@@ -1,9 +1,15 @@
 // components/LoginPromptModal.jsx
 import { X, Users, Star, TrendingUp, Trophy } from 'lucide-react';
 import { FaGoogle } from 'react-icons/fa';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export default function LoginPromptModal({ onClose, onLogin, featureType = "features", isLoading = false }) {
+    const [closing, setClosing] = useState(false);
+
+    const handleClose = useCallback(() => {
+        setClosing(true);
+        setTimeout(() => onClose(), 140);
+    }, [onClose]);
     // Lock body scroll when modal opens
     useEffect(() => {
         // Store original body style
@@ -61,12 +67,12 @@ export default function LoginPromptModal({ onClose, onLogin, featureType = "feat
     const content = getFeatureContent();
 
     return (
-        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-xl shadow-2xl w-full max-w-md border border-surface/50">
+        <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+            <div className={`bg-background rounded-xl shadow-2xl w-full max-w-md border border-surface/50 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
                 <div className="relative p-6 pb-4">
-                    <button 
-                        onClick={onClose}
+                    <button
+                        onClick={handleClose}
                         className="absolute right-4 top-4 rounded-full p-2 hover:bg-surface/80 transition-colors"
                         aria-label="Close"
                     >
@@ -108,7 +114,7 @@ export default function LoginPromptModal({ onClose, onLogin, featureType = "feat
                     </button>
                     
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="w-full px-4 py-2 text-secondary hover:text-primary transition-colors text-sm hover:bg-surface/30 rounded-lg"
                     >
                         Maybe later

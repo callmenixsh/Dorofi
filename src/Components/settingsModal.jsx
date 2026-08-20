@@ -1,5 +1,5 @@
 import { X, LogOut, Palette, Moon, Sun, User, Settings as SettingsIcon, Check } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export default function SettingsModal({ onClose, user, onLogout, onThemeChange }) {
     const [currentTheme, setCurrentTheme] = useState(() => {
@@ -8,8 +8,13 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                'celestial-light';
     });
 
-    // 🔥 ADDED: Image error state like ProfileHeader
     const [imageError, setImageError] = useState(false);
+    const [closing, setClosing] = useState(false);
+
+    const handleClose = useCallback(() => {
+        setClosing(true);
+        setTimeout(() => onClose(), 140);
+    }, [onClose]);
 
     // Lock body scroll when modal opens
     useEffect(() => {
@@ -85,7 +90,7 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
 
     const handleLogout = () => {
         onLogout();
-        onClose();
+        handleClose();
     };
 
     const handleThemeSelect = (themeId) => {
@@ -124,12 +129,12 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
     };
 
     return (
-        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-xl shadow-2xl w-full max-w-lg border border-primary/20">
+        <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+            <div className={`bg-background rounded-xl shadow-2xl w-full max-w-lg border border-primary/20 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
                 <div className="relative px-6 py-4 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10">
-                    <button 
-                        onClick={onClose}
+                    <button
+                        onClick={handleClose}
                         className="absolute right-4 top-4 rounded-full p-2 hover:bg-surface/80 transition-colors"
                         aria-label="Close Settings"
                     >
