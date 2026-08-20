@@ -284,9 +284,39 @@ export default function LeaderboardTab({ user, friends, loading }) {
 
     if (loading) {
         return (
-            <div className="bg-surface rounded-lg p-6 text-center">
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-secondary">Loading leaderboard...</p>
+            <div className="space-y-4">
+                <div className="bg-surface rounded-lg">
+                    <div className="p-6 border-b border-background">
+                        <div className="h-6 w-40 bg-background rounded animate-pulse mb-4" />
+                        <div className="flex bg-background rounded-lg p-1 gap-1">
+                            <div className="flex-1 h-9 bg-surface rounded-md animate-pulse" />
+                            <div className="flex-1 h-9 bg-surface rounded-md animate-pulse" />
+                            <div className="flex-1 h-9 bg-surface rounded-md animate-pulse" />
+                        </div>
+                    </div>
+                    <div className="p-4 space-y-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="rounded-lg p-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center justify-center w-10">
+                                            <div className="h-5 w-5 bg-background rounded animate-pulse" />
+                                        </div>
+                                        <div className="w-12 h-12 rounded-full bg-background animate-pulse" />
+                                        <div className="space-y-2">
+                                            <div className="h-4 w-32 bg-background rounded animate-pulse" />
+                                            <div className="h-3 w-24 bg-background rounded animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <div className="text-right space-y-2">
+                                        <div className="h-5 w-16 bg-background rounded animate-pulse ml-auto" />
+                                        <div className="h-3 w-12 bg-background rounded animate-pulse ml-auto" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         );
     }

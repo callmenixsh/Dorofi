@@ -227,26 +227,28 @@ export default function Achievements() {
         <>
             <div className="bg-surface rounded-lg p-6 mb-6">
                 {/* Header - osu! Style */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <Trophy className="w-6 h-6 text-primary" />
-                        <h2 className="text-lg font-bold text-primary">Medals</h2>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="bg-background px-3 py-1 rounded-full">
-                            <span className="text-primary font-semibold">{totalEarned}</span>
-                            <span className="text-secondary mx-1">/</span>
-                            <span className="text-secondary">50</span>
-                        </div>
-                        {earnedSecrets.length > 0 && (
-                            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-3 py-1 rounded-full border border-purple-500/30">
-                                <span className="text-purple-600 dark:text-purple-300 font-semibold text-xs">
-                                    {earnedSecrets.length} secret{earnedSecrets.length !== 1 ? 's' : ''}
-                                </span>
+                 <div className="flex items-center justify-between mb-5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-primary/20 rounded-xl">
+                                    <Trophy size={20} className="text-primary" />
+                                </div>
+                                <h2 className="text-lg font-bold text-primary">Medals</h2>
                             </div>
-                        )}
-                    </div>
-                </div>
+                            <div className="flex items-center gap-3 text-sm">
+                                <div className="bg-background px-3 py-1.5 rounded-full">
+                                    <span className="text-primary font-semibold">{totalEarned}</span>
+                                    <span className="text-secondary mx-1">/</span>
+                                    <span className="text-secondary">50</span>
+                                </div>
+                                {earnedSecrets.length > 0 && (
+                                    <div className="bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
+                                        <span className="text-purple-500 font-semibold text-xs">
+                                            {earnedSecrets.length} secret{earnedSecrets.length !== 1 ? 's' : ''}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                 
                 {/* Achievements Grid - osu! Circular Medal Layout */}
                 <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">

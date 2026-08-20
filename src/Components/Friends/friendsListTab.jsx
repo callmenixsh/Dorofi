@@ -203,9 +203,25 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
 
     if (loading) {
         return (
-            <div className="bg-surface rounded-lg p-6 text-center">
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-secondary">Loading friends...</p>
+            <div className="space-y-3">
+                <div className="relative mb-4">
+                    <div className="w-full h-10 bg-surface rounded-lg animate-pulse" />
+                </div>
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-surface rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-background animate-pulse" />
+                                <div className="space-y-2">
+                                    <div className="h-4 w-32 bg-background rounded animate-pulse" />
+                                    <div className="h-3 w-24 bg-background rounded animate-pulse" />
+                                    <div className="h-3 w-20 bg-background rounded animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="h-4 w-16 bg-background rounded animate-pulse" />
+                        </div>
+                    </div>
+                ))}
             </div>
         );
     }

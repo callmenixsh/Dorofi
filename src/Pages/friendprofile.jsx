@@ -191,44 +191,77 @@ export default function FriendProfile() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <div className="text-secondary">Loading {username}'s profile...</div>
+            <div className="min-h-screen bg-background p-6">
+                <div className="max-w-4xl mx-auto space-y-8">
+                    <div className="flex items-center space-x-3">
+                        <div className="h-5 w-5 bg-surface rounded animate-pulse" />
+                        <div className="h-4 w-32 bg-surface rounded animate-pulse" />
+                        <div className="h-4 w-40 bg-surface rounded animate-pulse ml-4" />
+                    </div>
+
+                    <div className="bg-surface rounded-lg p-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-full bg-background animate-pulse" />
+                            <div className="space-y-3">
+                                <div className="h-7 w-48 bg-background rounded animate-pulse" />
+                                <div className="h-4 w-32 bg-background rounded animate-pulse" />
+                                <div className="h-8 w-40 bg-background rounded-lg animate-pulse" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                            <div key={i} className="bg-surface rounded-xl p-5 border border-background">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-11 h-11 bg-background rounded-xl animate-pulse" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-3 w-20 bg-background rounded animate-pulse" />
+                                        <div className="h-5 w-16 bg-background rounded animate-pulse" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="bg-surface rounded-lg p-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 bg-background rounded animate-pulse" />
+                                <div className="h-5 w-20 bg-background rounded animate-pulse" />
+                            </div>
+                            <div className="h-6 w-16 bg-background rounded-full animate-pulse" />
+                        </div>
+                        <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+                                <div key={i} className="aspect-square rounded-full bg-background animate-pulse" />
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     }
 
-    // 🔥 POMODORO-STYLE ERROR PAGE with fixed navigation
     if (error) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center p-6">
                 <div className="text-center max-w-md">
-                    {/* Pomodoro Timer Icon */}
-                    <div className="relative mx-auto mb-8 w-32 h-32">
-                        <div className="w-32 h-32 rounded-full border-8 border-surface bg-surface/50 flex items-center justify-center relative">
-                            <Timer className="w-16 h-16 text-secondary" />
-                            {/* Tomato-style accent */}
-                            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-4 h-6 bg-accent rounded-full opacity-60"></div>
-                            <div className="absolute top-1 left-1/2 transform -translate-x-1/2 translate-x-1 w-2 h-1 bg-accent/80 rounded-full"></div>
-                            <div className="absolute top-1 left-1/2 transform -translate-x-1/2 -translate-x-1 w-2 h-1 bg-accent/80 rounded-full"></div>
-                        </div>
-                        {/* Crack effect */}
-                        <div className="absolute top-8 left-8 w-1 h-16 bg-accent/30 transform rotate-12 rounded-full"></div>
+                    <div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center mx-auto mb-6">
+                        <User size={36} className="text-secondary" />
                     </div>
-                    
-                    <h1 className="text-3xl font-bold text-primary mb-4">This user doesn't exist</h1>
-                    <p className="text-secondary text-lg mb-6">
-                        The user <span className="text-accent font-medium">@{username}</span> could not be found.
+
+                    <h1 className="text-2xl font-bold text-primary mb-2">User not found</h1>
+                    <p className="text-secondary mb-1">
+                        The user <span className="text-primary font-medium">@{username}</span> could not be found.
                     </p>
-                    <p className="text-secondary/70 text-sm mb-8">
+                    <p className="text-secondary/60 text-sm mb-8">
                         They might have changed their username or their account doesn't exist.
                     </p>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <button
-                            onClick={handleBackToFriends} // 🔥 FIXED: Use the new function
+                            onClick={handleBackToFriends}
                             className="bg-primary text-background px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors font-medium flex items-center justify-center gap-2"
                         >
                             <ArrowLeft size={18} />
@@ -257,55 +290,63 @@ export default function FriendProfile() {
     const stats = profile.stats || {};
     const achievements = profile.achievements || [];
 
-    // StatsOverview data (same as before...)
+    // StatsOverview data
     const statsData = [
         {
             icon: Clock,
             label: "Total Focus Time", 
             value: formatTime(stats.totalFocusTime),
-            color: "primary",
+            iconClass: "text-primary",
+            bgClass: "bg-primary/10",
         },
         {
             icon: Target,
             label: "Total Sessions",
             value: stats.totalSessions || 0,
-            color: "secondary",
+            iconClass: "text-secondary",
+            bgClass: "bg-secondary/10",
         },
         {
             icon: BarChart3,
             label: "Avg Session",
             value: formatTime(stats.averageSessionLength),
-            color: "secondary",
+            iconClass: "text-secondary",
+            bgClass: "bg-secondary/10",
         },
         {
             icon: TrendingUp,
             label: "Current Streak",
             value: `${stats.currentStreak || 0} days`,
-            color: "accent",
+            iconClass: "text-orange-500",
+            bgClass: "bg-orange-500/10",
         },
         {
             icon: Award,
             label: "Best Streak",
             value: `${stats.longestStreak || 0} days`,
-            color: "primary",
+            iconClass: "text-primary",
+            bgClass: "bg-primary/10",
         },
         {
             icon: Calendar,
             label: "Best Day",
             value: stats.bestDay?.focusTime ? formatDate(stats.bestDay.date) : "No record",
-            color: "accent",
+            iconClass: "text-accent",
+            bgClass: "bg-accent/10",
         },
         {
             icon: Trophy,
             label: "Achievements",
             value: achievements.length,
-            color: "accent",
+            iconClass: "text-yellow-500",
+            bgClass: "bg-yellow-500/10",
         },
         {
             icon: Zap,
             label: "Weekly Focus",
             value: formatTime(stats.weeklyFocusTime || 0),
-            color: "primary",
+            iconClass: "text-primary",
+            bgClass: "bg-primary/10",
         },
     ];
 
@@ -380,27 +421,22 @@ export default function FriendProfile() {
             <div className="min-h-screen bg-background p-6">
                 <div className="max-w-4xl mx-auto space-y-8">
                     
-                    {/* 🔥 FIXED: Back Button with specific tab navigation */}
-                    <div className="flex items-center space-x-3">
-                        <button
-                            onClick={handleBackToFriends} // 🔥 FIXED: Use the new function
-                            className="flex items-center space-x-2 text-secondary hover:text-primary transition-colors"
-                        >
-                            <ArrowLeft size={20} />
-                            <span>Back to Friends</span>
-                        </button>
-                        <div className="text-primary font-medium">
-                            {profile.displayName || profile.name}'s Profile
-                        </div>
-                    </div>
+                    {/* Back Button */}
+                    <button
+                        onClick={handleBackToFriends}
+                        className="flex items-center gap-2 text-secondary hover:text-primary bg-surface hover:bg-surface/80 px-4 py-2 rounded-xl transition-all text-sm font-medium w-fit"
+                    >
+                        <ArrowLeft size={16} />
+                        Back to Friends
+                    </button>
 
                     {/* Profile Header */}
-                    <div className="bg-surface rounded-lg p-6 mb-6">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                {/* Profile Picture */}
+                    <div className="bg-surface rounded-2xl overflow-hidden">
+                        <div className="h-24 bg-gradient-to-r from-primary/20 to-accent/20" />
+                        <div className="px-6 pb-6 -mt-10">
+                            <div className="flex items-end gap-5 mb-5">
                                 <div className="relative">
-                                    <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-primary bg-background">
+                                    <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-surface bg-background shadow-lg">
                                         {profile.picture && !imageError ? (
                                             <img
                                                 src={getHighResProfilePicture(profile.picture)}
@@ -412,78 +448,69 @@ export default function FriendProfile() {
                                                 referrerPolicy="no-referrer"
                                             />
                                         ) : (
-                                            <div className="w-full h-full bg-surface flex items-center justify-center">
-                                                <User size={24} className="text-secondary" />
+                                            <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                                                <User size={32} className="text-primary/50" />
                                             </div>
                                         )}
                                     </div>
                                 </div>
-
-                                {/* User Info */}
-                                <div>
-                                    {/* Display Name */}
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h1 className="text-2xl font-bold text-primary">
-                                            {profile.displayName || profile.name}
-                                        </h1>
-                                    </div>
-
-                                    {/* Username */}
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-accent">
-                                            @{profile.username}
-                                        </p>
-                                    </div>
-
-                                    {/* Custom Status */}
-                                    {profile.customStatus?.isActive && (
-                                        <div className="flex items-center space-x-2 bg-background px-3 py-2 rounded-lg w-fit">
-                                            <span className="text-lg">{profile.customStatus.emoji}</span>
-                                            <span className="text-primary text-sm">{profile.customStatus.text}</span>
-                                        </div>
-                                    )}
+                                <div className="pb-1">
+                                    <h1 className="text-2xl font-bold text-primary">
+                                        {profile.displayName || profile.name}
+                                    </h1>
+                                    <p className="text-secondary">
+                                        @{profile.username}
+                                    </p>
                                 </div>
                             </div>
+
+                            {profile.customStatus?.isActive && (
+                                <div className="inline-flex items-center gap-2 bg-background px-3 py-2 rounded-lg">
+                                    <span className="text-lg">{profile.customStatus.emoji}</span>
+                                    <span className="text-primary text-sm">{profile.customStatus.text}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Stats Overview - Using your exact UI */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {/* Stats Overview */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         {statsData.map((stat, index) => (
                             <div 
                                 key={index} 
-                                className="bg-surface rounded-xl p-5 hover:shadow-md transition-all duration-200 border border-background"
+                                className="bg-surface rounded-xl p-4 hover:shadow-md transition-all duration-200"
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className={`p-3 bg-${stat.color}/10 rounded-xl`}>
-                                        <stat.icon size={22} className={`text-${stat.color}`} />
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2.5 ${stat.bgClass} rounded-xl`}>
+                                        <stat.icon size={20} className={stat.iconClass} />
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-secondary font-medium mb-1">{stat.label}</p>
-                                        <p className="text-xl font-bold text-primary">{stat.value}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-secondary font-medium truncate">{stat.label}</p>
+                                        <p className="text-lg font-bold text-primary">{stat.value}</p>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Achievements - Using your exact UI with modal */}
-                    <div className="bg-surface rounded-lg p-6 mb-6">
-                        {/* Header - osu! Style */}
-                        <div className="flex items-center justify-between mb-6">
+                    {/* Achievements */}
+                    <div className="bg-surface rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-5">
                             <div className="flex items-center gap-3">
-                                <Trophy className="w-6 h-6 text-primary" />
+                                <div className="p-2.5 bg-primary/20 rounded-xl">
+                                    <Trophy size={20} className="text-primary" />
+                                </div>
                                 <h2 className="text-lg font-bold text-primary">Medals</h2>
                             </div>
-                            <div className="flex items-center gap-4 text-sm">
-                                <div className="bg-background px-3 py-1 rounded-full">
+                            <div className="flex items-center gap-3 text-sm">
+                                <div className="bg-background px-3 py-1.5 rounded-full">
                                     <span className="text-primary font-semibold">{totalEarned}</span>
                                     <span className="text-secondary mx-1">/</span>
                                     <span className="text-secondary">50</span>
                                 </div>
                                 {earnedSecrets.length > 0 && (
-                                    <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-3 py-1 rounded-full border border-purple-500/30">
-                                        <span className="text-purple-600 dark:text-purple-300 font-semibold text-xs">
+                                    <div className="bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
+                                        <span className="text-purple-500 font-semibold text-xs">
                                             {earnedSecrets.length} secret{earnedSecrets.length !== 1 ? 's' : ''}
                                         </span>
                                     </div>
@@ -491,8 +518,7 @@ export default function FriendProfile() {
                             </div>
                         </div>
                         
-                        {/* Achievements Grid - osu! Circular Medal Layout */}
-                        <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
+                        <div className="grid grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
                             {achievementsWithStatus.map((achievement) => {
                                 const IconComponent = achievement.icon;
                                 return (
@@ -560,27 +586,26 @@ export default function FriendProfile() {
             {/* 🔥 NEW: Achievement Details Modal */}
             {selectedAchievement && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-background rounded-lg shadow-xl w-full max-w-md border border-surface">
-                        {/* Header */}
+                    <div className="bg-background rounded-2xl shadow-xl w-full max-w-md border border-surface">
                         <div className="flex justify-between items-center p-6 border-b border-surface">
                             <div className="flex items-center gap-3">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                                     selectedAchievement.earned
                                         ? selectedAchievement.isSecret
-                                            ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30'
-                                            : 'bg-primary/10 border-2 border-primary/20'
-                                        : 'bg-background border-2 border-background'
+                                            ? 'bg-purple-500/10 border border-purple-500/20'
+                                            : 'bg-primary/10 border border-primary/20'
+                                        : 'bg-surface border border-surface'
                                 }`}>
                                     {selectedAchievement.earned ? (
                                         <selectedAchievement.icon 
                                             size={24}
-                                            className={selectedAchievement.isSecret ? 'text-purple-600 dark:text-purple-300' : 'text-primary'}
+                                            className={selectedAchievement.isSecret ? 'text-purple-500' : 'text-primary'}
                                         />
                                     ) : (
                                         selectedAchievement.isSecret ? (
-                                            <Lock size={24} className="text-gray-400" />
+                                            <Lock size={24} className="text-secondary" />
                                         ) : (
-                                            <selectedAchievement.icon size={24} className="text-gray-400" />
+                                            <selectedAchievement.icon size={24} className="text-secondary/50" />
                                         )
                                     )}
                                 </div>
@@ -592,16 +617,16 @@ export default function FriendProfile() {
                                         }
                                     </h3>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                                             selectedAchievement.isSecret
-                                                ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300'
+                                                ? 'bg-purple-500/10 text-purple-500'
                                                 : 'bg-primary/10 text-primary'
                                         }`}>
                                             {selectedAchievement.isSecret ? 'Secret' : selectedAchievement.category}
                                         </span>
                                         {selectedAchievement.earned && (
-                                            <span className="text-xs text-green-600 bg-green-500/10 px-2 py-1 rounded-full">
-                                                ✓ Earned
+                                            <span className="text-xs text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
+                                                Earned
                                             </span>
                                         )}
                                     </div>
@@ -615,16 +640,15 @@ export default function FriendProfile() {
                             </button>
                         </div>
 
-                        {/* Content */}
                         <div className="p-6">
                             {selectedAchievement.earned || !selectedAchievement.isSecret ? (
                                 <>
                                     <p className="text-secondary mb-4">
                                         {getAchievementDetails(selectedAchievement.id).description}
                                     </p>
-                                    <div className="bg-surface p-3 rounded-lg mb-4">
-                                        <h4 className="text-sm font-medium text-primary mb-1">Requirement:</h4>
-                                        <p className="text-sm text-secondary">
+                                    <div className="bg-surface p-3 rounded-xl mb-4">
+                                        <h4 className="text-xs font-medium text-secondary mb-1 uppercase tracking-wider">Requirement</h4>
+                                        <p className="text-sm text-primary">
                                             {selectedAchievement.isSecret && selectedAchievement.earned 
                                                 ? "Secret requirement completed!" 
                                                 : getAchievementDetails(selectedAchievement.id).requirement
@@ -632,9 +656,9 @@ export default function FriendProfile() {
                                         </p>
                                     </div>
                                     {selectedAchievement.earned && selectedAchievement.earnedAt && (
-                                        <div className="bg-green-500/10 p-3 rounded-lg">
-                                            <h4 className="text-sm font-medium text-green-600 mb-1">Earned On:</h4>
-                                            <p className="text-sm text-green-600">
+                                        <div className="bg-green-500/10 p-3 rounded-xl">
+                                            <h4 className="text-xs font-medium text-green-500 mb-1 uppercase tracking-wider">Earned On</h4>
+                                            <p className="text-sm text-green-500">
                                                 {new Date(selectedAchievement.earnedAt).toLocaleDateString('en-US', {
                                                     weekday: 'long',
                                                     year: 'numeric',
@@ -647,20 +671,21 @@ export default function FriendProfile() {
                                 </>
                             ) : (
                                 <div className="text-center py-4">
-                                    <Lock size={48} className="text-gray-400 mx-auto mb-4" />
+                                    <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+                                        <Lock size={28} className="text-secondary" />
+                                    </div>
                                     <h4 className="text-lg font-medium text-primary mb-2">Secret Achievement</h4>
                                     <p className="text-secondary text-sm">
-                                        This is a secret achievement. Complete it to reveal its details!
+                                        Complete it to reveal its details!
                                     </p>
                                 </div>
                             )}
                         </div>
 
-                        {/* Footer */}
-                        <div className="flex justify-end gap-3 p-6 bg-surface/50 border-t border-surface rounded-b-lg">
+                        <div className="flex justify-end p-6 pt-0">
                             <button
                                 onClick={closeModal}
-                                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+                                className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-background rounded-xl transition-colors font-medium text-sm"
                             >
                                 Close
                             </button>

@@ -271,4 +271,12 @@ body.has-compact-music-player {
   opacity: 0.2;
 }
 
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 

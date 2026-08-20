@@ -1,6 +1,6 @@
 // src/Components/Rooms/RoomSidebar.jsx
 import React from 'react';
-import { Users, MessageSquare, Share2, LogOut, X, Target, Send } from 'lucide-react';
+import { Users, MessageSquare, LogOut, X, Target, Send } from 'lucide-react';
 import TimerCard from '../Home/timerCard';
 import TimerControls from '../Home/timerControls';
 import StatsBar from '../Home/statsBar';
@@ -237,13 +237,6 @@ const RoomSidebar = ({
                 </form>
               </div>
             )}
-          </div>
-          
-          <div className="p-4 sm:p-6 border-t border-primary/5 bg-surface/30">
-            <button className="w-full py-4 bg-primary text-background rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 active:scale-[0.98]">
-              <Share2 size={16} strokeWidth={3} />
-              Invite Friends
-            </button>
           </div>
         </div>
       </div>

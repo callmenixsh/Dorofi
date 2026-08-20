@@ -180,16 +180,6 @@ export default function Friends() {
           </div>
         )}
 
-        {/* Friends Loading Indicator */}
-        {friendsLoading && (
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-primary text-sm">Loading friends data...</p>
-            </div>
-          </div>
-        )}
-
         <FriendsHeader
           user={user}
           onSendFriendRequest={sendFriendRequest}
