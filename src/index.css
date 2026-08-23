@@ -222,6 +222,10 @@ body.has-compact-music-player {
   background-color: var(--color-background) !important;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 /* Study Room Animations */
 @keyframes float-up {
   0% {

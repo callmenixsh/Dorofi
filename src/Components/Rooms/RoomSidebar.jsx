@@ -24,12 +24,14 @@ const RoomSidebar = ({
   user
 }) => {
   return (
-    <div 
-      className={`fixed inset-y-0 right-0 h-full bg-surface/95 backdrop-blur-md border-l border-primary/10 transition-all duration-500 ease-in-out z-[100] flex flex-col shadow-2xl ${
-        isOpen ? 'w-full sm:w-80 translate-x-0' : 'w-full sm:w-80 translate-x-full'
+    <div
+      className={`fixed inset-y-0 right-0 h-full max-h-screen bg-surface/95 backdrop-blur-md border-l border-primary/10 transition-all duration-500 ease-in-out z-[100] flex flex-col shadow-2xl overflow-hidden ${
+        isOpen
+          ? 'w-full sm:w-80 translate-x-0'
+          : 'w-full sm:w-80 translate-x-full pointer-events-none'
       }`}
     >
-      <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-col h-full min-h-0 overflow-hidden">
         {/* Mobile Header - Close Button */}
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-primary/5 bg-background/10">
           <h2 className="font-black text-primary uppercase tracking-tighter">Study Room</h2>
@@ -73,9 +75,9 @@ const RoomSidebar = ({
           </button>
         </div>
 
-        <div className="flex-grow overflow-hidden flex flex-col">
+        <div className="flex-grow min-h-0 overflow-hidden flex flex-col">
           {activeTab === 'participants' ? (
-            <div className="p-4 sm:p-6 flex-grow flex flex-col overflow-hidden">
+            <div className="p-4 sm:p-6 flex-grow min-h-0 flex flex-col overflow-hidden">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-[10px] font-black text-secondary uppercase tracking-[0.3em]">Participants</h2>
                 <div className="bg-primary text-background px-2.5 py-0.5 rounded-full text-[9px] font-black">
@@ -138,7 +140,7 @@ const RoomSidebar = ({
               </div>
             </div>
           ) : (
-            <div className="flex-grow flex flex-col overflow-hidden bg-background/5">
+            <div className="flex-grow min-h-0 flex flex-col overflow-hidden bg-background/5">
               {/* Combined Chat Feed (Now showing system notifications for Reactions) */}
               <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar">
                 {[...messages.map(m => ({ ...m, feedType: 'message' })), ...recentReactions.map(r => ({ ...r, feedType: 'reaction' }))]

@@ -170,7 +170,7 @@ const RoomSession = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
 
       {/* Sidebar - Fixed, doesn't participate in flow */}
       <RoomSidebar
