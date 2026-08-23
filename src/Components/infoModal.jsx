@@ -1,6 +1,7 @@
 // InfoModal.jsx - COMPLETE with Features Tab
 import { X, Keyboard, Zap, Play, Timer, Users, Settings, Trophy, Volume2, TrendingUp, Bug, ExternalLink } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function InfoModal({ onClose, user, onLoginPrompt }) {
     const [activeTab, setActiveTab] = useState('shortcuts');
@@ -40,7 +41,7 @@ export default function InfoModal({ onClose, user, onLoginPrompt }) {
         window.open("https://github.com/callmenixsh/Dorofi/issues/new", "_blank");
     };
 
-    return (
+    return createPortal(
         <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
             <div className={`bg-background rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
@@ -254,6 +255,7 @@ export default function InfoModal({ onClose, user, onLoginPrompt }) {
 
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

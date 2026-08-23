@@ -1,5 +1,6 @@
 // src/Components/Rooms/RoomShareModal.jsx
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Share2, X } from 'lucide-react';
 
 const RoomShareModal = ({ isOpen, onClose, roomId, roomLink }) => {
@@ -20,7 +21,7 @@ const RoomShareModal = ({ isOpen, onClose, roomId, roomLink }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-fade-in" 
       onClick={() => onClose()}
@@ -86,7 +87,8 @@ const RoomShareModal = ({ isOpen, onClose, roomId, roomLink }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

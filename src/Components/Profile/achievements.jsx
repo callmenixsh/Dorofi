@@ -1,5 +1,6 @@
 // components/Profile/Achievements.jsx - WITH ACHIEVEMENT MODAL
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import apiService from "../../services/api";
 import { 
     // Lucide icons
@@ -315,7 +316,7 @@ export default function Achievements() {
             </div>
 
             {/* 🔥 NEW: Achievement Details Modal */}
-            {selectedAchievement && (
+            {selectedAchievement && createPortal(
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-background rounded-lg shadow-xl w-full max-w-md border border-surface">
                         {/* Header */}
@@ -423,7 +424,8 @@ export default function Achievements() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

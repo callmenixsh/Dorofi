@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from 'react-router-dom';
 import {
     Search,
@@ -394,7 +395,7 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
             </div>
 
             {/* Remove Friend Confirmation Modal */}
-            {showRemoveModal && friendToRemove && (
+            {showRemoveModal && friendToRemove && createPortal(
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-background rounded-lg shadow-xl w-full max-w-md border border-surface">
                         {/* Header */}
@@ -444,7 +445,8 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

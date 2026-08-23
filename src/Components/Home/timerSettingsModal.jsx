@@ -16,6 +16,7 @@ import {
 	Sliders,
 } from "lucide-react";
 import { updateSettings, toggleSettings } from "../../store/slices/timerSlice";
+import { createPortal } from "react-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import apiService from "../../services/api";
 
@@ -263,7 +264,7 @@ const deletePreset = async (presetId) => {
 
 	const currentTip = getContextTip();
 
-	return (
+	return createPortal(
 		<div
 			className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}
 			onClick={handleCancel}
@@ -861,7 +862,8 @@ const deletePreset = async (presetId) => {
 					</button>
 				</div>
 			</div>
-		</div>
+		</div>,
+		document.body
 	);
 };
 

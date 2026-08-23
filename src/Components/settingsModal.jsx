@@ -1,5 +1,6 @@
 import { X, LogOut, Palette, Moon, Sun, User, Settings as SettingsIcon, Check } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function SettingsModal({ onClose, user, onLogout, onThemeChange }) {
     const [currentTheme, setCurrentTheme] = useState(() => {
@@ -128,7 +129,7 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
         return currentTheme.includes('-dark');
     };
 
-    return (
+    return createPortal(
         <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
             <div className={`bg-background rounded-xl shadow-2xl w-full max-w-lg border border-primary/20 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
@@ -291,6 +292,7 @@ export default function SettingsModal({ onClose, user, onLogout, onThemeChange }
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

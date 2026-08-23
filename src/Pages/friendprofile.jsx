@@ -1,5 +1,6 @@
 // Pages/FriendProfile.jsx - WITH ACHIEVEMENT MODAL AND 50 ACHIEVEMENTS
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Award, Clock, Target, TrendingUp, Trophy, BarChart3, Zap, Star, Calendar, MapPin, AlertCircle, Timer, X } from 'lucide-react';
 import { useAuth } from "../contexts/AuthContext.jsx";
@@ -584,7 +585,7 @@ export default function FriendProfile() {
             </div>
 
             {/* 🔥 NEW: Achievement Details Modal */}
-            {selectedAchievement && (
+            {selectedAchievement && createPortal(
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-background rounded-2xl shadow-xl w-full max-w-md border border-surface">
                         <div className="flex justify-between items-center p-6 border-b border-surface">
@@ -691,7 +692,8 @@ export default function FriendProfile() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

@@ -11,6 +11,7 @@ import {
     updateTask,
 } from "../../store/slices/tasksSlice";
 import { linkTaskToSession } from "../../store/slices/timerSlice";
+import { createPortal } from "react-dom";
 
 const TaskModal = () => {
     const dispatch = useDispatch();
@@ -143,7 +144,7 @@ const TaskModal = () => {
     const activeTasks = tasks.filter((task) => !task.isCompleted);
     const completedTasks = tasks.filter((task) => task.isCompleted);
 
-    return (
+    return createPortal(
         <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
             <div className={`bg-background rounded-xl shadow-2xl w-full max-w-md sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-primary/20 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
@@ -383,7 +384,8 @@ const TaskModal = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

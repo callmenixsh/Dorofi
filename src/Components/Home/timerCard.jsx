@@ -1,5 +1,6 @@
 // Components/Home/timerCard.jsx - Fixed for New Schema
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
     Target,
@@ -16,8 +17,7 @@ import {
     Heart,
     Leaf,
 } from "lucide-react";
-import { openTaskModal } from "../../store/slices/tasksSlice";
-import { toggleTask } from "../../store/slices/tasksSlice";
+import { openTaskModal, toggleTask } from "../../store/slices/tasksSlice";
 import { toggleSettings } from "../../store/slices/timerSlice";
 
 const TimerCard = () => {
@@ -83,7 +83,7 @@ const TimerCard = () => {
         switch (mode) {
             case "work":
                 return {
-                    icon: <Zap size={18} className="text-primary" />,
+                    icon: <Zap size={20} className="text-primary" />,
                     color: "text-primary",
                     bgColor: "bg-primary/10",
                     borderColor: "border-primary/20",
@@ -94,7 +94,7 @@ const TimerCard = () => {
                 };
             case "shortBreak":
                 return {
-                    icon: <Coffee size={18} className="text-accent" />,
+                    icon: <Coffee size={20} className="text-accent" />,
                     color: "text-accent",
                     bgColor: "bg-accent/10",
                     borderColor: "border-accent/20",
@@ -105,7 +105,7 @@ const TimerCard = () => {
                 };
             case "longBreak":
                 return {
-                    icon: <Leaf size={18} className="text-secondary" />,
+                    icon: <Leaf size={20} className="text-secondary" />,
                     color: "text-secondary",
                     bgColor: "bg-secondary/10",
                     borderColor: "border-secondary/20",
@@ -116,7 +116,7 @@ const TimerCard = () => {
                 };
             default:
                 return {
-                    icon: <Zap size={18} className="text-primary" />,
+                    icon: <Zap size={20} className="text-primary" />,
                     color: "text-primary",
                     bgColor: "bg-primary/10",
                     borderColor: "border-primary/20",
@@ -154,20 +154,20 @@ const TimerCard = () => {
         const isWorkMode = mode === "work";
 
         if (isCompleted) {
-            return "bg-primary";
+            return "bg-primary border-primary shadow-[0_0_10px_rgba(var(--color-primary),0.4)]";
         }
 
         if (isCurrent) {
             if (isWorkMode) {
-                return "bg-primary/50 animate-pulse scale-110";
+                return "bg-primary/50 animate-pulse scale-110 shadow-[0_0_10px_rgba(var(--color-primary),0.3)]";
             } else {
                 const colorMap = {
-                    shortBreak: "bg-background/30 border-2 border-accent animate-pulse",
-                    longBreak: "bg-background/30 border-2 border-secondary animate-pulse",
+                    shortBreak: "bg-background/30 border-2 border-accent animate-pulse shadow-[0_0_10px_rgba(var(--color-accent),0.3)]",
+                    longBreak: "bg-background/30 border-2 border-secondary animate-pulse shadow-[0_0_10px_rgba(var(--color-secondary),0.3)]",
                 };
                 return (
                     colorMap[mode] ||
-                    "bg-background/30 border-2 border-primary animate-pulse"
+                    "bg-background/30 border-2 border-primary animate-pulse shadow-[0_0_10px_rgba(var(--color-primary),0.3)]"
                 );
             }
         }
@@ -189,26 +189,30 @@ const TimerCard = () => {
     return (
         <>
             <div
-                className={`${modeInfo.cardBg} backdrop-blur-sm rounded-2xl sm:rounded-3xl p-8 sm:p-12 border ${modeInfo.cardBorder} transition-all duration-300`}
+                className={`bg-surface/30 backdrop-blur-xl rounded-3xl p-8 sm:p-10 border border-primary/20 shadow-xl transition-all duration-300 relative overflow-hidden group`}
             >
+                {/* Ambient inner glows */}
+                <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors duration-500"></div>
+                <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-accent/5 rounded-full blur-3xl pointer-events-none group-hover:bg-accent/10 transition-colors duration-500"></div>
+
                 {/* Header Row */}
-                <div className="flex items-center mb-8">
+                <div className="flex items-center mb-10 relative z-10">
                     {/* Left side - Help button */}
                     <div className="flex-1">
                         <button
                             onClick={handleHelpClick}
-                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-surface/50 hover:bg-primary/20 flex items-center justify-center transition-all text-secondary hover:text-primary"
+                            className="w-10 h-10 rounded-2xl bg-background/40 border border-surface/50 hover:border-primary/30 flex items-center justify-center transition-all text-secondary hover:text-primary shadow-sm hover:scale-105 active:scale-95"
                             title={isWorkMode ? "Focus Tips" : "Break Tips"}
                         >
-                            <Lightbulb size={14} className="lg:w-4 lg:h-4" />
+                            <Lightbulb size={16} />
                         </button>
                     </div>
 
-                    {/* Center - Mode Icon ONLY when timer is visible */}
+                    {/* Center - Mode Icon */}
                     {!settings.hideTimer && (
                         <div className="flex justify-center">
-                            <div className="p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
-                                {modeInfo.icon}
+                            <div className={`p-3.5 rounded-2xl bg-background/50 backdrop-blur-md border border-primary/10 shadow-sm ${modeInfo.color}`}>
+                                {React.cloneElement(modeInfo.icon, { size: 20 })}
                             </div>
                         </div>
                     )}
@@ -217,70 +221,65 @@ const TimerCard = () => {
                     <div className="flex-1 flex justify-end">
                         <button
                             onClick={handleSettingsClick}
-                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-surface/50 hover:bg-primary/20 flex items-center justify-center transition-all text-secondary hover:text-primary"
+                            className="w-10 h-10 rounded-2xl bg-background/40 border border-surface/50 hover:border-primary/30 flex items-center justify-center transition-all text-secondary hover:text-primary shadow-sm hover:scale-105 active:scale-95"
                             title="Timer Settings"
                         >
-                            <Sliders size={14} className="lg:w-4 lg:h-4" />
+                            <Sliders size={16} />
                         </button>
                     </div>
                 </div>
 
                 {/* Centered Content */}
-                <div className="text-center space-y-8">
+                <div className="text-center space-y-10 relative z-10">
                     {settings.hideTimer ? (
                         <div className="flex justify-center">
-                            <div className="relative w-32 h-32 sm:w-40 sm:h-40">
+                            <div className="relative w-36 h-32 sm:w-44 sm:h-44">
                                 {/* Progress Circle */}
                                 <svg
                                     className="w-full h-full transform -rotate-90"
                                     viewBox="0 0 100 100"
                                 >
-                                    {/* Background Circle */}
                                     <circle
                                         cx="50"
                                         cy="50"
                                         r="46"
                                         stroke="currentColor"
-                                        strokeWidth="3"
+                                        strokeWidth="4"
                                         fill="none"
-                                        className="text-surface opacity-80"
+                                        className="text-surface opacity-30"
                                     />
-                                    {/* Progress Circle */}
                                     <circle
                                         cx="50"
                                         cy="50"
                                         r="46"
                                         stroke="currentColor"
-                                        strokeWidth="3"
+                                        strokeWidth="4"
                                         fill="none"
                                         strokeLinecap="round"
-                                        className={`${modeInfo.color} ${
-                                            isRunning ? "drop-shadow-sm" : ""
-                                        }`}
+                                        className={`${modeInfo.color} transition-all duration-1000 ease-linear`}
                                         style={{
                                             strokeDasharray: `${2 * Math.PI * 46}`,
                                             strokeDashoffset: `${
                                                 2 * Math.PI * 46 * (1 - getProgress() / 100)
                                             }`,
                                             filter: isRunning
-                                                ? "drop-shadow(0 0 2px currentColor)"
+                                                ? `drop-shadow(0 0 8px currentColor)`
                                                 : "none",
                                         }}
                                     />
                                 </svg>
 
-                                {/* Center Icon */}
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div
-                                        className={`p-8 rounded-full ${
+                                        className={`p-10 rounded-full ${
                                             modeInfo.bgColor
-                                        } backdrop-blur-sm border-2 ${modeInfo.borderColor} ${
-                                            isRunning ? "shadow-lg scale-105" : "scale-100"
-                                        } transition-all duration-300`}
+                                        } backdrop-blur-md border-2 ${modeInfo.borderColor} ${
+                                            isRunning ? "shadow-[0_0_20px_rgba(var(--color-primary),0.2)] scale-105" : "scale-100"
+                                        } transition-all duration-500`}
                                     >
                                         <div className={`${isRunning ? "animate-pulse" : ""}`}>
                                             {React.cloneElement(modeInfo.icon, {
-                                                size: 38,
+                                                size: 42,
                                                 className: modeInfo.color,
                                             })}
                                         </div>
@@ -289,100 +288,92 @@ const TimerCard = () => {
                             </div>
                         </div>
                     ) : (
-                        /* Normal Timer Display */
                         <div
-                            className={`text-6xl sm:text-8xl font-mono font-bold ${
+                            className={`text-7xl sm:text-9xl font-mono font-black tracking-tighter ${
                                 modeInfo.timerColor
-                            } ${isRunning ? "drop-shadow-lg" : ""}`}
+                            } ${isRunning ? "drop-shadow-[0_0_15px_rgba(var(--color-primary),0.3)]" : "opacity-90"}`}
                         >
                             {formatTime(timeLeft)}
                         </div>
                     )}
 
-                    {/* Session Dots */}
-                    <div className="flex justify-center gap-2">
+                    <div className="flex justify-center gap-2.5">
                         {[...Array(settings.sessionsUntilLongBreak)].map((_, i) => (
                             <div
                                 key={i}
-                                className={`w-3 h-3 rounded-full transition-all duration-300 ${getSessionDotStyle(
-                                    i
-                                )}`}
+                                className={`w-3.5 h-3.5 rounded-full transition-all duration-500 border-2 ${
+                                    i < currentSession.completedPomodoros 
+                                    ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--color-primary),0.5)]" 
+                                    : i === currentSession.completedPomodoros && isRunning
+                                    ? "bg-primary/20 border-primary animate-pulse scale-125"
+                                    : "bg-surface/50 border-surface/50"
+                                }`}
                             />
                         ))}
                     </div>
 
-                    {/* Task Display - ALWAYS SHOW IN WORK MODE */}
                     {isWorkMode && (
-                        <div className="max-w-sm mx-auto h-16 flex items-center">
+                        <div className="max-w-md mx-auto h-20 flex items-center">
                             {pinnedTask ? (
                                 <div
-                                    className={`w-full bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-primary/10 transition-colors ${
-                                        isRunning ? "border-primary/20 shadow-md" : ""
+                                    className={`w-full bg-background/40 backdrop-blur-md rounded-2xl p-5 border border-surface/50 transition-all duration-300 shadow-sm ${
+                                        isRunning ? "border-primary/30 shadow-md ring-4 ring-primary/5" : ""
                                     }`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        {/* Complete Task Button */}
+                                    <div className="flex items-center gap-4">
                                         <button
                                             onClick={handleCompleteTask}
-                                            className="w-6 h-6 lg:w-8 lg:h-8 rounded-full border-2 border-primary/50 hover:border-primary flex items-center justify-center transition-all hover:bg-primary/10 backdrop-blur-sm group flex-shrink-0"
+                                            className="w-8 h-8 rounded-full border-2 border-primary/40 hover:border-primary flex items-center justify-center transition-all hover:bg-primary/10 group flex-shrink-0 active:scale-90"
                                             title="Mark as complete"
                                         >
                                             <Check
-                                                size={12}
-                                                className="lg:w-[14px] lg:h-[14px] text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                                                size={14}
+                                                className="text-primary opacity-0 group-hover:opacity-100 transition-opacity"
                                             />
                                         </button>
 
                                         <div className="flex-1 min-w-0 text-left">
-                                            {/* 🔥 FIXED: Use 'name' instead of 'text' */}
-                                            <p className="text-sm font-semibold text-primary truncate">
+                                            <p className="text-sm font-bold text-primary truncate">
                                                 {pinnedTask.name}
                                             </p>
+                                            <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mt-0.5">Current focus</p>
                                         </div>
 
-                                        {/* Task Management Button */}
                                         <button
                                             onClick={handleTasksClick}
-                                            className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-surface/50 hover:bg-primary/20 flex items-center justify-center transition-all text-secondary hover:text-primary flex-shrink-0"
-                                            title="Manage tasks"
+                                            className="w-10 h-10 rounded-xl bg-surface/50 hover:bg-primary/20 flex items-center justify-center transition-all text-secondary hover:text-primary flex-shrink-0"
                                         >
-                                            <MoreHorizontal size={14} className="lg:w-4 lg:h-4" />
+                                            <MoreHorizontal size={18} />
                                         </button>
                                     </div>
                                 </div>
                             ) : (
                                 <button
                                     onClick={handleTasksClick}
-                                    className="w-full h-full border-2 border-dashed border-primary/20 rounded-xl hover:border-primary/40 transition-all group bg-background/30 backdrop-blur-sm"
+                                    className="w-full h-full border-2 border-dashed border-primary/20 rounded-2xl hover:border-primary/40 transition-all group bg-background/20 backdrop-blur-sm flex items-center justify-center gap-4 active:scale-95"
                                 >
-                                    <div className="flex items-center justify-center gap-3 text-secondary group-hover:text-primary transition-colors">
-                                        <Target
-                                            size={16}
-                                            className="lg:w-[18px] lg:h-[18px] group-hover:bg-accent/20 group-hover:text-accent transition-all rounded-xl p-1"
-                                        />
-                                        <span className="text-sm font-medium">
-                                            Add a task to focus on
-                                        </span>
+                                    <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
+                                        <Target size={20} />
                                     </div>
+                                    <span className="text-sm font-bold text-secondary group-hover:text-primary transition-colors">
+                                        Assign a task to focus on
+                                    </span>
                                 </button>
                             )}
                         </div>
                     )}
 
-                    {/* Break Mode Message */}
                     {!isWorkMode && (
-                        <div className="max-w-sm mx-auto h-16 flex items-center justify-center">
-                            <div className="text-center">
-                                <div
-                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${modeInfo.bgColor} ${modeInfo.borderColor} border`}
-                                >
-                                    {modeInfo.icon}
-                                    <span className={`text-sm font-medium ${modeInfo.color}`}>
-                                        {mode === "shortBreak"
-                                            ? "Take a short break"
-                                            : "Enjoy your long break"}
-                                    </span>
-                                </div>
+                        <div className="max-w-md mx-auto h-20 flex items-center justify-center">
+                            <div
+                                className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl ${modeInfo.bgColor} border ${modeInfo.borderColor} shadow-sm backdrop-blur-md animate-bounce-subtle`}
+                            >
+                                {React.cloneElement(modeInfo.icon, { size: 18 })}
+                                <span className={`text-sm font-bold uppercase tracking-wider ${modeInfo.color}`}>
+                                    {mode === "shortBreak"
+                                        ? "Short Break"
+                                        : "Long Break"}
+                                </span>
                             </div>
                         </div>
                     )}
@@ -390,7 +381,7 @@ const TimerCard = () => {
             </div>
 
             {/* Help Modal */}
-            {showHelp && (
+            {showHelp && createPortal(
                 <div
                     className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] min-h-screen p-4"
                     onClick={handleCloseHelp}
@@ -583,12 +574,13 @@ const TimerCard = () => {
                                             </div>
                                         </div>
                                     </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+                                 </>
+                             )}
+                         </div>
+                     </div>
+                 </div>,
+                 document.body
+             )}
         </>
     );
 };

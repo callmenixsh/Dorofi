@@ -14,6 +14,7 @@ import {
     Settings2,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
+import { createPortal } from "react-dom";
 import { closeModal, toggleRepeat } from "../../store/slices/musicSlice";
 import PlaylistSelector from "./playlistSelector";
 
@@ -43,7 +44,7 @@ const SettingsModal = ({
         setTimeout(() => dispatch(closeModal()), 140);
     }, [dispatch]);
 
-    return (
+    return createPortal(
         <div className={`fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
             <div className={`w-full max-w-xs sm:max-w-2xl lg:max-w-4xl max-h-[90vh] sm:max-h-[85vh] bg-surface/95 rounded-2xl sm:rounded-3xl border border-primary/20 overflow-hidden ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-surface/50">
@@ -259,7 +260,8 @@ const SettingsModal = ({
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

@@ -1,5 +1,6 @@
 // Pages/Rooms.jsx - Study Rooms Discovery Page
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, Globe, Plus, Hash, ArrowRight, Lock, Play, Timer, ArrowLeft, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -274,7 +275,7 @@ const Rooms = () => {
       </div>
 
       {/* Create Room Modal */}
-      {showCreateModal && (
+      {showCreateModal && createPortal(
         <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">
           <div className="bg-surface border border-primary/20 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
             <div className="p-7">
@@ -354,7 +355,8 @@ const Rooms = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

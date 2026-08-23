@@ -1,10 +1,11 @@
 // components/Profile/LogoutModal.jsx - With theme colors
 import { LogOut, AlertCircle } from "lucide-react";
+import { createPortal } from "react-dom";
 
 export default function LogoutModal({ showModal, onClose, onConfirm }) {
   if (!showModal) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-surface border border-surface rounded-2xl p-6 max-w-md w-full">
         <div className="text-center">
@@ -33,6 +34,7 @@ export default function LogoutModal({ showModal, onClose, onConfirm }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

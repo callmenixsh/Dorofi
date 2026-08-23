@@ -2,6 +2,7 @@
 import { X, Users, Star, TrendingUp, Trophy } from 'lucide-react';
 import { FaGoogle } from 'react-icons/fa';
 import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function LoginPromptModal({ onClose, onLogin, featureType = "features", isLoading = false }) {
     const [closing, setClosing] = useState(false);
@@ -66,7 +67,7 @@ export default function LoginPromptModal({ onClose, onLogin, featureType = "feat
 
     const content = getFeatureContent();
 
-    return (
+    return createPortal(
         <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
             <div className={`bg-background rounded-xl shadow-2xl w-full max-w-md border border-surface/50 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
@@ -121,6 +122,7 @@ export default function LoginPromptModal({ onClose, onLogin, featureType = "feat
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

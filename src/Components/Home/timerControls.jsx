@@ -1,5 +1,6 @@
 // Components/Home/timerControls.jsx - Simplified Shortcuts with Confirmation
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
     Play,
@@ -263,7 +264,7 @@ const TimerControls = () => {
             )}
 
             {/* ⚠️ RESET CONFIRMATION MODAL */}
-            {showResetConfirm && (
+            {showResetConfirm && createPortal(
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
                     <div className="bg-surface rounded-2xl shadow-2xl p-6 max-w-sm mx-4 border border-background">
                         <div className="flex items-start gap-4 mb-4">
@@ -290,7 +291,8 @@ const TimerControls = () => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Timer Controls Container */}
