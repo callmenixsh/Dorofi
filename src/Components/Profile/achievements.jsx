@@ -317,71 +317,72 @@ export default function Achievements() {
 
             {/* 🔥 NEW: Achievement Details Modal */}
             {selectedAchievement && createPortal(
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-background rounded-lg shadow-xl w-full max-w-md border border-surface">
+                <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-backdrop-in" onClick={closeModal}>
+                    <div className="bg-background rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-primary/20 relative animate-modal-in" onClick={(e) => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="flex justify-between items-center p-6 border-b border-surface">
-                            <div className="flex items-center gap-3">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
                                     selectedAchievement.earned
                                         ? selectedAchievement.isSecret
-                                            ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30'
-                                            : 'bg-primary/10 border-2 border-primary/20'
-                                        : 'bg-background border-2 border-background'
+                                            ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                                            : 'bg-gradient-to-br from-primary to-primary/60'
+                                        : 'bg-surface/80 border border-surface'
                                 }`}>
                                     {selectedAchievement.earned ? (
                                         <selectedAchievement.icon 
                                             size={24}
-                                            className={selectedAchievement.isSecret ? 'text-purple-600 dark:text-purple-300' : 'text-primary'}
+                                            className="text-background"
                                         />
                                     ) : (
                                         selectedAchievement.isSecret ? (
-                                            <Lock size={24} className="text-gray-400" />
+                                            <Lock size={24} className="text-secondary" />
                                         ) : (
-                                            <selectedAchievement.icon size={24} className="text-gray-400" />
+                                            <selectedAchievement.icon size={24} className="text-secondary" />
                                         )
                                     )}
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-primary">
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-primary">
                                         {selectedAchievement.earned || !selectedAchievement.isSecret 
                                             ? selectedAchievement.name 
                                             : '???'
                                         }
                                     </h3>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
                                             selectedAchievement.isSecret
-                                                ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300'
-                                                : 'bg-primary/10 text-primary'
+                                                ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30'
+                                                : 'bg-primary/10 text-primary border border-primary/20'
                                         }`}>
                                             {selectedAchievement.isSecret ? 'Secret' : selectedAchievement.category}
                                         </span>
                                         {selectedAchievement.earned && (
-                                            <span className="text-xs text-green-600 bg-green-500/10 px-2 py-1 rounded-full">
+                                            <span className="text-xs text-green-600 dark:text-green-400 bg-green-500/10 px-2.5 py-0.5 rounded-full font-medium border border-green-500/20">
                                                 ✓ Earned
                                             </span>
                                         )}
                                     </div>
                                 </div>
+                                <button
+                                    onClick={closeModal}
+                                    className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+                                    aria-label="Close"
+                                >
+                                    <X size={20} className="text-secondary hover:text-primary transition-colors" />
+                                </button>
                             </div>
-                            <button
-                                onClick={closeModal}
-                                className="text-secondary hover:text-primary transition-colors p-1"
-                            >
-                                <X size={20} />
-                            </button>
                         </div>
 
                         {/* Content */}
-                        <div className="p-6">
+                        <div className="p-6 sm:p-8 space-y-4">
                             {selectedAchievement.earned || !selectedAchievement.isSecret ? (
                                 <>
-                                    <p className="text-secondary mb-4">
+                                    <p className="text-secondary text-sm leading-relaxed">
                                         {getAchievementDetails(selectedAchievement.id).description}
                                     </p>
-                                    <div className="bg-surface p-3 rounded-lg mb-4">
-                                        <h4 className="text-sm font-medium text-primary mb-1">Requirement:</h4>
+                                    <div className="bg-surface/50 border border-surface p-4 rounded-xl">
+                                        <h4 className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Requirement</h4>
                                         <p className="text-sm text-secondary">
                                             {selectedAchievement.isSecret && selectedAchievement.earned 
                                                 ? "Secret requirement completed!" 
@@ -390,9 +391,9 @@ export default function Achievements() {
                                         </p>
                                     </div>
                                     {selectedAchievement.earned && selectedAchievement.earnedAt && (
-                                        <div className="bg-green-500/10 p-3 rounded-lg">
-                                            <h4 className="text-sm font-medium text-green-600 mb-1">Earned On:</h4>
-                                            <p className="text-sm text-green-600">
+                                        <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
+                                            <h4 className="text-xs font-bold text-green-600 dark:text-green-400 mb-1 uppercase tracking-wider">Earned On</h4>
+                                            <p className="text-sm text-green-600 dark:text-green-400 font-medium">
                                                 {new Date(selectedAchievement.earnedAt).toLocaleDateString('en-US', {
                                                     weekday: 'long',
                                                     year: 'numeric',
@@ -404,24 +405,14 @@ export default function Achievements() {
                                     )}
                                 </>
                             ) : (
-                                <div className="text-center py-4">
-                                    <Lock size={48} className="text-gray-400 mx-auto mb-4" />
-                                    <h4 className="text-lg font-medium text-primary mb-2">Secret Achievement</h4>
+                                <div className="text-center py-6">
+                                    <Lock size={40} className="text-secondary/50 mx-auto mb-3" />
+                                    <h4 className="text-lg font-bold text-primary mb-1">Secret Achievement</h4>
                                     <p className="text-secondary text-sm">
                                         This is a secret achievement. Complete it to reveal its details!
                                     </p>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex justify-end gap-3 p-6 bg-surface/50 border-t border-surface rounded-b-lg">
-                            <button
-                                onClick={closeModal}
-                                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
-                            >
-                                Close
-                            </button>
                         </div>
                     </div>
                 </div>,

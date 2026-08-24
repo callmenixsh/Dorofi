@@ -396,53 +396,56 @@ export default function FriendsListTab({ friends, loading, onRemoveFriend }) {
 
             {/* Remove Friend Confirmation Modal */}
             {showRemoveModal && friendToRemove && createPortal(
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-background rounded-lg shadow-xl w-full max-w-md border border-surface">
+                <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-backdrop-in">
+                    <div className="bg-background rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-primary/20 animate-modal-in">
                         {/* Header */}
-                        <div className="flex justify-between items-center p-6 border-b border-surface">
-                            <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
-                                <AlertTriangle size={20} className="text-red-500" />
-                                Remove Friend
-                            </h3>
-                            <button
-                                onClick={cancelRemove}
-                                className="text-secondary hover:text-primary transition-colors p-1"
-                                disabled={removing}
-                            >
-                                <X size={20} />
-                            </button>
+                        <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center shrink-0">
+                                    <AlertTriangle size={24} className="text-red-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-primary">Remove Friend</h3>
+                                </div>
+                                <button
+                                    onClick={cancelRemove}
+                                    className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+                                    disabled={removing}
+                                >
+                                    <X size={20} className="text-secondary hover:text-primary transition-colors" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Content */}
-                        <div className="p-6">
-                            <p className="text-secondary mb-4">
+                        <div className="p-8">
+                            <p className="text-secondary text-base mb-6">
                                 Are you sure you want to remove{" "}
-                                <span className="font-medium text-primary">
+                                <span className="font-semibold text-primary">
                                     {friendToRemove.displayName || friendToRemove.name}
                                 </span>{" "}
                                 from your friends list?
                             </p>
-                        </div>
 
-                        {/* Footer */}
-                        <div className="flex justify-end gap-3 p-6 bg-surface/50 border-t border-surface rounded-b-lg">
-                            <button
-                                onClick={cancelRemove}
-                                className="px-4 py-2 text-secondary hover:text-primary transition-colors"
-                                disabled={removing}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmRemoveFriend}
-                                disabled={removing}
-                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
-                            >
-                                {removing && (
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                )}
-                                Remove Friend
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={cancelRemove}
+                                    className="flex-1 px-4 py-2.5 bg-surface/50 border border-surface rounded-xl text-secondary hover:text-primary hover:bg-surface/80 transition-colors font-medium text-sm"
+                                    disabled={removing}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmRemoveFriend}
+                                    disabled={removing}
+                                    className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all font-medium text-sm flex items-center justify-center gap-2 shadow-sm"
+                                >
+                                    {removing && (
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    )}
+                                    Remove
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>,

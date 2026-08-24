@@ -243,33 +243,32 @@ export default function StatusManager({
             </div>
 
             {showModal && createPortal(
-                <div className={`fixed inset-0 bg-background/40 backdrop-blur-md flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+                <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
                     <div 
                         ref={modalRef}
-                        className={`relative w-full max-w-sm sm:max-w-md bg-surface/70 backdrop-blur-2xl rounded-3xl border border-primary/20 shadow-2xl max-h-[85vh] flex flex-col overflow-hidden ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}
+                        className={`bg-background rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}
                     >
-                        <div className="relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-accent/5 to-primary/15"></div>
-                            <div className="relative flex items-center justify-between p-5 border-b border-primary/10">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg text-invert">
-                                        <Zap size={18} />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-base font-bold text-primary">Status</h2>
-                                        <p className="text-xs text-secondary font-medium">Show the world what you're up to</p>
-                                    </div>
+                        {/* Header */}
+                        <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center shrink-0">
+                                    <Zap size={24} className="text-background" />
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-2xl font-bold text-primary">Status</h2>
+                                    <p className="text-xs text-secondary mt-0.5">Show the world what you're up to</p>
                                 </div>
                                 <button 
                                     onClick={handleCloseModal}
-                                    className="p-2 rounded-lg hover:bg-surface/80 text-secondary hover:text-primary transition-all duration-200"
+                                    className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+                                    aria-label="Close"
                                 >
-                                    <X size={18} />
+                                    <X size={20} className="text-secondary hover:text-primary transition-colors" />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8">
+                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8">
                             {/* Presence Status */}
                             <section>
                                 <div className="flex items-center gap-2 mb-4">
@@ -279,22 +278,21 @@ export default function StatusManager({
                                 <div className="grid grid-cols-2 gap-3">
                                     {presenceOptions.map((option) => {
                                         const isSelected = currentPresence === option.id;
-                                        const Icon = option.icon;
                                         return (
                                             <button
                                                 key={option.id}
                                                 onClick={() => handlePresenceChange(option.id)}
-                                                className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all text-left group relative overflow-hidden ${
+                                                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all text-left group relative overflow-hidden text-secondary  ${
                                                     isSelected
-                                                        ? 'bg-primary/20 border-primary/40 shadow-[0_0_20px_rgba(var(--color-primary),0.15)]'
-                                                        : 'bg-background/40 border-surface/50 hover:border-primary/30 text-secondary hover:text-primary shadow-sm backdrop-blur-md'
+                                                        ? 'bg-primary/10 border-primary/40 shadow-sm'
+                                                        : 'bg-surface/50 border-surface hover:bg-surface/80 hover:text-primary'
                                                 }`}
                                             >
-                                                <div className={`w-2.5 h-2.5 ${option.color} rounded-full ring-4 ring-offset-2 ring-transparent group-hover:ring-${option.color.split('-')[1]}-500/20 transition-all duration-300`} />
+                                                <div className={`w-2.5 h-2.5 ${option.color} rounded-full ring-4 ring-offset-2 ring-transparent transition-all duration-300`} />
                                                 <span className="text-sm font-bold truncate">{option.label}</span>
                                                 {isSelected && (
-                                                    <div className="absolute right-2 top-2">
-                                                        <Check size={12} className="text-primary" />
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                        <Check size={14} className="text-primary" />
                                                     </div>
                                                 )}
                                             </button>
@@ -304,7 +302,7 @@ export default function StatusManager({
                             </section>
 
                             {/* Custom Message */}
-                            <section className="border-t border-surface pt-6">
+                            <section className="border-t border-surface/50 pt-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-4 bg-primary rounded-full"></div>
@@ -325,9 +323,9 @@ export default function StatusManager({
                                     <div className="space-y-4">
                                         <button
                                             onClick={() => setIsEditingCustom(true)}
-                                            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-background/40 hover:bg-background/60 border-2 border-surface/50 hover:border-primary/20 transition-all text-left shadow-sm group backdrop-blur-md"
+                                            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-surface/50 hover:bg-surface/80 border border-surface transition-all text-left shadow-sm group"
                                         >
-                                            <div className="w-12 h-12 rounded-2xl bg-surface/60 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-300 backdrop-blur-sm border border-white/10">
+                                            <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-300 border border-surface">
                                                 {user.customStatus?.emoji || '😊'}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -346,7 +344,7 @@ export default function StatusManager({
                                                 <button
                                                     key={idx}
                                                     onClick={() => handleQuickStatus(status)}
-                                                    className="flex items-center gap-3 p-3 rounded-2xl bg-background/30 hover:bg-primary/10 border border-surface/50 hover:border-primary/20 transition-all text-left group shadow-sm backdrop-blur-sm"
+                                                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface/30 hover:bg-surface/50 border border-surface transition-all text-left group shadow-sm"
                                                     disabled={saving}
                                                 >
                                                     <span className="text-lg group-hover:scale-125 transition-transform duration-300">{status.emoji}</span>
@@ -357,8 +355,8 @@ export default function StatusManager({
                                     </div>
                                 ) : (
                                     <div className="space-y-5 animate-fade-in">
-                                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-background/50 border-2 border-primary/20 shadow-inner group transition-all backdrop-blur-md">
-                                            <div className="w-12 h-12 bg-surface/60 border border-surface/50 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-sm ring-4 ring-primary/5">
+                                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-surface/50 border border-primary/20 shadow-inner group transition-all">
+                                            <div className="w-12 h-12 bg-background border border-surface rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-sm ring-4 ring-primary/5">
                                                 {customEmoji || <Smile size={24} className="text-secondary/50" />}
                                             </div>
                                             <div className="flex-1">
@@ -374,14 +372,14 @@ export default function StatusManager({
                                             </div>
                                         </div>
 
-                                        <div className="bg-background/40 p-4 rounded-2xl border border-surface/50 shadow-sm backdrop-blur-md">
+                                        <div className="bg-surface/30 p-4 rounded-2xl border border-surface shadow-sm">
                                             <div className="grid grid-cols-6 sm:grid-cols-8 gap-3">
                                                 {quickEmojis.map((emoji, idx) => (
                                                     <button
                                                         key={idx}
                                                         onClick={() => setCustomEmoji(emoji)}
-                                                        className={`w-10 h-10 text-xl hover:bg-surface/50 rounded-xl flex items-center justify-center transition-all hover:scale-125 duration-200 ${
-                                                            customEmoji === emoji ? 'bg-surface/80 scale-110 shadow-md ring-2 ring-primary/20' : 'opacity-70 hover:opacity-100'
+                                                        className={`w-10 h-10 text-xl hover:bg-surface/80 rounded-xl flex items-center justify-center transition-all hover:scale-125 duration-200 ${
+                                                            customEmoji === emoji ? 'bg-surface/100 scale-110 shadow-md ring-2 ring-primary/20' : 'opacity-70 hover:opacity-100'
                                                         }`}
                                                     >
                                                         {emoji}
@@ -397,17 +395,17 @@ export default function StatusManager({
                                                     setCustomText(user.customStatus?.text || '');
                                                     setCustomEmoji(user.customStatus?.emoji || '');
                                                 }}
-                                                className="flex-1 px-6 py-3 rounded-2xl bg-background/40 hover:bg-background/60 text-secondary hover:text-primary border-2 border-surface transition-all font-bold text-sm shadow-sm backdrop-blur-sm"
+                                                className="flex-1 px-6 py-3 rounded-xl bg-surface/50 hover:bg-surface/80 text-secondary hover:text-primary border border-surface transition-all font-bold text-sm shadow-sm"
                                             >
                                                 Cancel
                                             </button>
                                             <button
                                                 onClick={handleSaveCustom}
                                                 disabled={saving}
-                                                className="flex-2 px-8 py-3 rounded-2xl bg-primary hover:opacity-95 text-invert font-bold transition-all text-sm disabled:opacity-50 shadow-lg shadow-primary/20"
+                                                className="flex-2 px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 text-background font-bold transition-all text-sm disabled:opacity-50 shadow-sm"
                                             >
                                                 {saving ? (
-                                                    <div className="w-5 h-5 border-3 border-invert border-t-transparent rounded-full animate-spin mx-auto" />
+                                                    <div className="w-5 h-5 border-3 border-background border-t-transparent rounded-full animate-spin mx-auto" />
                                                 ) : (
                                                     'Update Status'
                                                 )}
@@ -418,10 +416,10 @@ export default function StatusManager({
                             </section>
 
                             {/* Privacy Setting */}
-                            <section className="border-t border-surface pt-6 pb-2">
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-background/40 border-2 border-surface/50 shadow-sm group hover:border-primary/20 transition-all backdrop-blur-md">
+                            <section className="border-t border-surface/50 pt-6 pb-2">
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-surface/30 border border-surface shadow-sm group hover:border-primary/20 transition-all">
                                     <div className="flex items-center gap-4">
-                                        <div className={`p-3 rounded-2xl transition-all duration-500 ${showLastSeen ? 'bg-emerald-500/20 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-secondary/10 text-secondary'}`}>
+                                        <div className={`p-3 rounded-xl transition-all duration-500 ${showLastSeen ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-secondary/10 text-secondary'}`}>
                                             {showLastSeen ? <Eye size={20} /> : <EyeOff size={20} />}
                                         </div>
                                         <div className="min-w-0">
@@ -431,13 +429,13 @@ export default function StatusManager({
                                     </div>
                                     <button
                                         onClick={toggleLastSeen}
-                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all flex-shrink-0 ${
-                                            showLastSeen ? 'bg-primary border-primary shadow-[0_0_10px_rgba(var(--color-primary),0.3)]' : 'bg-background/80 border-primary/20'
-                                        } border-2`}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all flex-shrink-0 ${
+                                            showLastSeen ? 'bg-primary' : 'bg-surface'
+                                        } border-2 ${showLastSeen ? 'border-primary' : 'border-surface'}`}
                                     >
                                         <span
                                             className={`inline-block h-4 w-4 transform rounded-full transition-all duration-300 ${
-                                                showLastSeen ? 'translate-x-6 bg-background scale-110 shadow-md' : 'translate-x-1.5 bg-primary/40'
+                                                showLastSeen ? 'translate-x-6 bg-background' : 'translate-x-1 bg-primary/40'
                                             }`}
                                         />
                                     </button>

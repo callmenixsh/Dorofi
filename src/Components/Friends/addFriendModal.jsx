@@ -113,32 +113,33 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
         ref={modalRef}
         className={`bg-background rounded-2xl shadow-2xl w-full max-w-md border border-primary/20 overflow-hidden ${closing ? "animate-modal-out" : "animate-modal-in"}`}
       >
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-accent/5 to-primary/15"></div>
-          <div className="relative flex justify-between items-center p-5 border-b border-primary/10">
-            <h3 className="text-base font-bold text-primary flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary to-accent text-invert shadow-md">
-                <User size={16} />
-              </div>
-              <span>Add Friend</span>
-            </h3>
+        {/* Header */}
+        <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center shrink-0">
+              <User size={24} className="text-background" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-primary">Add Friend</h3>
+            </div>
             <button
               onClick={handleClose}
-              className="text-secondary hover:text-primary transition-colors p-2 hover:bg-surface rounded-lg"
+              className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+              aria-label="Close"
               disabled={sending}
             >
-              <X size={18} />
+              <X size={20} className="text-secondary hover:text-primary transition-colors" />
             </button>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 sm:p-8 space-y-6">
           <div>
             <h4 className="text-xs font-bold text-primary mb-2.5 uppercase tracking-wider">
               Your Username
             </h4>
             <div className="flex items-center gap-2 bg-surface p-2 rounded-xl border border-surface/50">
-              <div className="flex-1 px-3 py-2 bg-background rounded-lg border border-surface/20">
+              <div className="flex-1 px-3 py-2 bg-background rounded-xl border border-surface/20">
                 <code className="text-primary font-mono text-sm font-semibold">
                   {myFriendCode}
                 </code>
@@ -147,7 +148,7 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                 onClick={copyFriendCode}
                 className={`p-3 rounded-xl border transition-all hover:scale-[1.03] ${
                   user?.username
-                    ? "bg-primary text-invert hover:opacity-95 border-primary shadow-sm"
+                    ? "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 text-background border-primary shadow-sm"
                     : "bg-surface text-secondary border-surface/30 cursor-not-allowed"
                 }`}
                 title={
@@ -179,17 +180,17 @@ export default function AddFriendModal({ user, onClose, onSendFriendRequest }) {
                     setFriendCode(e.target.value);
                     setMessage("");
                   }}
-                  className="flex-1 px-3 py-2 bg-background border border-surface/20 rounded-lg text-primary placeholder-secondary/70 focus:outline-none font-medium text-sm"
+                  className="flex-1 px-3 py-2 bg-background border border-surface/20 rounded-xl text-primary placeholder-secondary/70 focus:outline-none font-medium text-sm"
                   disabled={sending}
                   maxLength={20}
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2.5 bg-primary text-invert rounded-xl hover:opacity-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm font-semibold text-sm"
+                  className="px-4 py-2.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 text-background rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm font-semibold text-sm cursor-pointer"
                   disabled={!friendCode.trim() || sending}
                 >
                   {sending ? (
-                    <div className="w-4 h-4 border-2 border-invert border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Send size={14} />
                   )}

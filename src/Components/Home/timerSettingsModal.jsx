@@ -23,7 +23,7 @@ import apiService from "../../services/api";
 const TimerSettingsModal = () => {
 	const dispatch = useDispatch();
 	const { user, isAuthenticated } = useAuth();
-	const { settings, showSettings, isRunning, mode, timeLeft } = useSelector(
+	const { settings, showSettings, isRunning, timeLeft } = useSelector(
 		(state) => state.timer
 	);
 
@@ -270,63 +270,64 @@ const deletePreset = async (presetId) => {
 			onClick={handleCancel}
 		>
 			<div
-				className={`bg-background rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden border border-primary/20 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}
+				className={`bg-background rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}
-				<div className="flex items-center justify-between p-4 border-b border-surface/50">
-					<div className="flex items-center gap-2">
-						<Settings size={18} className="text-primary" />
-						<h2 className="text-lg font-semibold text-primary">
-							Timer Settings
-						</h2>
-						{isTimerActive && (
-							<div className="flex items-center gap-1 px-2 py-1 bg-accent/10 rounded-full">
-								<Lock size={12} className="text-accent" />
-								<span className="text-xs text-accent">Running</span>
-							</div>
-						)}
+				<div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+					<div className="flex items-center gap-4">
+						<div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
+							<Settings size={24} className="text-background" />
+						</div>
+						<div className="flex-1 flex items-center gap-2">
+							<h2 className="text-2xl font-bold text-primary">
+								Timer Settings
+							</h2>
+							{isTimerActive && (
+								<div className="flex items-center gap-1 px-2.5 py-1 bg-accent/10 rounded-full border border-accent/20">
+									<Lock size={12} className="text-accent" />
+									<span className="text-xs font-medium text-accent">Running</span>
+								</div>
+							)}
+						</div>
+						<button
+							onClick={handleCancel}
+							className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+							aria-label="Close"
+						>
+							<X size={20} className="text-secondary hover:text-primary transition-colors" />
+						</button>
 					</div>
-					<button
-						onClick={handleCancel}
-						className="p-1 hover:bg-surface/50 rounded-lg transition-colors"
-					>
-						<X size={18} className="text-secondary" />
-					</button>
 				</div>
 
 				{/* Tab Navigation */}
-				<div className="flex border-b border-surface/30">
+				<div className="flex border-b border-surface/50 bg-surface/20 flex-shrink-0">
 					<button
 						onClick={() => setActiveTab("durations")}
-						className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+						className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all flex-1 justify-center ${
 							activeTab === "durations"
-								? "text-primary border-b-2 border-primary bg-primary/5"
-								: "text-secondary hover:text-primary hover:bg-surface/30"
+								? "text-primary bg-background border-b-2 border-primary"
+								: "text-secondary hover:text-primary hover:bg-surface/50"
 						}`}
 					>
-						<div className="flex items-center justify-center gap-2">
-							<Timer size={14} />
-							Durations & Presets
-						</div>
+						<Timer size={16} />
+						<span>Durations & Presets</span>
 					</button>
 					<button
 						onClick={() => setActiveTab("behavior")}
-						className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+						className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all flex-1 justify-center ${
 							activeTab === "behavior"
-								? "text-primary border-b-2 border-primary bg-primary/5"
-								: "text-secondary hover:text-primary hover:bg-surface/30"
+								? "text-primary bg-background border-b-2 border-primary"
+								: "text-secondary hover:text-primary hover:bg-surface/50"
 						}`}
 					>
-						<div className="flex items-center justify-center gap-2">
-							<Sliders size={14} />
-							Behavior & Goals
-						</div>
+						<Sliders size={16} />
+						<span>Behavior & Goals</span>
 					</button>
 				</div>
 
 				{/* Content */}
-				<div className="max-h-[calc(90vh-200px)] overflow-y-auto">
+				<div className="flex-1 overflow-y-auto p-6 sm:p-8">
 					{activeTab === "durations" ? (
 						// TAB 1 - Durations & Presets
 						<div className="p-4 space-y-4">
@@ -847,16 +848,16 @@ const deletePreset = async (presetId) => {
 				</div>
 
 				{/* Footer */}
-				<div className="flex gap-2 p-4 border-t border-surface/50">
+				<div className="flex gap-3 px-8 py-4 border-t border-surface/50 flex-shrink-0 bg-surface/10">
 					<button
 						onClick={handleCancel}
-						className="flex-1 px-3 py-2 bg-surface/50 hover:bg-surface/80 text-secondary hover:text-primary rounded-lg transition-colors text-sm"
+						className="flex-1 px-4 py-2.5 bg-surface/50 border border-surface hover:bg-surface/80 text-secondary hover:text-primary rounded-xl transition-colors text-sm font-medium"
 					>
 						Cancel
 					</button>
 					<button
 						onClick={handleSave}
-						className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-background rounded-lg transition-colors text-sm font-medium"
+						className="flex-1 px-4 py-2.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 text-background rounded-xl transition-colors text-sm font-medium shadow-sm"
 					>
 						Save Settings
 					</button>

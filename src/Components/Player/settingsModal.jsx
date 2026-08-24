@@ -45,24 +45,31 @@ const SettingsModal = ({
     }, [dispatch]);
 
     return createPortal(
-        <div className={`fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
-            <div className={`w-full max-w-xs sm:max-w-2xl lg:max-w-4xl max-h-[90vh] sm:max-h-[85vh] bg-surface/95 rounded-2xl sm:rounded-3xl border border-primary/20 overflow-hidden ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
-                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-surface/50">
-                    <h2 className="text-lg sm:text-2xl font-bold text-primary flex items-center gap-2 sm:gap-3">
-                        <Settings2 size={20} className="sm:w-6 sm:h-6" />
-                        <span className="hidden sm:inline">Audio Settings</span>
-                        <span className="sm:hidden">Audio</span>
-                    </h2>
-                    <button
-                        onClick={handleClose}
-                        className="group w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-surface/50 flex items-center justify-center transition-colors"
-                        title="Close settings"
-                    >
-                        <X size={16} className="sm:w-[18px] sm:h-[18px] text-secondary group-hover:text-primary transition-colors" />
-                    </button>
+        <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+            <div className={`bg-background rounded-2xl shadow-2xl w-full max-w-2xl sm:max-w-3xl max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
+                {/* Header */}
+                <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
+                            <Settings2 size={24} className="text-background" />
+                        </div>
+                        <div className="flex-1">
+                            <h2 className="text-2xl font-bold text-primary">
+                                Audio Settings
+                            </h2>
+                        </div>
+                        <button
+                            onClick={handleClose}
+                            className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+                            aria-label="Close settings"
+                        >
+                            <X size={20} className="text-secondary hover:text-primary transition-colors" />
+                        </button>
+                    </div>
                 </div>
 
-                <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto max-h-[calc(90vh-80px)] sm:max-h-[calc(85vh-88px)]">
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 sm:space-y-8">
                     {/* Music Controls Section */}
                     <div>
                         <h3 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4 flex items-center gap-2">

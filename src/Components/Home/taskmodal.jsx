@@ -18,7 +18,6 @@ const TaskModal = () => {
     const { tasks, showTaskModal, isLoading, isLoggedIn } = useSelector(
         (state) => state.tasks
     );
-    const { currentSession } = useSelector((state) => state.timer);
     const [newTask, setNewTask] = useState("");
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [editingText, setEditingText] = useState("");
@@ -145,32 +144,36 @@ const TaskModal = () => {
     const completedTasks = tasks.filter((task) => task.isCompleted);
 
     return createPortal(
-        <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
-            <div className={`bg-background rounded-xl shadow-2xl w-full max-w-md sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-primary/20 ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
+        <div className={`fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${closing ? 'animate-backdrop-out' : 'animate-backdrop-in'}`}>
+            <div className={`bg-background rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative ${closing ? 'animate-modal-out' : 'animate-modal-in'}`}>
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-surface/50 bg-gradient-to-r from-primary/5 to-accent/5">
-                    <div>
-                        <h2 className="text-lg sm:text-xl font-bold text-primary">Manage Tasks</h2>
-                        {isLoggedIn && (
-                            <p className="text-xs sm:text-sm text-secondary mt-1">
-                                Synced across devices 
-                            </p>
-                        )}
+                <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
+                            <Target size={24} className="text-background" />
+                        </div>
+                        <div className="flex-1">
+                            <h2 className="text-2xl font-bold text-primary">
+                                Manage Tasks
+                            </h2>
+                            {isLoggedIn && (
+                                <p className="text-xs text-secondary mt-0.5">
+                                    Synced across devices
+                                </p>
+                            )}
+                        </div>
+                        <button
+                            onClick={handleClose}
+                            className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+                            aria-label="Close"
+                        >
+                            <X size={20} className="text-secondary hover:text-primary transition-colors" />
+                        </button>
                     </div>
-                    <button
-                        onClick={handleClose}
-                        className="rounded-full p-2 hover:bg-surface/80 transition-colors"
-                        aria-label="Close"
-                    >
-                        <X
-                            size={20}
-                            className="text-secondary hover:text-primary transition-colors"
-                        />
-                    </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-4 sm:p-6 max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto">
+                <div className="flex-1 overflow-y-auto p-6 sm:p-8">
                     {/* Add Task Form */}
                     <form onSubmit={handleAddTask} className="mb-6">
                         <div className="flex flex-col sm:flex-row gap-3">
@@ -179,16 +182,16 @@ const TaskModal = () => {
                                 value={newTask}
                                 onChange={(e) => setNewTask(e.target.value)}
                                 placeholder="Add a new task..."
-                                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-surface/50 border border-surface rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all text-primary placeholder-secondary text-sm sm:text-base"
+                                className="flex-1 px-4 py-3 bg-surface/50 border border-surface rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all text-primary placeholder-secondary text-sm sm:text-base"
                                 autoFocus
                                 disabled={isLoading}
                             />
                             <button
                                 type="submit"
                                 disabled={!newTask.trim() || isLoading}
-                                className="px-4 sm:px-6 py-2 sm:py-3 bg-accent hover:bg-accent/90 text-background rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
+                                className="px-6 py-3 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 text-background rounded-xl transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap shadow-sm"
                             >
-                                <Plus size={16} />
+                                <Plus size={18} />
                                 {isLoading ? "Adding..." : "Add Task"}
                             </button>
                         </div>
@@ -197,24 +200,24 @@ const TaskModal = () => {
                     {/* Active Tasks */}
                     <div className="mb-6">
                         <h3 className="text-base sm:text-lg font-semibold text-primary mb-4 flex items-center gap-2">
-                            <Target size={16} />
+                            <Target size={18} />
                             Active Tasks ({activeTasks.length})
                         </h3>
 
                         {activeTasks.length > 0 ? (
-                            <div className="space-y-2 sm:space-y-3">
+                            <div className="space-y-3">
                                 {activeTasks.map((task) => (
                                     <div
                                         key={task._id}
                                         onClick={() => handleTaskClick(task._id)}
-                                        className={`group flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border-2 transition-all hover:shadow-sm cursor-pointer ${
+                                        className={`group flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
                                             activeTaskId === task._id
                                                 ? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
                                                 : ''
                                         } ${
                                             task.isPinned
-                                                ? "bg-accent/10 border-accent/30 shadow-sm"
-                                                : "bg-surface/30 border-surface/50 hover:bg-surface/50 hover:border-accent/20"
+                                                ? "bg-primary/10 border-primary/30 shadow-sm"
+                                                : "bg-surface/50 border-surface hover:bg-surface/80"
                                         }`}
                                     >
                                         {/* Pin Button */}
@@ -223,10 +226,10 @@ const TaskModal = () => {
                                                 e.stopPropagation();
                                                 handlePinTask(task._id);
                                             }}
-                                            className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 ${
+                                            className={`p-2 rounded-lg transition-all duration-200 ${
                                                 task.isPinned
-                                                    ? "bg-accent text-background opacity-100"
-                                                    : `hover:bg-accent/20 text-secondary hover:text-accent ${
+                                                    ? "bg-primary text-background opacity-100"
+                                                    : `hover:bg-primary/20 text-secondary hover:text-primary ${
                                                         activeTaskId === task._id ? 'opacity-100' : 'opacity-0 sm:opacity-0'
                                                     } sm:group-hover:opacity-100`
                                             }`}
@@ -241,11 +244,11 @@ const TaskModal = () => {
                                                 e.stopPropagation();
                                                 handleToggleTask(task._id);
                                             }}
-                                            className="w-4 h-4 sm:w-5 sm:h-5 rounded border-2 border-accent/50 hover:border-accent flex items-center justify-center transition-colors flex-shrink-0"
+                                            className="w-5 h-5 rounded-md border-2 border-primary/50 hover:border-primary flex items-center justify-center transition-colors flex-shrink-0"
                                             disabled={isLoading}
                                         >
                                             {task.isCompleted && (
-                                                <Check size={12} className="text-accent" />
+                                                <Check size={14} className="text-primary" />
                                             )}
                                         </button>
 
@@ -256,7 +259,7 @@ const TaskModal = () => {
                                                     type="text"
                                                     value={editingText}
                                                     onChange={(e) => setEditingText(e.target.value)}
-                                                    className="flex-1 px-2 py-1 bg-background border border-accent/30 rounded focus:outline-none focus:border-accent text-sm sm:text-base text-primary"
+                                                    className="flex-1 px-3 py-1.5 bg-background border border-primary/30 rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base text-primary"
                                                     autoFocus
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Enter') saveEdit(task._id);
@@ -265,17 +268,17 @@ const TaskModal = () => {
                                                 />
                                                 <button
                                                     onClick={() => saveEdit(task._id)}
-                                                    className="p-1.5 text-green-500 hover:bg-green-500/10 rounded transition-colors"
+                                                    className="p-1.5 text-green-500 hover:bg-green-500/10 rounded-lg transition-colors"
                                                     title="Save changes"
                                                 >
-                                                    <Save size={14} />
+                                                    <Save size={16} />
                                                 </button>
                                                 <button
                                                     onClick={cancelEditing}
-                                                    className="p-1.5 text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                                                    className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                                                     title="Cancel editing"
                                                 >
-                                                    <XCircle size={14} />
+                                                    <XCircle size={16} />
                                                 </button>
                                             </div>
                                         ) : (
@@ -294,7 +297,7 @@ const TaskModal = () => {
                                             >
                                                 <button
                                                     onClick={() => startEditing(task)}
-                                                    className="p-1.5 sm:p-2 rounded-full hover:bg-primary/10 text-secondary hover:text-primary transition-colors"
+                                                    className="p-2 rounded-lg hover:bg-primary/10 text-secondary hover:text-primary transition-colors"
                                                     title="Edit task"
                                                     disabled={isLoading}
                                                 >
@@ -303,7 +306,7 @@ const TaskModal = () => {
 
                                                 <button
                                                     onClick={() => handleRemoveTask(task._id)}
-                                                    className="p-1.5 sm:p-2 rounded-full hover:bg-red-500/10 text-secondary hover:text-red-500 transition-colors"
+                                                    className="p-2 rounded-lg hover:bg-red-500/10 text-secondary hover:text-red-500 transition-colors"
                                                     title="Delete task"
                                                     disabled={isLoading}
                                                 >
@@ -315,11 +318,11 @@ const TaskModal = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 sm:py-12 text-secondary">
-                                <Target size={40} className="mx-auto mb-3 sm:mb-4 opacity-50" />
+                            <div className="text-center py-12 text-secondary bg-surface/30 rounded-xl border border-surface p-6">
+                                <Target size={40} className="mx-auto mb-3 opacity-50 text-primary" />
                                 <p className="text-sm sm:text-base">No active tasks. Add one to get started!</p>
                                 {!isLoggedIn && (
-                                    <p className="text-xs sm:text-sm mt-2 text-accent">
+                                    <p className="text-xs sm:text-sm mt-2 text-primary">
                                         Tasks are saved locally. <span className="hidden sm:inline">Login to sync across devices!</span>
                                     </p>
                                 )}
@@ -331,31 +334,31 @@ const TaskModal = () => {
                     {completedTasks.length > 0 && (
                         <div>
                             <h3 className="text-base sm:text-lg font-semibold text-primary mb-4 flex items-center gap-2">
-                                <Check size={16} />
+                                <Check size={18} />
                                 Completed Tasks ({completedTasks.length})
                             </h3>
-                            <div className="space-y-2 sm:space-y-3">
+                            <div className="space-y-3">
                                 {completedTasks.map((task) => (
                                     <div
                                         key={task._id}
                                         onClick={() => handleTaskClick(task._id)}
-                                        className={`group flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-surface/20 rounded-lg border border-surface/30 hover:bg-surface/30 transition-colors cursor-pointer ${
+                                        className={`group flex items-center gap-3 p-4 bg-surface/30 rounded-xl border border-surface/50 hover:bg-surface/50 transition-colors cursor-pointer ${
                                             activeTaskId === task._id
                                                 ? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
                                                 : ''
                                         }`}
                                     >
-                                        <div className="w-6 sm:w-8"></div>
+                                        <div className="w-8"></div>
 
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleToggleTask(task._id);
                                             }}
-                                            className="w-4 h-4 sm:w-5 sm:h-5 rounded border-2 border-accent bg-accent flex items-center justify-center transition-colors flex-shrink-0"
+                                            className="w-5 h-5 rounded-md border-2 border-primary bg-primary flex items-center justify-center transition-colors flex-shrink-0"
                                             disabled={isLoading}
                                         >
-                                            <Check size={12} className="text-background" />
+                                            <Check size={14} className="text-background" />
                                         </button>
 
                                         <span className="flex-1 text-secondary line-through text-sm sm:text-base leading-tight">
@@ -370,7 +373,7 @@ const TaskModal = () => {
                                         >
                                             <button
                                                 onClick={() => handleRemoveTask(task._id)}
-                                                className="p-1.5 sm:p-2 rounded-full hover:bg-red-500/10 text-secondary hover:text-red-500 transition-colors"
+                                                className="p-2 rounded-lg hover:bg-red-500/10 text-secondary hover:text-red-500 transition-colors"
                                                 title="Delete task"
                                                 disabled={isLoading}
                                             >

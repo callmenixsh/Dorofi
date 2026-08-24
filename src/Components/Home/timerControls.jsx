@@ -265,27 +265,27 @@ const TimerControls = () => {
 
             {/* ⚠️ RESET CONFIRMATION MODAL */}
             {showResetConfirm && createPortal(
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-                    <div className="bg-surface rounded-2xl shadow-2xl p-6 max-w-sm mx-4 border border-background">
-                        <div className="flex items-start gap-4 mb-4">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                                <AlertTriangle size={20} className="text-orange-600" />
+                <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-backdrop-in">
+                    <div className="bg-background rounded-2xl shadow-2xl w-full max-w-sm border border-primary/20 overflow-hidden animate-modal-in">
+                        <div className="px-6 py-5 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
+                                <AlertTriangle size={20} className="text-orange-500" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-primary mb-1">Reset Work Timer?</h3>
-                                <p className="text-sm text-secondary">This will reset your current work session. This action cannot be undone.</p>
+                                <h3 className="text-lg font-bold text-primary">Reset Work Timer?</h3>
+                                <p className="text-xs text-secondary mt-0.5">This will reset your current work session.</p>
                             </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="p-6 flex gap-3">
                             <button
                                 onClick={() => setShowResetConfirm(false)}
-                                className="flex-1 px-4 py-2 bg-background text-secondary rounded-lg hover:bg-surface transition-colors"
+                                className="flex-1 px-4 py-2.5 bg-surface/50 border border-surface text-secondary hover:text-primary rounded-xl hover:bg-surface/80 transition-colors font-medium text-sm"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmReset}
-                                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors font-medium text-sm shadow-sm"
                             >
                                 Reset
                             </button>
