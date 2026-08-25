@@ -265,7 +265,7 @@ const TimerControls = () => {
 
             {/* ⚠️ RESET CONFIRMATION MODAL */}
             {showResetConfirm && createPortal(
-                <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-backdrop-in">
+                <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[10006] p-4 animate-backdrop-in">
                     <div className="bg-background rounded-2xl shadow-2xl w-full max-w-sm border border-primary/20 overflow-hidden animate-modal-in">
                         <div className="px-6 py-5 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">

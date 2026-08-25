@@ -22,7 +22,7 @@ const Feature = ({ icon: Icon, iconColor, title, description }) => (
 
 const Step = ({ number, title, description }) => (
   <div className="flex gap-4">
-    <div className="w-9 h-9 rounded-full bg-primary text-invert flex items-center justify-center flex-shrink-0 text-sm font-bold">
+    <div className="w-9 h-9 rounded-full bg-primary text-surface flex items-center justify-center flex-shrink-0 text-sm font-bold">
       {number}
     </div>
     <div>
@@ -58,7 +58,7 @@ const About = () => {
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-invert transition-all hover:opacity-90 text-base"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-surface transition-all hover:opacity-90 text-base"
             style={{ backgroundColor: 'var(--color-primary)' }}
           >
             <Play size={18} />
@@ -184,7 +184,7 @@ const About = () => {
           </p>
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-invert transition-all hover:opacity-90"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-surface transition-all hover:opacity-90"
             style={{ backgroundColor: 'var(--color-primary)' }}
           >
             <Play size={18} />
@@ -196,22 +196,21 @@ const About = () => {
       {/* ─── Founder ─── */}
       <div className="max-w-4xl mx-auto px-6 pb-12">
         <div className="text-center">
-          <div className="inline-flex items-center gap-3 text-xs text-invert">
+          <div className="inline-flex items-center gap-3 text-md text-invert">
             <span>Built by</span>
             <button
-              onClick={() => navigate('/profile/callmenixsh')}
-              className="text-primary hover:text-accent transition-colors font-medium"
+              className="flex items-center gap-1 text-primary hover:text-accent transition-colors font-medium"
+              onClick={() => window.open('https://github.com/callmenixsh/Dorofi', '_blank')}
             >
+            <Github size={12} />
               callmenixsh
             </button>
             <span>•</span>
             <button
-              onClick={() => window.open('https://github.com/callmenixsh', '_blank')}
-              className="flex items-center gap-1 text-invert hover:text-primary transition-colors"
+              className="flex items-center gap-1 text-accent hover:text-primary transition-colors"
+              onClick={() => navigate('/profile/callmenixshh')}
             >
-              <Github size={12} />
-              Open Source
-              <ExternalLink size={10} />
+              Profile
             </button>
           </div>
         </div>

@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Users } from 'lucide-react';
 import useTimer from '../hooks/useTimer';
-import { addReaction, addMessage } from '../store/slices/roomsSlice';
+import { addReaction, addMessage, leaveRoom } from '../store/slices/roomsSlice';
 
 // Room Components
 import RoomHeader from '../Components/Rooms/RoomHeader';
 import RoomSidebar from '../Components/Rooms/RoomSidebar';
 import RoomMainContent from '../Components/Rooms/RoomMainContent';
 import RoomShareModal from '../Components/Rooms/RoomShareModal';
+import LeaveRoomModal from '../Components/Rooms/LeaveRoomModal';
 
 const RoomSession = () => {
   const { roomId } = useParams();
@@ -20,6 +21,7 @@ const RoomSession = () => {
   const [chatMessage, setChatMessage] = useState('');
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [isJoining, setIsJoining] = useState(true);
   const [joiningStep, setJoiningStep] = useState(0);
   const chatEndRef = useRef(null);
@@ -69,9 +71,13 @@ const RoomSession = () => {
   };
 
   const handleLeaveRoom = () => {
-    if (window.confirm('Are you sure you want to leave the study room?')) {
-      navigate('/rooms');
-    }
+    setShowLeaveModal(true);
+  };
+
+  const handleConfirmLeave = () => {
+    dispatch(leaveRoom());
+    setShowLeaveModal(false);
+    navigate('/rooms');
   };
 
   useEffect(() => {
@@ -227,6 +233,14 @@ const RoomSession = () => {
         onClose={() => setShowShareModal(false)}
         roomId={roomId}
         roomLink={window.location.href}
+      />
+
+      {/* Leave Room Modal */}
+      <LeaveRoomModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleConfirmLeave}
+        roomName={activeRoom?.name}
       />
     </div>
   );

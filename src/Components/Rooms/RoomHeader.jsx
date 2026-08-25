@@ -25,7 +25,7 @@ const RoomHeader = ({
               <span className="opacity-30">•</span>
               <span className="flex items-center gap-1 text-secondary/80">
                 <Users size={12} />
-                {participantsCount} online
+                {participantsCount}/10 online
               </span>
             </p>
           </div>

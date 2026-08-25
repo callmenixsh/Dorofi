@@ -34,7 +34,7 @@ const Guide = () => {
               { step: '3', text: 'Take a 5-minute break, then repeat' },
             ].map(({ step, text }) => (
               <div key={step} className="flex items-start gap-3">
-                <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-invert text-xs font-bold flex-shrink-0 mt-0.5">{step}</div>
+                <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-surface text-xs font-bold flex-shrink-0 mt-0.5">{step}</div>
                 <p className="text-secondary text-sm">{text}</p>
               </div>
             ))}
@@ -47,9 +47,9 @@ const Guide = () => {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`flex w-full items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === id
-                  ? 'bg-primary text-invert'
+                  ? 'bg-primary text-surface'
                   : 'text-secondary hover:bg-surface hover:text-primary'
               }`}
             >
@@ -181,7 +181,7 @@ const Guide = () => {
         <div className="text-center mt-10">
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-invert transition-all hover:opacity-90"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-surface transition-all hover:opacity-90"
             style={{ backgroundColor: 'var(--color-primary)' }}
           >
             <Play size={18} />

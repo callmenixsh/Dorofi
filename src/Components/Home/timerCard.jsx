@@ -20,7 +20,7 @@ import {
 import { openTaskModal, toggleTask } from "../../store/slices/tasksSlice";
 import { toggleSettings } from "../../store/slices/timerSlice";
 
-const TimerCard = () => {
+const TimerCard = ({ isFocusMode = false }) => {
     const dispatch = useDispatch();
     const [showHelp, setShowHelp] = useState(false);
 
@@ -83,7 +83,7 @@ const TimerCard = () => {
         switch (mode) {
             case "work":
                 return {
-                    icon: <Zap size={20} className="text-primary" />,
+                    icon: <Zap size={isFocusMode ? 28 : 20} className="text-primary" />,
                     color: "text-primary",
                     bgColor: "bg-primary/10",
                     borderColor: "border-primary/20",
@@ -94,7 +94,7 @@ const TimerCard = () => {
                 };
             case "shortBreak":
                 return {
-                    icon: <Coffee size={20} className="text-accent" />,
+                    icon: <Coffee size={isFocusMode ? 28 : 20} className="text-accent" />,
                     color: "text-accent",
                     bgColor: "bg-accent/10",
                     borderColor: "border-accent/20",
@@ -105,7 +105,7 @@ const TimerCard = () => {
                 };
             case "longBreak":
                 return {
-                    icon: <Leaf size={20} className="text-secondary" />,
+                    icon: <Leaf size={isFocusMode ? 28 : 20} className="text-secondary" />,
                     color: "text-secondary",
                     bgColor: "bg-secondary/10",
                     borderColor: "border-secondary/20",
@@ -116,7 +116,7 @@ const TimerCard = () => {
                 };
             default:
                 return {
-                    icon: <Zap size={20} className="text-primary" />,
+                    icon: <Zap size={isFocusMode ? 28 : 20} className="text-primary" />,
                     color: "text-primary",
                     bgColor: "bg-primary/10",
                     borderColor: "border-primary/20",
@@ -147,72 +147,40 @@ const TimerCard = () => {
         return ((totalDuration - timeLeft) / totalDuration) * 100;
     };
 
-    // Get session dot styles based on current mode
-    const getSessionDotStyle = (index) => {
-        const isCompleted = index < currentSession.completedPomodoros;
-        const isCurrent = index === currentSession.completedPomodoros && isRunning;
-        const isWorkMode = mode === "work";
-
-        if (isCompleted) {
-            return "bg-primary border-primary shadow-[0_0_10px_rgba(var(--color-primary),0.4)]";
-        }
-
-        if (isCurrent) {
-            if (isWorkMode) {
-                return "bg-primary/50 animate-pulse scale-110 shadow-[0_0_10px_rgba(var(--color-primary),0.3)]";
-            } else {
-                const colorMap = {
-                    shortBreak: "bg-background/30 border-2 border-accent animate-pulse shadow-[0_0_10px_rgba(var(--color-accent),0.3)]",
-                    longBreak: "bg-background/30 border-2 border-secondary animate-pulse shadow-[0_0_10px_rgba(var(--color-secondary),0.3)]",
-                };
-                return (
-                    colorMap[mode] ||
-                    "bg-background/30 border-2 border-primary animate-pulse shadow-[0_0_10px_rgba(var(--color-primary),0.3)]"
-                );
-            }
-        }
-
-        const inactiveColorMap = {
-            work: "bg-background/30 border border-primary/20",
-            shortBreak: "bg-background/30 border border-accent/20",
-            longBreak: "bg-background/30 border border-secondary/20",
-        };
-
-        return (
-            inactiveColorMap[mode] || "bg-background/30 border border-primary/20"
-        );
-    };
-
     // Check if current mode is work mode
     const isWorkMode = mode === "work";
 
     return (
         <>
             <div
-                className={`bg-surface/30 backdrop-blur-xl rounded-3xl p-8 sm:p-10 border border-primary/20 shadow-xl transition-all duration-300 relative overflow-hidden group`}
+                className={`${isFocusMode ? 'bg-transparent border-none shadow-none w-full max-w-4xl mx-auto' : 'bg-surface/30 backdrop-blur-xl border border-primary/25 shadow-xl'} rounded-3xl ${isFocusMode ? 'p-12 sm:p-16' : 'p-8 sm:p-10'} transition-all duration-300 relative overflow-hidden group`}
             >
-                {/* Ambient inner glows */}
-                <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors duration-500"></div>
-                <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-accent/5 rounded-full blur-3xl pointer-events-none group-hover:bg-accent/10 transition-colors duration-500"></div>
+                {/* Ambient inner glows - hidden in focus mode */}
+                {!isFocusMode && (
+                    <>
+                        <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors duration-500"></div>
+                        <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-accent/5 rounded-full blur-3xl pointer-events-none group-hover:bg-accent/10 transition-colors duration-500"></div>
+                    </>
+                )}
 
                 {/* Header Row */}
-                <div className="flex items-center mb-10 relative z-10">
+                <div className={`flex items-center ${isFocusMode ? 'mb-16' : 'mb-10'} relative z-10`}>
                     {/* Left side - Help button */}
                     <div className="flex-1">
                         <button
                             onClick={handleHelpClick}
-                            className="w-10 h-10 rounded-2xl bg-background/40 border border-surface/50 hover:border-primary/30 flex items-center justify-center transition-all text-secondary hover:text-primary shadow-sm hover:scale-105 active:scale-95"
+                            className={`${isFocusMode ? 'w-12 h-12 rounded-2xl' : 'w-10 h-10 rounded-2xl'} bg-background/40 border border-surface/50 hover:border-primary/30 flex items-center justify-center transition-all text-secondary hover:text-primary shadow-sm hover:scale-105 active:scale-95`}
                             title={isWorkMode ? "Focus Tips" : "Break Tips"}
                         >
-                            <Lightbulb size={16} />
+                            <Lightbulb size={isFocusMode ? 20 : 16} />
                         </button>
                     </div>
 
                     {/* Center - Mode Icon */}
                     {!settings.hideTimer && (
                         <div className="flex justify-center">
-                            <div className={`p-3.5 rounded-2xl bg-background/50 backdrop-blur-md border border-primary/10 shadow-sm ${modeInfo.color}`}>
-                                {React.cloneElement(modeInfo.icon, { size: 20 })}
+                            <div className={`p-4 rounded-2xl bg-background/50 backdrop-blur-md border border-primary/10 shadow-sm ${modeInfo.color}`}>
+                                {React.cloneElement(modeInfo.icon, { size: isFocusMode ? 28 : 20 })}
                             </div>
                         </div>
                     )}
@@ -221,19 +189,19 @@ const TimerCard = () => {
                     <div className="flex-1 flex justify-end">
                         <button
                             onClick={handleSettingsClick}
-                            className="w-10 h-10 rounded-2xl bg-background/40 border border-surface/50 hover:border-primary/30 flex items-center justify-center transition-all text-secondary hover:text-primary shadow-sm hover:scale-105 active:scale-95"
+                            className={`${isFocusMode ? 'w-12 h-12 rounded-2xl' : 'w-10 h-10 rounded-2xl'} bg-background/40 border border-surface/50 hover:border-primary/30 flex items-center justify-center transition-all text-secondary hover:text-primary shadow-sm hover:scale-105 active:scale-95`}
                             title="Timer Settings"
                         >
-                            <Sliders size={16} />
+                            <Sliders size={isFocusMode ? 20 : 16} />
                         </button>
                     </div>
                 </div>
 
                 {/* Centered Content */}
-                <div className="text-center space-y-10 relative z-10">
+                <div className={`text-center ${isFocusMode ? 'space-y-16' : 'space-y-10'} relative z-10`}>
                     {settings.hideTimer ? (
                         <div className="flex justify-center">
-                            <div className="relative w-36 h-32 sm:w-44 sm:h-44">
+                            <div className="relative w-48 h-48 sm:w-60 sm:h-60">
                                 {/* Progress Circle */}
                                 <svg
                                     className="w-full h-full transform -rotate-90"
@@ -271,7 +239,7 @@ const TimerCard = () => {
 
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div
-                                        className={`p-10 rounded-full ${
+                                        className={`p-12 rounded-full ${
                                             modeInfo.bgColor
                                         } backdrop-blur-md border-2 ${modeInfo.borderColor} ${
                                             isRunning ? "shadow-[0_0_20px_rgba(var(--color-primary),0.2)] scale-105" : "scale-100"
@@ -279,7 +247,7 @@ const TimerCard = () => {
                                     >
                                         <div className={`${isRunning ? "animate-pulse" : ""}`}>
                                             {React.cloneElement(modeInfo.icon, {
-                                                size: 42,
+                                                size: 54,
                                                 className: modeInfo.color,
                                             })}
                                         </div>
@@ -289,19 +257,19 @@ const TimerCard = () => {
                         </div>
                     ) : (
                         <div
-                            className={`text-7xl sm:text-9xl font-mono font-black tracking-tighter ${
+                            className={`${isFocusMode ? 'text-9xl sm:text-[12rem]' : 'text-7xl sm:text-9xl'} font-mono font-black tracking-tighter ${
                                 modeInfo.timerColor
-                            } ${isRunning ? "drop-shadow-[0_0_15px_rgba(var(--color-primary),0.3)]" : "opacity-90"}`}
+                            } ${isRunning ? "drop-shadow-[0_0_20px_rgba(var(--color-primary),0.35)]" : "opacity-90"} leading-none`}
                         >
                             {formatTime(timeLeft)}
                         </div>
                     )}
 
-                    <div className="flex justify-center gap-2.5">
+                    <div className="flex justify-center gap-3">
                         {[...Array(settings.sessionsUntilLongBreak)].map((_, i) => (
                             <div
                                 key={i}
-                                className={`w-3.5 h-3.5 rounded-full transition-all duration-500 border-2 ${
+                                className={`${isFocusMode ? 'w-4 h-4' : 'w-3.5 h-3.5'} rounded-full transition-all duration-500 border-2 ${
                                     i < currentSession.completedPomodoros 
                                     ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--color-primary),0.5)]" 
                                     : i === currentSession.completedPomodoros && isRunning
@@ -313,7 +281,7 @@ const TimerCard = () => {
                     </div>
 
                     {isWorkMode && (
-                        <div className="max-w-md mx-auto h-20 flex items-center">
+                        <div className="max-w-xl mx-auto h-20 flex items-center">
                             {pinnedTask ? (
                                 <div
                                     className={`w-full bg-background/40 backdrop-blur-md rounded-2xl p-5 border border-surface/50 transition-all duration-300 shadow-sm ${
@@ -383,36 +351,39 @@ const TimerCard = () => {
             {/* Help Modal */}
             {showHelp && createPortal(
                 <div
-                    className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] min-h-screen p-4"
+                    className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-backdrop-in"
                     onClick={handleCloseHelp}
                 >
                     <div
-                        className="bg-background rounded-xl shadow-2xl w-full max-w-md border border-primary/20 relative z-10"
+                        className="bg-background rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden border border-primary/20 flex flex-col relative animate-modal-in"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-surface/50">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-primary/10 rounded-xl">
-                                    <Lightbulb size={20} className="text-primary" />
+                        <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
+                                    <Lightbulb size={24} className="text-background" />
                                 </div>
-                                <h2 className="text-xl font-bold text-primary">
-                                    {isWorkMode ? "Focus Tips" : "Break Tips"}
-                                </h2>
+                                <div className="flex-1">
+                                    <h2 className="text-2xl font-bold text-primary">
+                                        {isWorkMode ? "Focus Tips" : "Break Tips"}
+                                    </h2>
+                                </div>
+                                <button
+                                    onClick={handleCloseHelp}
+                                    className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+                                    aria-label="Close"
+                                >
+                                    <X
+                                        size={20}
+                                        className="text-secondary hover:text-primary transition-colors"
+                                    />
+                                </button>
                             </div>
-                            <button
-                                onClick={handleCloseHelp}
-                                className="rounded-full p-2 hover:bg-surface/80 transition-colors"
-                            >
-                                <X
-                                    size={20}
-                                    className="text-secondary hover:text-primary transition-colors"
-                                />
-                            </button>
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 space-y-6">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
                             {isWorkMode ? (
                                 /* Focus Tips */
                                 <>

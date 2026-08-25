@@ -91,7 +91,7 @@ const Support = () => {
 						</div>
 						<button
 							onClick={handleGitHubIssues}
-							className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:opacity-95 text-invert rounded-xl transition-all font-semibold shadow-sm text-xs"
+							className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:opacity-95 text-surface rounded-xl transition-all font-semibold shadow-sm text-xs"
 						>
 							<Github size={14} />
 							<span>Browse Issues</span>

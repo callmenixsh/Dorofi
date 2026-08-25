@@ -81,7 +81,7 @@ const RoomSidebar = ({
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-[10px] font-black text-secondary uppercase tracking-[0.3em]">Participants</h2>
                 <div className="bg-primary text-background px-2.5 py-0.5 rounded-full text-[9px] font-black">
-                  {participants.length}
+                  {participants.length}/10
                 </div>
               </div>
 

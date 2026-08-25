@@ -23,29 +23,31 @@ const RoomShareModal = ({ isOpen, onClose, roomId, roomLink }) => {
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-fade-in" 
+      className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-backdrop-in" 
       onClick={() => onClose()}
     >
-      <div className="bg-background rounded-2xl shadow-2xl w-full max-w-md border border-primary/20 relative z-10 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-background rounded-2xl shadow-2xl w-full max-w-md border border-primary/20 relative z-10 overflow-hidden animate-modal-in" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-surface/50 bg-gradient-to-r from-primary/5 to-accent/5">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary">
-              <Share2 size={18} />
+        <div className="px-8 py-6 border-b border-surface/50 bg-gradient-to-r from-surface/30 to-surface/10 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center shrink-0">
+              <Share2 size={24} className="text-background" />
             </div>
-            <h2 className="text-base font-bold text-primary">Share Study Room</h2>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-primary">Share Study Room</h2>
+            </div>
+            <button
+              onClick={() => onClose()}
+              className="rounded-full p-2 hover:bg-surface/80 transition-colors"
+              aria-label="Close"
+            >
+              <X size={20} className="text-secondary hover:text-primary transition-colors" />
+            </button>
           </div>
-          <button
-            onClick={() => onClose()}
-            className="rounded-full p-1.5 hover:bg-surface/80 transition-colors"
-            aria-label="Close"
-          >
-            <X size={18} className="text-secondary hover:text-primary transition-colors" />
-          </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 sm:p-8 space-y-6">
           <p className="text-xs text-secondary leading-relaxed font-medium">
             Invite others to join your synced study session by sharing the room code or direct link below!
           </p>

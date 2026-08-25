@@ -69,9 +69,9 @@ const Policies = () => {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary text-invert shadow-sm scale-[1.02]'
+                      ? 'bg-primary text-surface shadow-sm scale-[1.02]'
                       : 'text-secondary hover:bg-background hover:text-primary'
                   }`}
                 >
