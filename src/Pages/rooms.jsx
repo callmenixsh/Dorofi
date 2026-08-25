@@ -71,7 +71,7 @@ const Rooms = () => {
     }
     if (activeRoom) {
       if (activeRoom.id === room.id) {
-        navigate(`/rooms/${room.id}`);
+        navigate('/');
         return;
       }
       setPendingAction({ type: 'join', targetRoom: room });
@@ -79,7 +79,7 @@ const Rooms = () => {
       return;
     }
     dispatch(setActiveRoom(room));
-    navigate(`/rooms/${room.id}`);
+    navigate('/');
   };
 
   const handlePasscodeSubmit = (e) => {
@@ -95,7 +95,7 @@ const Rooms = () => {
 
     if (activeRoom) {
       if (activeRoom.id === room.id) {
-        navigate(`/rooms/${room.id}`);
+        navigate('/');
         return;
       }
       setPendingAction({ type: 'join', targetRoom: room });
@@ -103,11 +103,11 @@ const Rooms = () => {
       return;
     }
     dispatch(setActiveRoom(room));
-    navigate(`/rooms/${room.id}`);
+    navigate('/');
   };
 
   const handleReturnToRoom = () => {
-    if (activeRoom) navigate(`/rooms/${activeRoom.id}`);
+    if (activeRoom) navigate('/');
   };
 
   const handleLeaveCurrentRoom = () => {
@@ -123,9 +123,9 @@ const Rooms = () => {
 
     if (action?.type === 'join' && action.targetRoom) {
       dispatch(setActiveRoom(action.targetRoom));
-      navigate(`/rooms/${action.targetRoom.id}`);
+      navigate('/');
     } else if (action?.type === 'joinCode' && action.code) {
-      navigate(`/rooms/${action.code}`);
+      navigate('/');
     } else if (action?.type === 'create') {
       setShowCreateModal(true);
     }
@@ -139,7 +139,7 @@ const Rooms = () => {
       setShowLeaveModal(true);
       return;
     }
-    navigate(`/rooms/${roomCode.trim()}`);
+    navigate('/');
   };
 
   const handleNewRoomClick = () => {
@@ -168,7 +168,7 @@ const Rooms = () => {
     setRoomName('');
     setPrivateCode('');
     dispatch(setActiveRoom(newRoom));
-    navigate(`/rooms/${newRoom.id}`);
+    navigate('/');
   };
 
   const activePercent = activeRoom?.expiresAt

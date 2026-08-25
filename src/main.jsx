@@ -15,7 +15,6 @@ import { store } from './store';
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import Home from "./Pages/home.jsx";
 import Rooms from "./Pages/rooms.jsx";
-import RoomSession from "./Pages/RoomSession.jsx";
 import About from "./Pages/about.jsx";
 import Friends from "./Pages/friends.jsx";
 import Profile from "./Pages/profile.jsx";
@@ -152,7 +151,6 @@ const router = createBrowserRouter([
             { path: "/", element: <Home /> },
             { path: "/about", element: <About /> },
             { path: "/rooms", element: <Rooms /> },
-            { path: "/rooms/:roomId", element: <RoomSession /> },
             { path: "/policies", element: <Policies /> },
             { path: "/guide", element: <Guide /> },
             { path: "/support", element: <Support /> },
@@ -212,9 +210,9 @@ const AppWithErrorBoundary = () => {
         );
     }
 
-    return (
+return (
         <GoogleOAuthProvider clientId={googleClientId}>
-            <Provider store={store}> {/* 🆕 Redux Provider wrapping everything */}
+            <Provider store={store}>
                 <ThemeInitializer>
                     <AuthProvider>
                         <RouterProvider router={router} />
