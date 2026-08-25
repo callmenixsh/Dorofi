@@ -7,6 +7,7 @@ import {
 	Users,
 	MessageSquare,
 	Target,
+	X,
 } from "lucide-react";
 
 const RoomHeader = ({
@@ -42,47 +43,36 @@ const RoomHeader = ({
 					</div>
 				</div>
 
-				<div className="flex items-center justify-between sm:justify-end gap-2">
-					<div className="flex items-center gap-1">
-						<button
-							onClick={onShareClick}
-							className="p-2.5 hover:bg-primary/10 rounded-xl text-secondary hover:text-primary transition-all bg-background/50 border border-primary/5 shadow-sm"
-							title="Share Room"
-						>
-							<Share2 size={18} />
-						</button>
-						<button
-							onClick={() => onToggleSidebar(!isSidebarOpen)}
-							className={`lg:hidden p-2.5 rounded-xl transition-all border shadow-sm ${
-								isSidebarOpen
-									? "bg-primary/10 border-primary/20 text-primary"
-									: "bg-background/50 border-primary/5 text-secondary hover:text-primary hover:bg-primary/10"
-							}`}
-							title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
-						>
-							<MessageSquare size={18} />
-						</button>
-						<button
-							onClick={() => onToggleSidebar(!isSidebarOpen)}
-							className={`hidden lg:flex p-2.5 rounded-xl transition-all border shadow-sm ${
-								isSidebarOpen
-									? "bg-primary/10 border-primary/20 text-primary"
-									: "bg-background/50 border-primary/5 text-secondary hover:text-primary hover:bg-primary/10"
-							}`}
-							title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
-						>
-							<Users size={18} />
-						</button>
-					</div>
-
+			<div className="flex items-center justify-between sm:justify-end gap-2">
+				<div className="flex items-center gap-1.5">
 					<button
-						onClick={onLeaveClick}
-						className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all font-bold text-sm shadow-sm"
+						onClick={onShareClick}
+						className="p-2.5 hover:bg-primary/10 rounded-xl text-secondary hover:text-primary transition-all bg-background/50 border border-primary/5 shadow-sm"
+						title="Share Room"
 					>
-						<LogOut size={16} />
-						<span>Leave</span>
+						<Share2 size={18} />
+					</button>
+					<button
+						onClick={() => onToggleSidebar(!isSidebarOpen)}
+						className={`p-2.5 rounded-xl transition-all border shadow-sm ${
+							isSidebarOpen
+								? "bg-primary/10 border-primary/20 text-primary"
+								: "bg-background/50 border-primary/5 text-secondary hover:text-primary hover:bg-primary/10"
+						}`}
+						title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+					>
+						{isSidebarOpen ? <X size={18} /> : <MessageSquare size={18} />}
 					</button>
 				</div>
+
+				<button
+					onClick={onLeaveClick}
+					className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all font-bold text-sm shadow-sm"
+				>
+					<LogOut size={16} />
+					<span>Leave</span>
+				</button>
+			</div>
 			</div>
 
 			<div className="border-t border-primary/5 p-3 flex items-center gap-2.5 text-secondary italic text-xs truncate font-medium">

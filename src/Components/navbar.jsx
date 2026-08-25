@@ -223,7 +223,7 @@ export default function DorofiNavbar() {
 
     return (
         <>
-            <nav className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-background relative">
+            <nav className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-background relative z-[300]">
                 {/* Desktop Layout - Hidden on mobile */}
                 <div className="hidden md:grid grid-cols-3 items-center">
                     

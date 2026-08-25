@@ -83,10 +83,6 @@ const Home = () => {
 	};
 
 	useEffect(() => {
-		chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [messages, recentReactions, activeTab]);
-
-	useEffect(() => {
 		if (cooldownRemaining > 0) {
 			const timer = setInterval(() => {
 				setCooldownRemaining((prev) => Math.max(0, prev - 100));
@@ -154,6 +150,23 @@ const Home = () => {
 	}, []);
 
 	useEffect(() => {
+		if (!activeRoom) return;
+		const handleTabToggle = (event) => {
+			if (event.key !== "Tab") return;
+			const isTyping =
+				event.target.tagName === "INPUT" ||
+				event.target.tagName === "TEXTAREA" ||
+				event.target.isContentEditable;
+			if (!isTyping) {
+				event.preventDefault();
+				setIsSidebarOpen((prev) => !prev);
+			}
+		};
+		window.addEventListener("keydown", handleTabToggle, true);
+		return () => window.removeEventListener("keydown", handleTabToggle, true);
+	}, [activeRoom]);
+
+	useEffect(() => {
 		if (user) {
 			// Update BOTH timer and tasks logged in state
 			dispatch(setLoggedInState(true));
@@ -204,7 +217,7 @@ const Home = () => {
 						user={user}
 					/>
 				)}
-				<div className={`transition-all duration-300 ease-in-out ${activeRoom && isSidebarOpen ? "lg:mr-80" : "mr-0"}`}>
+				<div className="transition-all duration-300 ease-in-out">
 					<div className="container mx-auto px-4 py-8 max-w-4xl">
 						<div className="space-y-8">
 							{activeRoom && (
