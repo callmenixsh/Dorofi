@@ -37,9 +37,6 @@ const NotFound = () => {
           <p className="text-lg text-secondary mb-2">
             Looks like this page took a break and didn't come back!
           </p>
-          <p className="text-secondary">
-            The page you're looking for doesn't exist or has been moved.
-          </p>
         </div>
 
         {/* Action Buttons */}
@@ -64,7 +61,7 @@ const NotFound = () => {
         <div className="mt-8 text-xs text-secondary">
           <p>Error Code: 404 • Page Not Found</p>
           <p className="mt-1">
-            Need help? <button className="text-primary hover:text-accent underline">Contact Support</button>
+            Need help? <button onClick={() => navigate(`/support`)} className="text-primary hover:text-accent underline">Contact Support</button>
           </p>
         </div>
 
